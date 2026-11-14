@@ -1,4 +1,4 @@
-<![CDATA[<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -713,13 +713,26 @@
         flex-direction: column;
       }
     }
+
+    /* Kid-proofing: no text selection, no long-press callouts, no pull-to-refresh. */
+    html,
+    body {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      overscroll-behavior: none;
+    }
+
+    .canvas-wrap {
+      overscroll-behavior: contain;
+    }
   </style>
 </head>
 <body>
   <main class="app">
     <header>
       <h1>Magic Letter Zoo</h1>
-      <div class="subtitle">✏️ Draw a letter. Meet an animal friend! 🐾</div>
+      <div class="subtitle">✏️ Trace a letter. Meet an animal friend! 🐾</div>
     </header>
 
     <section class="game" aria-label="Magic Letter Zoo game">
@@ -727,8 +740,8 @@
         <div class="prompt">
           <div class="star" aria-hidden="true">⭐</div>
           <div class="prompt-text">
-            <strong id="promptTitle">Can you write this letter?</strong>
-            <span id="promptSubtitle">Use your finger, mouse, or stylus.</span>
+            <strong id="promptTitle">Can you trace this letter?</strong>
+            <span id="promptSubtitle">Start at the green dot. Follow the dots!</span>
           </div>
           <div class="big-target" id="targetLetter" aria-label="Target letter">A</div>
         </div>
@@ -740,7 +753,7 @@
         </div>
 
         <div class="controls">
-          <button id="tryButton" type="button">✨ Guess My Letter</button>
+          <button id="tryButton" type="button">✅ Done</button>
           <button id="clearButton" class="secondary" type="button">🧽 Wipe</button>
           <button id="newLetterButton" class="secondary" type="button">🎲 New Letter</button>
           <button id="installButton" class="install" type="button">📲 Install App</button>
@@ -759,7 +772,7 @@
             <div class="animal-emoji" id="animalEmoji" aria-hidden="true">🦄</div>
             <div class="recognized" id="recognized">Ready?</div>
             <div class="animal-name" id="animalName">Magic Zoo</div>
-            <div class="message" id="message">Pick up your finger when you finish. I will try to guess!</div>
+            <div class="message" id="message">Follow the dots to make the letter. An animal friend will come!</div>
           </div>
         </div>
 
@@ -773,6 +786,485 @@
   <script>
     (() => {
       "use strict";
+
+// ==ENGINE START==
+// Pure (DOM-free) letter engine: guide layout, tracing check, free-draw recognizer.
+const LetterEngine = (() => {
+  "use strict";
+
+  // Teaching strokes in a 0..100 box. Order + direction follow the usual
+  // preschool rule: start at the top, big lines first, then the small ones.
+  const TEMPLATES = {
+    A: [[[50,8],[14,98]], [[50,8],[86,98]], [[28,66],[72,66]]],
+    B: [[[18,8],[18,98]], [[18,8],[52,8],[68,14],[74,28],[68,44],[52,52],[18,52],[56,52],[74,60],[80,76],[72,92],[54,98],[18,98]]],
+    C: [[[80,22],[66,11],[48,8],[30,13],[17,28],[11,50],[16,73],[30,90],[48,98],[66,95],[81,82]]],
+    D: [[[18,8],[18,98]], [[18,8],[46,8],[66,17],[80,36],[82,56],[76,76],[62,92],[44,98],[18,98]]],
+    E: [[[20,8],[20,98]], [[20,8],[78,8]], [[20,53],[68,53]], [[20,98],[80,98]]],
+    F: [[[20,8],[20,98]], [[20,8],[78,8]], [[20,53],[68,53]]],
+    G: [[[82,22],[68,11],[50,8],[32,13],[18,28],[12,50],[16,73],[30,90],[50,98],[68,94],[80,82],[84,62],[58,62]]],
+    H: [[[16,8],[16,98]], [[82,8],[82,98]], [[16,53],[82,53]]],
+    I: [[[50,8],[50,98]]],
+    J: [[[66,8],[66,72],[60,88],[47,98],[31,96],[18,84]]],
+    K: [[[18,8],[18,98]], [[78,8],[20,58],[80,98]]],
+    L: [[[20,8],[20,98],[78,98]]],
+    M: [[[14,8],[14,98]], [[14,8],[48,66],[82,8],[82,98]]],
+    N: [[[16,8],[16,98]], [[16,8],[80,98],[80,8]]],
+    O: [[[50,8],[32,12],[18,24],[11,42],[11,62],[18,80],[32,93],[50,98],[68,93],[82,80],[89,62],[89,42],[82,24],[68,12],[50,8]]],
+    P: [[[18,8],[18,98]], [[18,8],[52,8],[70,15],[77,30],[70,46],[52,54],[18,54]]],
+    Q: [[[50,8],[32,12],[18,24],[11,42],[11,62],[18,80],[32,93],[50,98],[68,93],[82,80],[89,62],[89,42],[82,24],[68,12],[50,8]], [[58,72],[88,100]]],
+    R: [[[18,8],[18,98]], [[18,8],[52,8],[70,15],[77,30],[70,46],[52,54],[18,54],[42,54],[80,98]]],
+    S: [[[78,20],[64,10],[46,8],[28,14],[20,28],[26,42],[46,50],[66,58],[78,72],[74,88],[56,98],[36,98],[18,88]]],
+    T: [[[12,8],[88,8]], [[50,8],[50,98]]],
+    U: [[[16,8],[16,68],[24,88],[40,98],[58,98],[74,88],[82,68],[82,8]]],
+    V: [[[12,8],[50,98],[88,8]]],
+    W: [[[6,8],[28,98],[50,40],[72,98],[94,8]]],
+    X: [[[16,8],[84,98]], [[84,8],[16,98]]],
+    Y: [[[14,8],[50,52]], [[86,8],[50,52],[50,98]]],
+    Z: [[[14,8],[84,8],[14,98],[86,98]]]
+  };
+
+  // Extra shapes accepted by the free-draw recognizer (common kid variants).
+  const VARIANTS = {
+    I: [[[[50,8],[50,98]], [[28,8],[72,8]], [[28,98],[72,98]]]],
+    J: [[[[66,8],[66,72],[60,88],[47,98],[31,96],[18,84]], [[40,8],[86,8]]]],
+    G: [[[[82,22],[68,11],[50,8],[32,13],[18,28],[12,50],[16,73],[30,90],[50,98],[68,94],[80,82],[82,62]]]],
+    M: [[[[14,98],[14,8],[48,98],[82,8],[82,98]]]],
+    K: [[[[18,8],[18,98]], [[78,8],[18,58]], [[40,44],[80,98]]]],
+    Y: [[[[14,8],[50,52],[86,8]], [[50,52],[50,98]]]],
+    B: [[[[18,8],[18,98]], [[18,8],[60,12],[64,48],[18,52]], [[18,52],[70,56],[72,94],[18,98]]]]
+  };
+
+  const LOOKALIKE = [
+    ["C", "G", "O", "Q", "U"], ["B", "P", "R", "D"], ["E", "F"], ["I", "J", "L", "T"],
+    ["M", "N", "W", "V"], ["K", "X", "Y"], ["S", "Z"], ["H", "N"]
+  ];
+
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  function polylineLength(pts) {
+    let s = 0;
+    for (let i = 1; i < pts.length; i++) s += dist(pts[i - 1], pts[i]);
+    return s;
+  }
+
+  // Insert points so no gap is bigger than `step` (fast finger flicks leave gaps).
+  function densify(pts, step) {
+    if (pts.length < 2) return pts.slice();
+    const out = [pts[0]];
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i];
+      const d = dist(a, b);
+      const k = Math.ceil(d / step);
+      for (let j = 1; j <= k; j++) {
+        const t = j / k;
+        out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+      }
+    }
+    return out;
+  }
+
+  // Distance from p to segment ab, and the segment's unit direction.
+  function segInfo(p, a, b) {
+    const vx = b.x - a.x, vy = b.y - a.y;
+    const len2 = vx * vx + vy * vy || 1e-9;
+    const t = clamp(((p.x - a.x) * vx + (p.y - a.y) * vy) / len2, 0, 1);
+    const cx = a.x + vx * t, cy = a.y + vy * t;
+    const len = Math.sqrt(len2);
+    return { d: Math.hypot(p.x - cx, p.y - cy), ux: vx / len, uy: vy / len };
+  }
+
+  // ---------- Guide layout (canvas coordinates) ----------
+  function layoutTransform(letter, width, height) {
+    const raw = TEMPLATES[letter] || TEMPLATES.A;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    raw.flat().forEach(([x, y]) => {
+      minX = Math.min(minX, x); minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+    });
+    const padding = Math.max(28, Math.min(width, height) * 0.14);
+    const rawW = Math.max(1, maxX - minX), rawH = Math.max(1, maxY - minY);
+    const scale = Math.min((width - padding * 2) / rawW, (height - padding * 2) / rawH);
+    const offX = (width - rawW * scale) / 2 - minX * scale;
+    const offY = (height - rawH * scale) / 2 - minY * scale + height * 0.03;
+    return { scale, offX, offY };
+  }
+
+  function layoutStrokes(letter, width, height) {
+    const { scale, offX, offY } = layoutTransform(letter, width, height);
+    const raw = TEMPLATES[letter] || TEMPLATES.A;
+    return raw.map(s => s.map(([x, y]) => ({ x: x * scale + offX, y: y * scale + offY })));
+  }
+
+  function buildGuide(letter, width, height) {
+    const strokes = layoutStrokes(letter, width, height);
+    const ys = strokes.flat().map(p => p.y);
+    const letterH = Math.max(...ys) - Math.min(...ys);
+    // Fat-finger tolerance: ~12% of letter height (≈ a preschooler's fingertip on a tablet).
+    const R = clamp(letterH * 0.12, 22, 58);
+    const spacing = clamp(letterH / 15, 12, 30);
+    const dots = [];
+    strokes.forEach((s, si) => {
+      const len = polylineLength(s);
+      const count = Math.max(2, Math.round(len / spacing) + 1);
+      const dense = densify(s, 1.5);
+      const step = polylineLength(dense) / (count - 1);
+      let acc = 0, next = 0;
+      dots.push({ x: dense[0].x, y: dense[0].y, stroke: si, covered: false });
+      for (let i = 1; i < dense.length && dots.filter(d => d.stroke === si).length < count; i++) {
+        acc += dist(dense[i - 1], dense[i]);
+        if (acc >= step * (next + 1) - 0.01) {
+          next++;
+          dots.push({ x: dense[i].x, y: dense[i].y, stroke: si, covered: false });
+        }
+      }
+      const last = s[s.length - 1];
+      const mine = dots.filter(d => d.stroke === si);
+      if (dist(mine[mine.length - 1], last) > spacing * 0.5) dots.push({ x: last.x, y: last.y, stroke: si, covered: false });
+    });
+    const segments = [];
+    strokes.forEach(s => { for (let i = 1; i < s.length; i++) segments.push([s[i - 1], s[i]]); });
+    const guideLength = strokes.reduce((acc, s) => acc + polylineLength(s), 0);
+    return { letter, strokes, dots, segments, R, letterH, guideLength, spacing };
+  }
+
+  function resetCoverage(guide) { guide.dots.forEach(d => { d.covered = false; }); }
+
+  // Live feedback: light up guide dots near new ink. Returns how many lit up.
+  function markCoverage(guide, points) {
+    let lit = 0;
+    const pts = densify(points, guide.R / 3);
+    for (const d of guide.dots) {
+      if (d.covered) continue;
+      for (const p of pts) {
+        if (dist(d, p) <= guide.R) { d.covered = true; lit++; break; }
+      }
+    }
+    return lit;
+  }
+
+  // Thresholds get kinder each time the child is told "almost".
+  const LENIENCY = [
+    { overall: 0.78, perStroke: 0.55, precision: 0.72, align: 0.70, maxInk: 2.4 },
+    { overall: 0.66, perStroke: 0.40, precision: 0.62, align: 0.64, maxInk: 2.8 },
+    { overall: 0.55, perStroke: 0.25, precision: 0.55, align: 0.62, maxInk: 3.0 }
+  ];
+
+  function traceReport(guide, inkStrokes, leniency = 0) {
+    const L = LENIENCY[clamp(leniency, 0, LENIENCY.length - 1)];
+    const R = guide.R;
+    const strokes = inkStrokes.filter(s => s.length > 1 || s.length === 1);
+    const ink = strokes.map(s => densify(s, R / 4));
+    const flat = ink.flat();
+    const inkLength = inkStrokes.reduce((a, s) => a + polylineLength(s), 0);
+
+    // Coverage: guide dots that have ink within R.
+    const perStrokeTotals = guide.strokes.map(() => 0);
+    const perStrokeHit = guide.strokes.map(() => 0);
+    let hit = 0;
+    const uncovered = [];
+    for (const d of guide.dots) {
+      perStrokeTotals[d.stroke]++;
+      let ok = false;
+      for (const p of flat) { if (dist(d, p) <= R) { ok = true; break; } }
+      if (ok) { hit++; perStrokeHit[d.stroke]++; } else uncovered.push(d);
+    }
+    const coverage = guide.dots.length ? hit / guide.dots.length : 0;
+    const perStroke = perStrokeTotals.map((t, i) => (t ? perStrokeHit[i] / t : 0));
+
+    // Precision + alignment: is the ink ON the letter and moving ALONG it?
+    let near = 0, alignSum = 0, alignN = 0, segCount = 0;
+    ink.forEach(s => {
+      for (let i = 0; i < s.length; i++) {
+        let best = { d: Infinity, ux: 0, uy: 0 };
+        for (const [a, b] of guide.segments) {
+          const info = segInfo(s[i], a, b);
+          if (info.d < best.d) best = info;
+        }
+        segCount++;
+        if (best.d <= R * 1.3) {
+          near++;
+          if (i > 0) {
+            const dx = s[i].x - s[i - 1].x, dy = s[i].y - s[i - 1].y;
+            const l = Math.hypot(dx, dy);
+            if (l > 0.5) { alignSum += Math.abs((dx * best.ux + dy * best.uy) / l); alignN++; }
+          }
+        }
+      }
+    });
+    const precision = segCount ? near / segCount : 0;
+    const align = alignN ? alignSum / alignN : 0;
+    const inkRatio = guide.guideLength ? inkLength / guide.guideLength : 0;
+
+    const pass =
+      coverage >= L.overall &&
+      Math.min(...perStroke) >= L.perStroke &&
+      precision >= L.precision &&
+      align >= L.align &&
+      inkRatio <= L.maxInk;
+
+    const onGuide = precision >= 0.45 && align >= 0.55 && inkRatio <= L.maxInk + 0.6;
+    const almost = !pass && onGuide && coverage >= 0.22;
+    // Clearly tracing the guide (ink sits on it and follows it) but not finished yet.
+    const tracingEffort = !pass && precision >= 0.85 && align >= 0.7 && coverage >= 0.35;
+    let weakest = 0;
+    perStroke.forEach((c, i) => { if (c < perStroke[weakest]) weakest = i; });
+
+    return { coverage, perStroke, precision, align, inkRatio, inkLength, pass, onGuide, almost, tracingEffort, weakestStroke: weakest, uncovered };
+  }
+
+  // ---------- $P point-cloud recognizer (order/direction independent) ----------
+  const NP = 32;
+
+  function cloudOf(strokes) {
+    const pts = [];
+    strokes.forEach((s, id) => s.forEach(p => pts.push({ x: p.x, y: p.y, id })));
+    if (!pts.length) return [];
+    let len = 0;
+    for (let i = 1; i < pts.length; i++) if (pts[i].id === pts[i - 1].id) len += dist(pts[i - 1], pts[i]);
+    let out;
+    if (len < 1e-6) {
+      out = Array.from({ length: NP }, () => ({ ...pts[0] }));
+    } else {
+      const I = len / (NP - 1);
+      let D = 0;
+      out = [{ ...pts[0] }];
+      const src = pts.map(p => ({ ...p }));
+      for (let i = 1; i < src.length; i++) {
+        if (src[i].id !== src[i - 1].id) continue;
+        const d = dist(src[i - 1], src[i]);
+        if (D + d >= I && d > 0) {
+          const t = (I - D) / d;
+          const q = { x: src[i - 1].x + t * (src[i].x - src[i - 1].x), y: src[i - 1].y + t * (src[i].y - src[i - 1].y), id: src[i].id };
+          out.push(q);
+          src.splice(i, 0, q);
+          D = 0;
+        } else D += d;
+        if (out.length >= NP) break;
+      }
+      while (out.length < NP) out.push({ ...src[src.length - 1] });
+    }
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    out.forEach(p => { minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); });
+    const size = Math.max(maxX - minX, maxY - minY) || 1;
+    out = out.map(p => ({ x: (p.x - minX) / size, y: (p.y - minY) / size }));
+    const cx = out.reduce((a, p) => a + p.x, 0) / NP, cy = out.reduce((a, p) => a + p.y, 0) / NP;
+    return out.map(p => ({ x: p.x - cx, y: p.y - cy }));
+  }
+
+  function cloudDistance(a, b, start) {
+    const n = a.length, matched = new Array(n).fill(false);
+    let sum = 0, i = start;
+    do {
+      let idx = -1, min = Infinity;
+      for (let j = 0; j < n; j++) {
+        if (matched[j]) continue;
+        const d = (a[i].x - b[j].x) ** 2 + (a[i].y - b[j].y) ** 2;
+        if (d < min) { min = d; idx = j; }
+      }
+      matched[idx] = true;
+      sum += (1 - ((i - start + n) % n) / n) * Math.sqrt(min);
+      i = (i + 1) % n;
+    } while (i !== start);
+    return sum;
+  }
+
+  function greedyMatch(a, b) {
+    const step = Math.floor(Math.pow(NP, 0.5));
+    let min = Infinity;
+    for (let i = 0; i < NP; i += step) min = Math.min(min, cloudDistance(a, b, i), cloudDistance(b, a, i));
+    return min;
+  }
+
+  const toPts = strokes => strokes.map(s => s.map(([x, y]) => ({ x, y })));
+  const CLOUDS = [];
+  Object.entries(TEMPLATES).forEach(([letter, s]) => CLOUDS.push({ letter, cloud: cloudOf(toPts(s)), aspect: aspectOf(toPts(s)) }));
+  Object.entries(VARIANTS).forEach(([letter, list]) => list.forEach(s => CLOUDS.push({ letter, cloud: cloudOf(toPts(s)), aspect: aspectOf(toPts(s)) })));
+
+  function aspectOf(strokes) {
+    const f = strokes.flat();
+    const xs = f.map(p => p.x), ys = f.map(p => p.y);
+    const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
+    return Math.max(0.05, w) / Math.max(0.05, h);
+  }
+
+  function freeRecognize(inkStrokes, targetLetter, leniency = 0) {
+    const strokes = inkStrokes.filter(s => s.length > 1);
+    if (!strokes.length) return null;
+    const flat = strokes.flat();
+    const xs = flat.map(p => p.x), ys = flat.map(p => p.y);
+    const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
+    const diag = Math.hypot(w, h);
+    const inkLength = strokes.reduce((a, s) => a + polylineLength(s), 0);
+    if (diag < 30) return { tooSmall: true };
+    // Scribble: lots of ink packed into a small box.
+    const isScribble = inkLength / Math.max(1, diag) > 4.4;
+
+    const cloud = cloudOf(strokes);
+    const userAspect = Math.max(4, w) / Math.max(4, h);
+    const byLetter = {};
+    CLOUDS.forEach(t => {
+      let d = greedyMatch(cloud, t.cloud);
+      // Gentle aspect-ratio tie-breaker (helps I vs L vs T, O vs Q stays shape-driven).
+      d += Math.min(1.2, Math.abs(Math.log(userAspect / t.aspect)) * 0.6);
+      if (!(t.letter in byLetter) || d < byLetter[t.letter]) byLetter[t.letter] = d;
+    });
+    const ranked = Object.entries(byLetter).map(([letter, d]) => ({ letter, d })).sort((a, b) => a.d - b.d);
+    const best = ranked[0], second = ranked[1];
+    const target = ranked.find(r => r.letter === targetLetter);
+    const sameGroup = LOOKALIKE.some(g => g.includes(targetLetter) && g.includes(best.letter));
+    // $P distances: a fair kid letter is ~0.4-1.6, scribbles/blobs are >2.
+    const maxD = [1.9, 2.15, 2.4][clamp(leniency, 0, 2)];
+    const targetOk = !isScribble && !!target && target.d < maxD && (
+      target === best ||
+      target.d <= best.d * 1.12 + 0.08 ||
+      (sameGroup && target.d <= best.d * 1.3 + 0.12)
+    );
+    const confident = !isScribble && best.d < 1.8 && best.d <= second.d * 0.88;
+    return { ranked: ranked.slice(0, 5), best, target, targetOk, confident, isScribble, inkLength, diag };
+  }
+
+  // ---------- Top-level decision ----------
+  // verdict: pass | almost | other | retry | scribble | wait | empty
+  function evaluate(guide, inkStrokes, targetLetter, { final = false, leniency = 0 } = {}) {
+    const real = inkStrokes.filter(s => polylineLength(s) >= Math.max(8, guide.R * 0.3));
+    if (!real.length) return { verdict: final ? "empty" : "wait" };
+    const trace = traceReport(guide, real, leniency);
+    if (trace.pass) return { verdict: "pass", letter: targetLetter, mode: "trace", trace };
+    if (!final) return { verdict: "wait", trace };
+    const free = freeRecognize(real, targetLetter, leniency);
+    const clearTarget = free && free.targetOk && free.target === free.best && free.target.d < 1.5;
+    // Child is clearly tracing but stopped early -> point at the missing part
+    // (unless the drawing on its own is already an unmistakable target letter).
+    if (trace.tracingEffort && !clearTarget) return { verdict: "almost", letter: targetLetter, trace, free };
+    if (!free || free.tooSmall) return { verdict: trace.almost ? "almost" : "retry", trace, free };
+    if (free.isScribble) return { verdict: "scribble", trace, free };
+    // Off the guide but clearly the target letter (e.g. written next to it): still a win.
+    if (free.targetOk) return { verdict: "pass", letter: targetLetter, mode: "free", trace, free };
+    if (free.confident && free.best.letter !== targetLetter) return { verdict: "other", letter: free.best.letter, trace, free };
+    if (trace.almost) return { verdict: "almost", letter: targetLetter, trace, free };
+    return { verdict: "retry", trace, free };
+  }
+
+  return { TEMPLATES, layoutTransform, layoutStrokes, buildGuide, resetCoverage, markCoverage, traceReport, freeRecognize, evaluate, polylineLength, densify };
+})();
+// ==ENGINE END==
+
+// ==ARBITER START==
+// Pure (DOM-free) touch arbiter: decides which contact may draw.
+//  - one finger draws, everything else is ignored
+//  - two fingers landing together (pinch / two-finger tap) cancel the fresh stroke
+//    and lock drawing until the fingers lift
+//  - a palm / big contact, or a thumb gripping the canvas edge, never draws
+//  - a hand resting on the screen does NOT block the drawing finger
+//  - a stylus always wins over touch (palm rejection for pen users)
+const createTouchArbiter = (opts = {}) => {
+  const cfg = {
+    palmPx: 64,          // contact width/height (CSS px) treated as a palm
+    edgePx: 12,          // touches starting this close to the canvas edge are grip, not ink
+    youngMs: 140,        // a stroke younger than this...
+    youngTravelPx: 18,   // ...and shorter than this is cancelled if a 2nd finger lands
+    pairMs: 350,
+    pinchMs: 600,        // a 2nd finger that slides this early in a stroke = pinch, cancel
+    pinchTravelPx: 30,         // two touches landing within this window = two-finger gesture
+    lockMaxMs: 1500,     // safety: a lock never outlives this without new touches
+    ...opts
+  };
+  const contacts = new Map(); // id -> { type, t0, x0, y0, travel, role }
+  let activeId = null;
+  let lockedAt = -1;
+  let penDown = false;
+
+  const isLocked = now => lockedAt >= 0 && now - lockedAt < cfg.lockMaxMs;
+
+  function down(e) {
+    // e: { id, type, x, y, w, h, cw, ch, t, button }
+    const c = { type: e.type, t0: e.t, x0: e.x, y0: e.y, x: e.x, y: e.y, travel: 0, role: "idle" };
+    contacts.set(e.id, c);
+
+    if (e.type === "mouse") {
+      if (e.button !== 0 || activeId !== null) { c.role = "ignored"; return { action: "ignore", reason: "mouse-busy" }; }
+      c.role = "ink"; activeId = e.id; return { action: "start" };
+    }
+
+    if (e.type === "pen") {
+      penDown = true;
+      const prev = activeId;
+      c.role = "ink"; activeId = e.id; lockedAt = -1;
+      if (prev !== null && prev !== e.id) {
+        const p = contacts.get(prev); if (p) p.role = "ignored";
+        return { action: "restart", cancelId: prev, reason: "pen-wins" };
+      }
+      return { action: "start" };
+    }
+
+    // ---- touch ----
+    if (penDown) { c.role = "ignored"; return { action: "ignore", reason: "pen-active" }; }
+    if ((e.w || 0) >= cfg.palmPx || (e.h || 0) >= cfg.palmPx) { c.role = "palm"; return { action: "ignore", reason: "palm" }; }
+    if (e.x < cfg.edgePx || e.y < cfg.edgePx || e.x > e.cw - cfg.edgePx || e.y > e.ch - cfg.edgePx) {
+      c.role = "grip"; return { action: "ignore", reason: "edge" };
+    }
+    if (isLocked(e.t)) { c.role = "ignored"; lockedAt = e.t; return { action: "ignore", reason: "locked" }; }
+    lockedAt = -1;
+
+    if (activeId !== null) {
+      const a = contacts.get(activeId);
+      const young = a && e.t - a.t0 < cfg.youngMs && a.travel < cfg.youngTravelPx;
+      if (young) {
+        // Two fingers came down together: drop the fresh stroke, wait for lift.
+        const cancelId = activeId;
+        a.role = "ignored"; c.role = "ignored"; activeId = null; lockedAt = e.t;
+        return { action: "cancel", cancelId, reason: "two-fingers" };
+      }
+      c.role = "ignored";
+      return { action: "ignore", reason: "already-drawing" };
+    }
+
+    // Nobody is drawing. Another finger that landed *just* before = two-finger tap.
+    for (const [id, o] of contacts) {
+      if (id === e.id || o.type !== "touch") continue;
+      if ((o.role === "idle" || o.role === "ignored") && e.t - o.t0 < cfg.pairMs) {
+        c.role = "ignored"; lockedAt = e.t;
+        return { action: "ignore", reason: "two-finger-tap" };
+      }
+    }
+    // Older resting contacts (palm, other hand, thumb) do not block a new finger.
+    c.role = "ink"; activeId = e.id;
+    return { action: "start" };
+  }
+
+  function move(e) {
+    const c = contacts.get(e.id);
+    if (!c) return { action: "ignore" };
+    c.travel += Math.hypot(e.x - c.x, e.y - c.y);
+    c.x = e.x; c.y = e.y;
+    if (e.id === activeId) return { action: "draw" };
+    // A second finger that slides while the stroke is still fresh = pinch/zoom attempt.
+    if (activeId !== null && c.type === "touch" && c.role === "ignored" && c.travel > cfg.pinchTravelPx) {
+      const a = contacts.get(activeId);
+      if (a && a.type === "touch" && e.t - a.t0 < cfg.pinchMs) {
+        const cancelId = activeId;
+        a.role = "ignored"; activeId = null; lockedAt = e.t;
+        return { action: "cancel", cancelId, reason: "pinch" };
+      }
+    }
+    return { action: "ignore" };
+  }
+
+  function up(e) {
+    const c = contacts.get(e.id);
+    contacts.delete(e.id);
+    if (c && c.type === "pen") penDown = [...contacts.values()].some(o => o.type === "pen");
+    if (![...contacts.values()].some(o => o.type === "touch")) lockedAt = -1;
+    if (e.id === activeId) { activeId = null; return { action: "end" }; }
+    return { action: "ignore" };
+  }
+
+  function reset() { contacts.clear(); activeId = null; lockedAt = -1; penDown = false; }
+
+  return { down, move, up, reset, get activeId() { return activeId; }, get size() { return contacts.size; }, cfg };
+};
+// ==ARBITER END==
 
       const animals = {
         A: { name: "Alligator", emoji: "🐊", sound: "snap snap!" },
@@ -804,438 +1296,67 @@
       };
 
       const animalVariants = {
-        A: [
-          { name: "Alligator", emoji: "🐊", sound: "snap snap!" },
-          { name: "Ant", emoji: "🐜", sound: "tiny steps!" }
-        ],
-        B: [
-          { name: "Bear", emoji: "🐻", sound: "grrr!" },
-          { name: "Bird", emoji: "🐦", sound: "tweet tweet!" },
-          { name: "Butterfly", emoji: "🦋", sound: "flutter flutter!" }
-        ],
-        C: [
-          { name: "Cat", emoji: "🐱", sound: "meow!" },
-          { name: "Cow", emoji: "🐮", sound: "moo!" }
-        ],
-        D: [
-          { name: "Dog", emoji: "🐶", sound: "woof!" },
-          { name: "Duck", emoji: "🦆", sound: "quack!" }
-        ],
-        E: [
-          { name: "Elephant", emoji: "🐘", sound: "toot toot!" },
-          { name: "Eagle", emoji: "🦅", sound: "screech!" }
-        ],
-        F: [
-          { name: "Fox", emoji: "🦊", sound: "ring-ding!" },
-          { name: "Frog", emoji: "🐸", sound: "ribbit!" },
-          { name: "Fish", emoji: "🐟", sound: "bubble bubble!" }
-        ],
-        M: [
-          { name: "Monkey", emoji: "🐵", sound: "ooh ooh!" },
-          { name: "Mouse", emoji: "🐭", sound: "squeak!" }
-        ],
-        P: [
-          { name: "Penguin", emoji: "🐧", sound: "waddle waddle!" },
-          { name: "Panda", emoji: "🐼", sound: "munch munch!" }
-        ],
-        R: [
-          { name: "Rabbit", emoji: "🐰", sound: "hop hop!" },
-          { name: "Rooster", emoji: "🐓", sound: "cock-a-doodle-doo!" }
-        ],
-        T: [
-          { name: "Tiger", emoji: "🐯", sound: "rawr!" },
-          { name: "Turtle", emoji: "🐢", sound: "slow steps!" }
-        ],
-        W: [
-          { name: "Whale", emoji: "🐳", sound: "whoooo!" },
-          { name: "Wolf", emoji: "🐺", sound: "awooo!" }
-        ]
+        A: [{ name: "Alligator", emoji: "🐊", sound: "snap snap!" }, { name: "Ant", emoji: "🐜", sound: "tiny steps!" }],
+        B: [{ name: "Bear", emoji: "🐻", sound: "grrr!" }, { name: "Bird", emoji: "🐦", sound: "tweet tweet!" }, { name: "Butterfly", emoji: "🦋", sound: "flutter flutter!" }],
+        C: [{ name: "Cat", emoji: "🐱", sound: "meow!" }, { name: "Cow", emoji: "🐮", sound: "moo!" }],
+        D: [{ name: "Dog", emoji: "🐶", sound: "woof!" }, { name: "Duck", emoji: "🦆", sound: "quack!" }],
+        E: [{ name: "Elephant", emoji: "🐘", sound: "toot toot!" }, { name: "Eagle", emoji: "🦅", sound: "screech!" }],
+        F: [{ name: "Fox", emoji: "🦊", sound: "ring-ding!" }, { name: "Frog", emoji: "🐸", sound: "ribbit!" }, { name: "Fish", emoji: "🐟", sound: "bubble bubble!" }],
+        M: [{ name: "Monkey", emoji: "🐵", sound: "ooh ooh!" }, { name: "Mouse", emoji: "🐭", sound: "squeak!" }],
+        P: [{ name: "Penguin", emoji: "🐧", sound: "waddle waddle!" }, { name: "Panda", emoji: "🐼", sound: "munch munch!" }],
+        R: [{ name: "Rabbit", emoji: "🐰", sound: "hop hop!" }, { name: "Rooster", emoji: "🐓", sound: "cock-a-doodle-doo!" }],
+        T: [{ name: "Tiger", emoji: "🐯", sound: "rawr!" }, { name: "Turtle", emoji: "🐢", sound: "slow steps!" }],
+        W: [{ name: "Whale", emoji: "🐳", sound: "whoooo!" }, { name: "Wolf", emoji: "🐺", sound: "awooo!" }]
       };
 
       const targetLetters = Object.keys(animals);
-      const canvasWrap = document.getElementById("canvasWrap");
-      const drawCanvas = document.getElementById("drawCanvas");
-      const guideCanvas = document.getElementById("guideCanvas");
+      const $ = id => document.getElementById(id);
+      const canvasWrap = $("canvasWrap");
+      const drawCanvas = $("drawCanvas");
+      const guideCanvas = $("guideCanvas");
       const dctx = drawCanvas.getContext("2d");
       const gctx = guideCanvas.getContext("2d");
+      const inkCanvas = document.createElement("canvas"); // cache of finished strokes
+      const ictx = inkCanvas.getContext("2d");
 
-      const hint = document.getElementById("hint");
-      const targetLetterEl = document.getElementById("targetLetter");
-      const promptTitle = document.getElementById("promptTitle");
-      const promptSubtitle = document.getElementById("promptSubtitle");
-      const animalCard = document.getElementById("animalCard");
-      const animalEmoji = document.getElementById("animalEmoji");
-      const recognized = document.getElementById("recognized");
-      const animalName = document.getElementById("animalName");
-      const message = document.getElementById("message");
-      const starsEl = document.getElementById("stars");
-      const foundCountEl = document.getElementById("foundCount");
-      const alphabetEl = document.getElementById("alphabet");
-      const toast = document.getElementById("toast");
+      const hint = $("hint"), targetLetterEl = $("targetLetter"), promptTitle = $("promptTitle"), promptSubtitle = $("promptSubtitle");
+      const animalCard = $("animalCard"), animalEmoji = $("animalEmoji"), recognized = $("recognized"), animalName = $("animalName");
+      const message = $("message"), starsEl = $("stars"), foundCountEl = $("foundCount"), alphabetEl = $("alphabet"), toast = $("toast");
+      const tryButton = $("tryButton"), clearButton = $("clearButton"), newLetterButton = $("newLetterButton");
+      const installButton = $("installButton"), soundButton = $("soundButton");
 
-      const tryButton = document.getElementById("tryButton");
-      const clearButton = document.getElementById("clearButton");
-      const newLetterButton = document.getElementById("newLetterButton");
-      const installButton = document.getElementById("installButton");
-      const soundButton = document.getElementById("soundButton");
-
-      let width = 0;
-      let height = 0;
-      let drawing = false;
-      let strokes = [];
+      // ---------- state ----------
+      let width = 0, height = 0, ratio = 1;
+      let strokes = [];           // finished strokes (CSS px)
       let currentStroke = [];
-      let lastPoint = null;
-      let activePointerId = null;
-      let targetLetter = "A";
-      let targetIndex = 0;
-      let stars = 0;
-      let audioEnabled = true;
-      let audioCtx = null;
-      let speechUnlocked = false;
-      let preferredVoice = null;
+      let drawing = false;
+      let guide = null;           // LetterEngine guide for the current target + canvas size
+      let glowDots = null;        // guide dots to highlight after an "almost"
+      let targetLetter = "A", targetIndex = 0, stars = 0;
+      let phase = "play";         // "play" | "celebrate"
+      let leniency = 0;           // 0..2, grows each time the child is told "almost"
+      let idleTimer = null, wipeTimer = null, nextTimer = null, celebrateTimer = null;
+      let renderQueued = false, guideQueued = false;
+      let audioEnabled = true, audioCtx = null, speechUnlocked = false, preferredVoice = null;
       let deferredInstallPrompt = null;
-      let teachingAnimationId = null;
-      let teachingAnimationToken = 0;
-      let autoEraseTimer = null;
+      let teachingAnimationId = null, teachingAnimationToken = 0, teaching = false;
+      let lastPling = 0, lastOneFingerNudge = 0;
       const found = new Set();
       const animalCycleState = {};
-      const activeTouchPointers = new Set();
-
       const alphabetChips = new Map();
+      const arbiter = createTouchArbiter();
 
-      function makePoint(x, y) {
-        return { x, y };
+      const IDLE_CHECK_MS = 2800;   // pause after the last stroke before we "look" at it
+      const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+      const lerp = (a, b, t) => a + (b - a) * t;
+
+      // ---------- small helpers ----------
+      function clearTimers() {
+        clearTimeout(idleTimer); idleTimer = null;
+        clearTimeout(wipeTimer); wipeTimer = null;
       }
 
-      function dist(a, b) {
-        return Math.hypot(a.x - b.x, a.y - b.y);
-      }
-
-      function pathLength(points) {
-        let len = 0;
-        for (let i = 1; i < points.length; i++) len += dist(points[i - 1], points[i]);
-        return len;
-      }
-
-      function lerp(a, b, t) {
-        return a + (b - a) * t;
-      }
-
-      function flattenStrokes(sourceStrokes) {
-        const flat = [];
-        sourceStrokes.forEach((stroke, strokeIndex) => {
-          stroke.forEach((p, pointIndex) => {
-            flat.push({ x: p.x, y: p.y, stroke: strokeIndex, start: pointIndex === 0 });
-          });
-        });
-        return flat;
-      }
-
-      function normalize(points, size = 100) {
-        if (points.length === 0) return [];
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        points.forEach(p => {
-          minX = Math.min(minX, p.x);
-          minY = Math.min(minY, p.y);
-          maxX = Math.max(maxX, p.x);
-          maxY = Math.max(maxY, p.y);
-        });
-
-        const boxW = Math.max(1, maxX - minX);
-        const boxH = Math.max(1, maxY - minY);
-        const scale = size / Math.max(boxW, boxH);
-        const normalized = points.map(p => ({
-          x: (p.x - minX) * scale,
-          y: (p.y - minY) * scale,
-          stroke: p.stroke,
-          start: p.start
-        }));
-
-        const center = normalized.reduce((acc, p) => {
-          acc.x += p.x;
-          acc.y += p.y;
-          return acc;
-        }, { x: 0, y: 0 });
-        center.x /= normalized.length;
-        center.y /= normalized.length;
-
-        return normalized.map(p => ({
-          x: p.x - center.x,
-          y: p.y - center.y,
-          stroke: p.stroke,
-          start: p.start
-        }));
-      }
-
-      function resample(points, n = 64) {
-        if (points.length === 0) return [];
-        if (points.length === 1) return Array.from({ length: n }, () => ({ ...points[0] }));
-
-        const output = [{ ...points[0] }];
-        let segmentRemainder = 0;
-        const total = pathLength(points);
-        const interval = total / (n - 1);
-
-        if (!isFinite(interval) || interval <= 0.01) {
-          return Array.from({ length: n }, (_, i) => ({ ...points[Math.min(points.length - 1, i)] }));
-        }
-
-        let prev = { ...points[0] };
-        for (let i = 1; i < points.length; i++) {
-          let curr = { ...points[i] };
-          let d = dist(prev, curr);
-
-          while ((segmentRemainder + d) >= interval && output.length < n) {
-            const t = (interval - segmentRemainder) / d;
-            const nx = lerp(prev.x, curr.x, t);
-            const ny = lerp(prev.y, curr.y, t);
-            const newPoint = { x: nx, y: ny, stroke: curr.stroke, start: false };
-            output.push(newPoint);
-            prev = newPoint;
-            d = dist(prev, curr);
-            segmentRemainder = 0;
-          }
-          segmentRemainder += d;
-          prev = curr;
-        }
-
-        while (output.length < n) output.push({ ...points[points.length - 1] });
-        return output.slice(0, n);
-      }
-
-      function vectorDistance(a, b) {
-        let sum = 0;
-        const n = Math.min(a.length, b.length);
-        for (let i = 0; i < n; i++) {
-          const dx = a[i].x - b[i].x;
-          const dy = a[i].y - b[i].y;
-          sum += Math.hypot(dx, dy);
-        }
-        return sum / Math.max(1, n);
-      }
-
-      function angleBetween(a, b) {
-        return Math.atan2(b.y - a.y, b.x - a.x);
-      }
-
-      function basicFeatures(rawPoints, sourceStrokes) {
-        if (rawPoints.length === 0) {
-          return {
-            strokeCount: 0, aspect: 1, closedness: 9, turnCount: 0,
-            endpoints: [], minX: 0, maxX: 0, minY: 0, maxY: 0
-          };
-        }
-
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        rawPoints.forEach(p => {
-          minX = Math.min(minX, p.x);
-          minY = Math.min(minY, p.y);
-          maxX = Math.max(maxX, p.x);
-          maxY = Math.max(maxY, p.y);
-        });
-
-        const w = Math.max(1, maxX - minX);
-        const h = Math.max(1, maxY - minY);
-        const diagonal = Math.max(1, Math.hypot(w, h));
-        const start = rawPoints[0];
-        const end = rawPoints[rawPoints.length - 1];
-        const closedness = dist(start, end) / diagonal;
-
-        let turnCount = 0;
-        const pts = resample(rawPoints, 28);
-        for (let i = 2; i < pts.length; i++) {
-          const a1 = angleBetween(pts[i - 2], pts[i - 1]);
-          const a2 = angleBetween(pts[i - 1], pts[i]);
-          let delta = Math.abs(a2 - a1);
-          delta = Math.min(delta, Math.PI * 2 - delta);
-          if (delta > 1.08) turnCount++;
-        }
-
-        const endpoints = [];
-        sourceStrokes.forEach(stroke => {
-          if (stroke.length) {
-            endpoints.push(stroke[0], stroke[stroke.length - 1]);
-          }
-        });
-
-        const xNorm = p => (p.x - minX) / w;
-        const yNorm = p => (p.y - minY) / h;
-        const first = rawPoints[0];
-        const last = rawPoints[rawPoints.length - 1];
-        const startXNorm = xNorm(first);
-        const startYNorm = yNorm(first);
-        const endXNorm = xNorm(last);
-        const endYNorm = yNorm(last);
-        const lowerHalfPoints = rawPoints.filter(p => yNorm(p) > 0.52);
-        const lowerRightRatio = lowerHalfPoints.length
-          ? lowerHalfPoints.filter(p => xNorm(p) > 0.45).length / lowerHalfPoints.length
-          : 0;
-        const bottomBandPoints = rawPoints.filter(p => yNorm(p) > 0.72);
-        const bottomRightRatio = bottomBandPoints.length
-          ? bottomBandPoints.filter(p => xNorm(p) > 0.42).length / bottomBandPoints.length
-          : 0;
-        const bottomCoverage = bottomBandPoints.length / rawPoints.length;
-        const endpointsRight = startXNorm > 0.52 && endXNorm > 0.58;
-        const endInside = endXNorm < 0.72 && endYNorm > 0.35 && endYNorm < 0.9;
-
-        return {
-          strokeCount: sourceStrokes.length,
-          aspect: w / h,
-          closedness,
-          turnCount,
-          endpoints,
-          minX, maxX, minY, maxY,
-          startXNorm,
-          startYNorm,
-          endXNorm,
-          endYNorm,
-          lowerRightRatio,
-          bottomRightRatio,
-          bottomCoverage,
-          endpointsRight,
-          endInside
-        };
-      }
-
-      function makeStroke(points) {
-        return points.map(([x, y]) => ({ x, y }));
-      }
-
-      const templateDefinitions = {
-        A: [[[10,100],[30,10],[50,100]], [[22,62],[42,62]]],
-        B: [[[10,100],[10,10],[45,12],[58,25],[46,43],[10,47],[48,49],[62,68],[48,94],[10,100]]],
-        C: [[[70,15],[35,5],[12,28],[10,72],[35,97],[72,84]]],
-        D: [[[12,100],[12,10],[48,12],[72,35],[72,72],[48,96],[12,100]]],
-        E: [[[70,10],[12,10],[12,52],[55,52],[12,52],[12,96],[72,96]]],
-        F: [[[12,98],[12,10],[72,10],[12,10],[12,52],[55,52]]],
-        G: [[[74,18],[42,7],[15,26],[10,62],[28,90],[62,92],[78,70],[52,70]]],
-        H: [[[12,10],[12,98]], [[70,10],[70,98]], [[12,54],[70,54]]],
-        I: [[[50,10],[50,96]]],
-        J: [[[72,10],[72,72],[58,94],[34,96],[18,80]]],
-        K: [[[14,10],[14,98]], [[70,10],[14,56],[72,98]]],
-        L: [[[16,10],[16,96],[74,96]]],
-        M: [[[10,98],[10,12],[42,65],[72,12],[72,98]]],
-        N: [[[12,98],[12,12],[72,98],[72,12]]],
-        O: [[[50,8],[22,18],[10,50],[22,84],[50,98],[78,84],[90,50],[78,18],[50,8]]],
-        P: [[[12,98],[12,10],[52,12],[70,28],[58,50],[12,52]]],
-        Q: [[[50,8],[22,18],[10,50],[22,84],[50,98],[78,84],[90,50],[78,18],[50,8]], [[60,72],[88,100]]],
-        R: [[[12,98],[12,10],[52,12],[70,28],[58,50],[12,52],[46,52],[74,98]]],
-        S: [[[74,18],[45,8],[16,20],[18,44],[56,54],[78,70],[62,92],[24,88]]],
-        T: [[[15,10],[85,10]], [[50,10],[50,98]]],
-        U: [[[12,10],[12,70],[28,94],[52,98],[74,72],[74,10]]],
-        V: [[[10,10],[42,98],[78,10]]],
-        W: [[[8,10],[24,98],[45,42],[66,98],[84,10]]],
-        X: [[[12,12],[78,98]], [[78,12],[12,98]]],
-        Y: [[[10,12],[45,52],[80,12]], [[45,52],[45,98]]],
-        Z: [[[12,12],[78,12],[15,98],[82,98]]]
-      };
-
-      const templates = Object.entries(templateDefinitions).map(([letter, strokes]) => {
-        const flat = flattenStrokes(strokes.map(makeStroke));
-        return {
-          letter,
-          strokes,
-          vector: resample(normalize(flat), 64),
-          feature: basicFeatures(flat, strokes.map(makeStroke))
-        };
-      });
-
-      function recognizeLetter(sourceStrokes) {
-        const raw = flattenStrokes(sourceStrokes);
-        if (raw.length < 7) return null;
-
-        const userVector = resample(normalize(raw), 64);
-        const userFeature = basicFeatures(raw, sourceStrokes);
-
-        let best = { letter: "A", score: Infinity };
-        const ranked = templates.map(template => {
-          const shape = vectorDistance(userVector, template.vector);
-          const strokePenalty = Math.min(14, Math.abs(userFeature.strokeCount - template.feature.strokeCount) * 2.3);
-          const aspectPenalty = Math.min(16, Math.abs(Math.log(userFeature.aspect / template.feature.aspect)) * 7);
-          const closedPenalty = Math.min(12, Math.abs(userFeature.closedness - template.feature.closedness) * 6);
-          let score = shape + strokePenalty + aspectPenalty + closedPenalty;
-
-          // Friendly nudges for common child-written shapes.
-          if (userFeature.closedness < 0.22 && ["O", "Q"].includes(template.letter)) score -= 9;
-          if (userFeature.aspect > 1.85 && ["L", "T", "Z", "E", "F"].includes(template.letter)) score -= 2;
-          if (userFeature.aspect < 0.48 && ["I", "J", "L"].includes(template.letter)) score -= 4;
-          if (userFeature.turnCount > 9 && ["S", "G", "B"].includes(template.letter)) score -= 3;
-
-          // I vs K and other tall letters: a preschool "I" is often just one tall line.
-          if (userFeature.aspect < 0.38 && userFeature.strokeCount <= 2 && userFeature.turnCount < 4) {
-            if (template.letter === "I") score -= 22;
-            if (["K", "X", "Y", "N", "M", "H"].includes(template.letter)) score += 18;
-          }
-
-          // Extra toddler-writing disambiguation:
-          // C vs G: a C usually starts and ends on the right side; a G usually finishes inward.
-          if (userFeature.endpointsRight && userFeature.endXNorm > 0.68 && userFeature.closedness > 0.24) {
-            if (template.letter === "C") score -= 10;
-            if (template.letter === "G") score += 13;
-          }
-          if (userFeature.endInside) {
-            if (template.letter === "G") score -= 5;
-            if (template.letter === "C") score += 5;
-          }
-
-          // B vs P: a B has meaningful drawing on the lower-right; a P mostly does not.
-          if (userFeature.lowerRightRatio > 0.2) {
-            if (template.letter === "B") score -= 10;
-            if (template.letter === "P") score += 14;
-          } else if (userFeature.lowerRightRatio < 0.1) {
-            if (template.letter === "P") score -= 5;
-            if (template.letter === "B") score += 9;
-          }
-
-          // E vs F: E has a bottom bar extending to the right; F usually has no bottom bar.
-          if (userFeature.bottomCoverage > 0.08 && userFeature.bottomRightRatio > 0.18) {
-            if (template.letter === "E") score -= 14;
-            if (template.letter === "F") score += 18;
-          } else if (userFeature.bottomRightRatio < 0.08) {
-            if (template.letter === "F") score -= 5;
-            if (template.letter === "E") score += 8;
-          }
-
-          return { letter: template.letter, score };
-        }).sort((a, b) => a.score - b.score);
-
-        best = ranked[0];
-
-        // This is a tracing game, so give strong preference to the prompted letter
-        // when it is a plausible match. This makes the game much kinder for
-        // 3-4 year old handwriting while still avoiding completely unrelated marks.
-        const targetRank = ranked.find(r => r.letter === targetLetter);
-        if (targetRank) {
-          const targetIsSimpleI =
-            targetLetter === "I" &&
-            userFeature.aspect < 0.48 &&
-            userFeature.strokeCount <= 2 &&
-            userFeature.turnCount < 5;
-          // Very strong tracing bias: this game is about practicing the prompted
-          // letter, not generic OCR. If the child's drawing has enough signal to
-          // guess at all, heavily prefer the letter shown in the trace guide.
-          const targetIsPlausible = targetRank.score < 95 || targetRank.score < best.score + 80;
-          const targetIsCloseEnough = targetRank.score < best.score + 110;
-          const drawingHasEnoughSignal = raw.length >= 7 && pathLength(raw) > 18;
-          const targetIsLookAlike =
-            (["C", "G"].includes(targetLetter) && ["C", "G"].includes(best.letter)) ||
-            (["B", "P", "R"].includes(targetLetter) && ["B", "P", "R"].includes(best.letter)) ||
-            (["E", "F"].includes(targetLetter) && ["E", "F"].includes(best.letter)) ||
-            (["O", "Q"].includes(targetLetter) && ["O", "Q"].includes(best.letter)) ||
-            (["I", "J", "L"].includes(targetLetter) && ["I", "J", "L"].includes(best.letter));
-
-          if (targetIsSimpleI || targetIsPlausible || targetIsLookAlike || targetIsCloseEnough || drawingHasEnoughSignal) {
-            best = { ...targetRank, encouraged: true };
-          }
-        }
-
-        return {
-          letter: best.letter,
-          score: best.score,
-          confidence: Math.max(0, Math.min(1, 1 - best.score / 58)),
-          alternatives: ranked.slice(0, 4)
-        };
-      }
+      function lineWidthInk() { return Math.max(13, Math.min(26, width / 32)); }
 
       function setupAlphabet() {
         alphabetEl.innerHTML = "";
@@ -1257,204 +1378,191 @@
         return variants[index];
       }
 
+      // ---------- canvas sizing ----------
       function resizeCanvases() {
         const rect = canvasWrap.getBoundingClientRect();
-        const ratio = window.devicePixelRatio || 1;
-        width = Math.max(1, rect.width);
-        height = Math.max(1, rect.height);
+        const newW = Math.max(1, rect.width), newH = Math.max(1, rect.height);
+        const newRatio = window.devicePixelRatio || 1;
+        if (Math.abs(newW - width) < 0.5 && Math.abs(newH - height) < 0.5 && newRatio === ratio && guide) return;
 
-        [drawCanvas, guideCanvas].forEach(canvas => {
+        // Keep the child's ink glued to the letter when the canvas changes size
+        // (mobile URL bar hiding, rotation, split screen...).
+        if (width > 1 && height > 1 && strokes.length) {
+          const a = LetterEngine.layoutTransform(targetLetter, width, height);
+          const b = LetterEngine.layoutTransform(targetLetter, newW, newH);
+          const map = p => ({ x: (p.x - a.offX) / a.scale * b.scale + b.offX, y: (p.y - a.offY) / a.scale * b.scale + b.offY });
+          strokes = strokes.map(s => s.map(map));
+          currentStroke = currentStroke.map(map);
+        }
+
+        width = newW; height = newH; ratio = newRatio;
+        [drawCanvas, guideCanvas, inkCanvas].forEach(canvas => {
           canvas.width = Math.floor(width * ratio);
           canvas.height = Math.floor(height * ratio);
-          canvas.style.width = `${width}px`;
-          canvas.style.height = `${height}px`;
-          const ctx = canvas.getContext("2d");
-          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+          if (canvas !== inkCanvas) { canvas.style.width = `${width}px`; canvas.style.height = `${height}px`; }
+          canvas.getContext("2d").setTransform(ratio, 0, 0, ratio, 0, 0);
         });
 
-        redraw();
-        drawGuideLetter();
+        guide = LetterEngine.buildGuide(targetLetter, width, height);
+        recomputeCoverage();
+        rebuildInkCache();
+        cancelTeachingAnimation();
+        drawGuide();
+        render();
       }
 
-      function clearAutoEraseTimer() {
-        window.clearTimeout(autoEraseTimer);
-        autoEraseTimer = null;
+      function recomputeCoverage() {
+        if (!guide) return;
+        LetterEngine.resetCoverage(guide);
+        strokes.forEach(s => LetterEngine.markCoverage(guide, s));
+        if (currentStroke.length) LetterEngine.markCoverage(guide, currentStroke);
       }
 
-      function scheduleAutoErase(delay = 8500, text = "All clean! Try another letter!") {
-        clearAutoEraseTimer();
-        autoEraseTimer = window.setTimeout(() => {
-          if (drawing || strokes.length === 0) return;
-          clearDrawing(true);
-          message.textContent = text;
-          showToast("I wiped the board for you!");
-          boop(true);
-        }, delay);
-      }
-
-      function clearDrawing(keepMessage = false) {
-        clearAutoEraseTimer();
-        strokes = [];
-        currentStroke = [];
-        lastPoint = null;
-        dctx.clearRect(0, 0, width, height);
-        hint.classList.remove("hidden");
-        if (!keepMessage) {
-          message.textContent = "Draw a big letter, then I will guess!";
-        }
-        drawGuideLetter();
-      }
-
-      function redraw() {
-        dctx.clearRect(0, 0, width, height);
-        dctx.lineCap = "round";
-        dctx.lineJoin = "round";
-
-        strokes.forEach(stroke => {
-          drawStroke(stroke);
-        });
-
-        if (currentStroke.length) drawStroke(currentStroke);
-      }
-
-      function drawStroke(stroke) {
-        if (stroke.length < 2) return;
-        dctx.save();
-        dctx.lineWidth = Math.max(13, Math.min(26, width / 32));
-        dctx.strokeStyle = "#4f7cff";
-        dctx.shadowColor = "rgba(79, 124, 255, 0.28)";
-        dctx.shadowBlur = 8;
-        dctx.beginPath();
-        dctx.moveTo(stroke[0].x, stroke[0].y);
+      // ---------- ink rendering ----------
+      function strokePath(ctx, stroke) {
+        ctx.beginPath();
+        ctx.moveTo(stroke[0].x, stroke[0].y);
         for (let i = 1; i < stroke.length; i++) {
           const midX = (stroke[i - 1].x + stroke[i].x) / 2;
           const midY = (stroke[i - 1].y + stroke[i].y) / 2;
-          dctx.quadraticCurveTo(stroke[i - 1].x, stroke[i - 1].y, midX, midY);
+          ctx.quadraticCurveTo(stroke[i - 1].x, stroke[i - 1].y, midX, midY);
         }
         const last = stroke[stroke.length - 1];
-        dctx.lineTo(last.x, last.y);
-        dctx.stroke();
-
-        dctx.lineWidth = Math.max(5, Math.min(10, width / 74));
-        dctx.strokeStyle = "rgba(255,255,255,0.75)";
-        dctx.shadowBlur = 0;
-        dctx.stroke();
-        dctx.restore();
+        ctx.lineTo(last.x, last.y);
       }
 
-      function cancelTeachingAnimation() {
-        teachingAnimationToken += 1;
-        if (teachingAnimationId) {
-          cancelAnimationFrame(teachingAnimationId);
-          teachingAnimationId = null;
+      function drawInkStroke(ctx, stroke) {
+        if (!stroke.length) return;
+        const lw = lineWidthInk();
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        if (stroke.length === 1) {
+          // A tap still leaves a visible dot, so little fingers always get feedback.
+          ctx.fillStyle = "#4f7cff";
+          ctx.beginPath(); ctx.arc(stroke[0].x, stroke[0].y, lw / 2, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+          return;
         }
+        strokePath(ctx, stroke);
+        // Cheap glow instead of shadowBlur (shadowBlur is very slow on budget tablets).
+        ctx.lineWidth = lw + 9; ctx.strokeStyle = "rgba(79, 124, 255, 0.16)"; ctx.stroke();
+        ctx.lineWidth = lw; ctx.strokeStyle = "#4f7cff"; ctx.stroke();
+        ctx.lineWidth = Math.max(5, Math.min(10, width / 74)); ctx.strokeStyle = "rgba(255,255,255,0.75)"; ctx.stroke();
+        ctx.restore();
       }
 
-      function drawGuideLetter() {
-        cancelTeachingAnimation();
-        drawFaintGuideLetter(targetLetter);
+      function rebuildInkCache() {
+        ictx.clearRect(0, 0, width, height);
+        strokes.forEach(s => drawInkStroke(ictx, s));
       }
 
-      function drawFaintGuideLetter(letter) {
+      function render() {
+        renderQueued = false;
+        dctx.clearRect(0, 0, width, height);
+        dctx.drawImage(inkCanvas, 0, 0, width, height);
+        if (currentStroke.length) drawInkStroke(dctx, currentStroke);
+      }
+
+      function queueRender() {
+        if (renderQueued) return;
+        renderQueued = true;
+        requestAnimationFrame(render);
+      }
+
+      // ---------- guide rendering (dots that light up as you trace) ----------
+      function queueGuide() {
+        if (guideQueued) return;
+        guideQueued = true;
+        requestAnimationFrame(() => { guideQueued = false; drawGuide(); });
+      }
+
+      function nextStrokeToTrace() {
+        if (!guide) return 0;
+        for (let i = 0; i < guide.strokes.length; i++) {
+          const dots = guide.dots.filter(d => d.stroke === i);
+          const lit = dots.filter(d => d.covered).length;
+          if (lit / dots.length < 0.6) return i;
+        }
+        return -1;
+      }
+
+      function drawGuide() {
+        if (teaching || !guide) return;
         gctx.clearRect(0, 0, width, height);
-        const guideStrokes = templateToCanvasStrokes(letter);
-        const lineWidth = Math.max(12, Math.min(26, width / 34));
+        const roadW = Math.max(18, guide.R * 1.1);
 
+        // Soft "road" so the letter shape is obvious even before tracing.
         gctx.save();
-        gctx.lineCap = "round";
-        gctx.lineJoin = "round";
-        gctx.lineWidth = lineWidth;
-        gctx.strokeStyle = "rgba(124, 92, 255, 0.58)";
-        gctx.shadowColor = "rgba(124, 92, 255, 0.18)";
-        gctx.shadowBlur = 7;
-        gctx.setLineDash([1, lineWidth * 1.35]);
-
-        guideStrokes.forEach(stroke => {
-          if (stroke.length < 2) return;
-          gctx.beginPath();
-          gctx.moveTo(stroke[0].x, stroke[0].y);
-          for (let i = 1; i < stroke.length; i++) {
-            gctx.lineTo(stroke[i].x, stroke[i].y);
-          }
+        gctx.lineCap = "round"; gctx.lineJoin = "round";
+        gctx.lineWidth = roadW;
+        gctx.strokeStyle = "rgba(124, 92, 255, 0.10)";
+        guide.strokes.forEach(s => {
+          gctx.beginPath(); gctx.moveTo(s[0].x, s[0].y);
+          for (let i = 1; i < s.length; i++) gctx.lineTo(s[i].x, s[i].y);
           gctx.stroke();
         });
-
         gctx.restore();
-      }
 
-      function templateToCanvasStrokes(letter) {
-        const rawStrokes = templateDefinitions[letter] || templateDefinitions.A;
-        const flat = rawStrokes.flat();
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        flat.forEach(([x, y]) => {
-          minX = Math.min(minX, x);
-          minY = Math.min(minY, y);
-          maxX = Math.max(maxX, x);
-          maxY = Math.max(maxY, y);
+        const r = Math.max(5, Math.min(11, guide.spacing * 0.32));
+        const glowing = new Set(glowDots || []);
+        guide.dots.forEach(d => {
+          gctx.beginPath();
+          if (d.covered) {
+            gctx.fillStyle = "#ffc93c";
+            gctx.arc(d.x, d.y, r * 1.25, 0, Math.PI * 2);
+          } else if (glowing.has(d)) {
+            gctx.fillStyle = "#ff4fa3";
+            gctx.arc(d.x, d.y, r * 1.45, 0, Math.PI * 2);
+          } else {
+            gctx.fillStyle = "rgba(124, 92, 255, 0.55)";
+            gctx.arc(d.x, d.y, r, 0, Math.PI * 2);
+          }
+          gctx.fill();
+          if (glowing.has(d) && !d.covered) {
+            gctx.strokeStyle = "rgba(255, 79, 163, 0.35)";
+            gctx.lineWidth = 6;
+            gctx.beginPath(); gctx.arc(d.x, d.y, r * 2.4, 0, Math.PI * 2); gctx.stroke();
+          }
         });
 
-        const padding = Math.max(28, Math.min(width, height) * 0.16);
-        const rawW = Math.max(1, maxX - minX);
-        const rawH = Math.max(1, maxY - minY);
-        const scale = Math.min((width - padding * 2) / rawW, (height - padding * 2) / rawH);
-        const offsetX = (width - rawW * scale) / 2 - minX * scale;
-        const offsetY = (height - rawH * scale) / 2 - minY * scale + height * 0.04;
-
-        return rawStrokes.map(stroke =>
-          stroke.map(([x, y]) => ({
-            x: x * scale + offsetX,
-            y: y * scale + offsetY
-          }))
-        );
+        // Green numbered start dot + arrow on the next stroke to trace.
+        const next = nextStrokeToTrace();
+        if (next >= 0 && !drawing) {
+          const s = guide.strokes[next];
+          drawStartDot(s[0], next + 1, "#4bd269", "#1f9e45");
+          drawArrow(s[0], s[1]);
+        }
       }
 
-      function drawTeachingStroke(points, progress, color, lineWidth) {
-        if (points.length < 2 || progress <= 0) return;
-
-        const total = pathLength(points);
-        const target = total * Math.min(1, progress);
-        let travelled = 0;
-
+      function drawArrow(a, b) {
+        const ang = Math.atan2(b.y - a.y, b.x - a.x);
+        const len = Math.min(dist(a, b) * 0.5, Math.max(34, guide.R * 1.4));
+        const sx = a.x + Math.cos(ang) * guide.R * 0.9, sy = a.y + Math.sin(ang) * guide.R * 0.9;
+        const ex = sx + Math.cos(ang) * len, ey = sy + Math.sin(ang) * len;
         gctx.save();
-        gctx.lineCap = "round";
-        gctx.lineJoin = "round";
-        gctx.lineWidth = lineWidth;
-        gctx.strokeStyle = color;
-        gctx.shadowColor = "rgba(0, 184, 148, 0.26)";
-        gctx.shadowBlur = 10;
+        gctx.strokeStyle = "#1f9e45"; gctx.fillStyle = "#1f9e45";
+        gctx.lineWidth = 5; gctx.lineCap = "round";
+        gctx.beginPath(); gctx.moveTo(sx, sy); gctx.lineTo(ex, ey); gctx.stroke();
+        const h = 13;
         gctx.beginPath();
-        gctx.moveTo(points[0].x, points[0].y);
-
-        for (let i = 1; i < points.length; i++) {
-          const segment = dist(points[i - 1], points[i]);
-          if (travelled + segment <= target) {
-            gctx.lineTo(points[i].x, points[i].y);
-            travelled += segment;
-          } else {
-            const t = Math.max(0, Math.min(1, (target - travelled) / segment));
-            gctx.lineTo(lerp(points[i - 1].x, points[i].x, t), lerp(points[i - 1].y, points[i].y, t));
-            break;
-          }
-        }
-
-        gctx.stroke();
-        gctx.lineWidth = Math.max(4, lineWidth * 0.36);
-        gctx.strokeStyle = "rgba(255,255,255,0.78)";
-        gctx.shadowBlur = 0;
-        gctx.stroke();
+        gctx.moveTo(ex + Math.cos(ang) * 4, ey + Math.sin(ang) * 4);
+        gctx.lineTo(ex - Math.cos(ang - 0.6) * h, ey - Math.sin(ang - 0.6) * h);
+        gctx.lineTo(ex - Math.cos(ang + 0.6) * h, ey - Math.sin(ang + 0.6) * h);
+        gctx.closePath(); gctx.fill();
         gctx.restore();
       }
 
-      function drawStartDot(point, number) {
+      function drawStartDot(point, number, fill = "#ffd85a", ring = "#ff9f43") {
         gctx.save();
-        gctx.fillStyle = "#ffd85a";
-        gctx.strokeStyle = "#ff9f43";
+        gctx.fillStyle = fill;
+        gctx.strokeStyle = ring;
         gctx.lineWidth = 4;
         gctx.beginPath();
-        gctx.arc(point.x, point.y, Math.max(15, Math.min(width, height) / 34), 0, Math.PI * 2);
+        gctx.arc(point.x, point.y, Math.max(15, Math.min(width, height) / 30), 0, Math.PI * 2);
         gctx.fill();
         gctx.stroke();
-        gctx.fillStyle = "#243b6b";
+        gctx.fillStyle = "#ffffff";
         gctx.font = `900 ${Math.max(16, Math.min(width, height) / 22)}px "Comic Sans MS", system-ui, sans-serif`;
         gctx.textAlign = "center";
         gctx.textBaseline = "middle";
@@ -1462,219 +1570,298 @@
         gctx.restore();
       }
 
-      function drawMovingStar(stroke, progress) {
-        if (stroke.length < 2 || progress <= 0) return;
-        const sampled = resample(stroke, 80);
-        const index = Math.min(sampled.length - 1, Math.floor(progress * (sampled.length - 1)));
-        const p = sampled[index];
+      // ---------- teaching animation ("this is how we write X") ----------
+      function cancelTeachingAnimation() {
+        teachingAnimationToken += 1;
+        teaching = false;
+        if (teachingAnimationId) { cancelAnimationFrame(teachingAnimationId); teachingAnimationId = null; }
+      }
+
+      function polyLen(points) { let s = 0; for (let i = 1; i < points.length; i++) s += dist(points[i - 1], points[i]); return s; }
+
+      function pointAt(points, frac) {
+        const target = polyLen(points) * frac;
+        let acc = 0;
+        for (let i = 1; i < points.length; i++) {
+          const seg = dist(points[i - 1], points[i]);
+          if (acc + seg >= target) { const t = seg ? (target - acc) / seg : 0; return { x: lerp(points[i - 1].x, points[i].x, t), y: lerp(points[i - 1].y, points[i].y, t) }; }
+          acc += seg;
+        }
+        return points[points.length - 1];
+      }
+
+      function drawTeachingStroke(points, progress, color, lw) {
+        if (points.length < 2 || progress <= 0) return;
+        const total = polyLen(points), target = total * Math.min(1, progress);
+        let travelled = 0;
         gctx.save();
-        gctx.font = `${Math.max(24, Math.min(width, height) / 13)}px "Comic Sans MS", system-ui, sans-serif`;
-        gctx.textAlign = "center";
-        gctx.textBaseline = "middle";
-        gctx.fillText("⭐", p.x, p.y);
+        gctx.lineCap = "round"; gctx.lineJoin = "round";
+        gctx.lineWidth = lw; gctx.strokeStyle = color;
+        gctx.beginPath(); gctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          const seg = dist(points[i - 1], points[i]);
+          if (travelled + seg <= target) { gctx.lineTo(points[i].x, points[i].y); travelled += seg; }
+          else { const t = Math.max(0, Math.min(1, (target - travelled) / seg)); gctx.lineTo(lerp(points[i - 1].x, points[i].x, t), lerp(points[i - 1].y, points[i].y, t)); break; }
+        }
+        gctx.stroke();
+        gctx.lineWidth = Math.max(4, lw * 0.36); gctx.strokeStyle = "rgba(255,255,255,0.78)"; gctx.stroke();
         gctx.restore();
       }
 
-      function animateCorrectLetter(letter) {
+      function animateLetter(letter, onDone) {
         cancelTeachingAnimation();
+        teaching = true;
         const token = teachingAnimationToken;
-        const teachingStrokes = templateToCanvasStrokes(letter);
-        const duration = Math.max(2300, teachingStrokes.length * 850 + 700);
-        const lineWidth = Math.max(16, Math.min(34, width / 26));
+        const tStrokes = LetterEngine.layoutStrokes(letter, width, height);
+        const duration = Math.max(2300, tStrokes.length * 900 + 700);
+        const lw = Math.max(16, Math.min(34, width / 26));
         const start = performance.now();
 
         function frame(now) {
           if (token !== teachingAnimationToken) return;
-
-          const elapsed = now - start;
-          const progress = Math.min(1, elapsed / duration);
-          const active = progress * teachingStrokes.length;
-
-          drawFaintGuideLetter(letter);
-
+          const progress = Math.min(1, (now - start) / duration);
+          const active = progress * tStrokes.length;
+          gctx.clearRect(0, 0, width, height);
           gctx.save();
           gctx.fillStyle = "#4f3cc9";
           gctx.font = `900 ${Math.max(22, Math.min(width, height) / 18)}px "Comic Sans MS", system-ui, sans-serif`;
-          gctx.textAlign = "center";
-          gctx.textBaseline = "top";
-          gctx.fillText(`This is how we write ${letter}!`, width / 2, 16);
+          gctx.textAlign = "center"; gctx.textBaseline = "top";
+          gctx.fillText(`This is how we write ${letter}!`, width / 2, 12);
           gctx.restore();
-
-          teachingStrokes.forEach((stroke, index) => {
-            drawStartDot(stroke[0], index + 1);
-            const strokeProgress = Math.max(0, Math.min(1, active - index));
-            drawTeachingStroke(stroke, strokeProgress, index % 2 ? "#ff6fb1" : "#00b894", lineWidth);
-            if (strokeProgress > 0 && strokeProgress < 1) {
-              drawMovingStar(stroke, strokeProgress);
+          tStrokes.forEach((s, i) => {
+            const p = Math.max(0, Math.min(1, active - i));
+            drawTeachingStroke(s, p, i % 2 ? "#ff6fb1" : "#00b894", lw);
+            drawStartDot(s[0], i + 1);
+            if (p > 0 && p < 1) {
+              const q = pointAt(s, p);
+              gctx.save();
+              gctx.font = `${Math.max(24, Math.min(width, height) / 13)}px system-ui, sans-serif`;
+              gctx.textAlign = "center"; gctx.textBaseline = "middle";
+              gctx.fillText("⭐", q.x, q.y);
+              gctx.restore();
             }
           });
-
-          if (progress < 1) {
-            teachingAnimationId = requestAnimationFrame(frame);
-          } else {
+          if (progress < 1) teachingAnimationId = requestAnimationFrame(frame);
+          else {
             teachingAnimationId = null;
+            setTimeout(() => {
+              if (token !== teachingAnimationToken) return;
+              teaching = false;
+              if (onDone) onDone(); else drawGuide();
+            }, 700);
           }
         }
-
         teachingAnimationId = requestAnimationFrame(frame);
       }
 
-      function pointerPosition(event) {
-        const rect = drawCanvas.getBoundingClientRect();
-        return makePoint(event.clientX - rect.left, event.clientY - rect.top);
+      // ---------- input (one finger draws; multi-touch rejected) ----------
+      function toArb(e) {
+        const r = drawCanvas.getBoundingClientRect();
+        return {
+          id: e.pointerId, type: e.pointerType || "mouse", button: e.button,
+          x: e.clientX - r.left, y: e.clientY - r.top,
+          w: e.width || 0, h: e.height || 0, cw: r.width, ch: r.height,
+          t: performance.now()
+        };
       }
 
-      function addPointToCurrentStroke(point) {
-        if (!lastPoint || dist(lastPoint, point) > 0.65) {
-          currentStroke.push(point);
-          lastPoint = point;
-          return true;
-        }
-        return false;
+      function canvasPoint(ev) {
+        const r = drawCanvas.getBoundingClientRect();
+        return {
+          x: Math.max(0, Math.min(width, ev.clientX - r.left)),
+          y: Math.max(0, Math.min(height, ev.clientY - r.top))
+        };
       }
 
-      function startDraw(event) {
-        event.preventDefault();
+      function onPointerDown(e) {
+        e.preventDefault();
+        if (phase !== "play") return;
+        const res = arbiter.down(toArb(e));
+        if (res.action === "cancel" || res.action === "restart") cancelCurrentStroke(res.reason);
+        if (res.action === "start" || res.action === "restart") beginStroke(e);
+      }
 
-        // Reject multi-touch. Only one primary finger/stylus is allowed to draw.
-        if (event.pointerType === "touch") {
-          activeTouchPointers.add(event.pointerId);
-          if (activeTouchPointers.size > 1 || event.isPrimary === false || activePointerId !== null) {
-            activeTouchPointers.delete(event.pointerId);
-            return;
-          }
-        } else if (activePointerId !== null) {
-          return;
+      function onPointerMove(e) {
+        const res = arbiter.move(toArb(e));
+        if (res.action === "cancel") { cancelCurrentStroke(res.reason); return; }
+        if (res.action !== "draw" || !drawing) return;
+        e.preventDefault();
+        const events = typeof e.getCoalescedEvents === "function" ? e.getCoalescedEvents() : [];
+        const list = events.length ? events : [e];
+        const added = [];
+        for (const ev of list) {
+          const p = canvasPoint(ev);
+          const last = currentStroke[currentStroke.length - 1];
+          if (!last || dist(last, p) >= 0.75) { currentStroke.push(p); added.push(p); }
         }
+        if (!added.length) return;
+        const before = currentStroke[currentStroke.length - added.length - 1];
+        const lit = LetterEngine.markCoverage(guide, before ? [before, ...added] : added);
+        if (lit) { queueGuide(); pling(); }
+        queueRender();
+      }
 
-        window.clearTimeout(endDraw.timer);
-        clearAutoEraseTimer();
+      function onPointerUp(e) {
+        const res = arbiter.up({ id: e.pointerId, t: performance.now() });
+        if (res.action === "end" && drawing) endStroke();
+      }
+
+      function beginStroke(e) {
+        // If old ink was waiting to be wiped (after a wrong letter), wipe it now so
+        // the new attempt starts clean; otherwise just stop the "are you done?" timer.
+        if (wipeTimer) clearDrawing(true); else clearTimers();
         unlockSpeech();
-        drawGuideLetter();
-        activePointerId = event.pointerId;
-        if (event.pointerType === "touch") {
-          drawCanvas.setPointerCapture(event.pointerId);
-        }
+        ensureAudio();
+        if (teaching) cancelTeachingAnimation();
+        try { drawCanvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
         drawing = true;
         hint.classList.add("hidden");
-        currentStroke = [pointerPosition(event)];
-        lastPoint = currentStroke[0];
+        currentStroke = [canvasPoint(e)];
+        LetterEngine.markCoverage(guide, currentStroke);
+        drawGuide();
+        queueRender();
         playTinyTap();
       }
 
-      function moveDraw(event) {
-        if (!drawing || event.pointerId !== activePointerId) return;
-        event.preventDefault();
-
-        const events = typeof event.getCoalescedEvents === "function"
-          ? event.getCoalescedEvents()
-          : [event];
-
-        let changed = false;
-        events.forEach(pointerEvent => {
-          changed = addPointToCurrentStroke(pointerPosition(pointerEvent)) || changed;
-        });
-
-        if (changed) redraw();
-      }
-
-      function endDraw(event) {
-        if (event.pointerType === "touch") {
-          activeTouchPointers.delete(event.pointerId);
-        }
-        if (!drawing || event.pointerId !== activePointerId) return;
-        event.preventDefault();
+      function endStroke() {
         drawing = false;
-        activePointerId = null;
-        if (currentStroke.length > 1) {
-          strokes.push(simplifyStroke(currentStroke));
-          sparkleAt(currentStroke[currentStroke.length - 1]);
+        if (currentStroke.length) {
+          const s = simplifyStroke(currentStroke);
+          strokes.push(s);
+          drawInkStroke(ictx, s);
+          if (s.length > 1) sparkleAt(s[s.length - 1]);
         }
         currentStroke = [];
-        lastPoint = null;
-        redraw();
+        queueRender();
+        drawGuide();
+        afterStroke();
+      }
 
-        if (flattenStrokes(strokes).length > 10) {
-          window.clearTimeout(endDraw.timer);
-          endDraw.timer = window.setTimeout(() => guessLetter(false), 2200);
-        } else {
-          scheduleAutoErase(9000, "The board is clean. Draw a big letter!");
+      function cancelCurrentStroke(reason) {
+        if (drawing) {
+          drawing = false;
+          currentStroke = [];
+          recomputeCoverage();
+          queueRender();
+          drawGuide();
+        }
+        const now = performance.now();
+        if (now - lastOneFingerNudge > 4000) {
+          lastOneFingerNudge = now;
+          showToast("☝️ One finger, please!");
         }
       }
 
       function simplifyStroke(stroke) {
-        const simplified = [];
-        stroke.forEach(p => {
-          if (!simplified.length || dist(simplified[simplified.length - 1], p) > 3) {
-            simplified.push(p);
-          }
-        });
-        return simplified;
+        const out = [];
+        stroke.forEach(p => { if (!out.length || dist(out[out.length - 1], p) > 2) out.push(p); });
+        const last = stroke[stroke.length - 1];
+        if (out.length && out[out.length - 1] !== last && dist(out[out.length - 1], last) > 0.5) out.push(last);
+        return out;
       }
 
-      function guessLetter(manual) {
-        const result = recognizeLetter(strokes);
-        if (!result) {
-          showToast("Try drawing a little bigger!");
-          message.textContent = "I need a little more drawing to guess.";
-          boop(false);
-          scheduleAutoErase(7000, "I wiped the board. Try a big letter!");
+      // ---------- checking the letter ----------
+      function afterStroke() {
+        if (phase !== "play") return;
+        const res = LetterEngine.evaluate(guide, strokes, targetLetter, { final: false, leniency });
+        if (res.verdict === "pass") {
+          phase = "celebrate";
+          clearTimers();
+          celebrateTimer = setTimeout(() => succeed(res), 260);
           return;
         }
-
-        revealAnimal(result.letter, result.confidence, manual);
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => finalCheck(false), IDLE_CHECK_MS);
       }
 
-      function revealAnimal(letter, confidence = 0.7, manual = false) {
-        const animal = getAnimalForLetter(letter);
-        const isTarget = letter === targetLetter;
-        const alreadyFound = found.has(letter);
+      function finalCheck(manual) {
+        clearTimeout(idleTimer); idleTimer = null;
+        if (phase !== "play" || drawing) return;
+        let res = LetterEngine.evaluate(guide, strokes, targetLetter, { final: true, leniency });
 
+        // Never let a 3-year-old get stuck: third "almost" with real effort counts.
+        if (res.verdict === "almost" && leniency >= 2 && res.trace && res.trace.coverage >= 0.45) {
+          res = { ...res, verdict: "pass" };
+        }
+
+        switch (res.verdict) {
+          case "pass":
+            phase = "celebrate";
+            succeed(res);
+            break;
+          case "almost":
+            leniency = Math.min(2, leniency + 1);
+            glowDots = res.trace.uncovered;
+            drawGuide();
+            message.textContent = "Almost! Trace the pink dots ✨";
+            showToast("Almost! Follow the pink dots ✨");
+            say("Almost! Follow the pink dots.");
+            boop(true);
+            break;
+          case "other":
+            revealOther(res.letter);
+            break;
+          case "scribble":
+            clearDrawing(true);
+            message.textContent = "Wow, lots of lines! Let's follow the dots.";
+            say(`Let's follow the dots to make ${targetLetter}.`);
+            boop(true);
+            animateLetter(targetLetter);
+            break;
+          case "retry":
+            leniency = Math.min(2, leniency + 1);
+            clearDrawing(true);
+            message.textContent = `Watch! Then start at the green dot.`;
+            say(`Watch me make ${targetLetter}. Then you try!`);
+            boop(true);
+            animateLetter(targetLetter);
+            break;
+          default: // empty
+            if (manual) { showToast("Start at the green dot! 🟢"); say("Start at the green dot."); }
+            else if (strokes.length) clearDrawing(true);
+        }
+      }
+
+      function succeed() {
+        clearTimers();
+        revealAnimal(targetLetter, true);
+        clearTimeout(nextTimer);
+        nextTimer = setTimeout(nextTarget, 4600);
+      }
+
+      function revealOther(letter) {
+        revealAnimal(letter, false);
+        message.textContent = `That looks like ${letter}! Now can you trace ${targetLetter}?`;
+        wipeTimer = setTimeout(() => clearDrawing(true), 5200);
+      }
+
+      function revealAnimal(letter, isTarget) {
+        const animal = getAnimalForLetter(letter);
+        const alreadyFound = found.has(letter);
         animalEmoji.textContent = animal.emoji;
         recognized.textContent = `I see ${letter}!`;
         animalName.textContent = `${letter} is for ${animal.name}!`;
-
-        const praise = [
-          "Amazing!",
-          "Wow!",
-          "Super writing!",
-          "Zoo-rific!",
-          "You did it!",
-          "Fantastic!"
-        ][Math.floor(Math.random() * 6)];
+        const praise = ["Amazing!", "Wow!", "Super writing!", "Zoo-rific!", "You did it!", "Fantastic!"][Math.floor(Math.random() * 6)];
 
         if (isTarget) {
-          message.textContent = `${praise} You found the letter ${letter}! Watch how to write ${letter}! ${animal.name} says "${animal.sound}"`;
+          message.textContent = `${praise} ${animal.name} says "${animal.sound}"`;
           stars += alreadyFound ? 1 : 3;
-          setTimeout(nextTarget, 4200);
-        } else if (confidence < 0.34) {
-          message.textContent = `Hmm... I think it might be ${letter}. ${animal.name} came to say hi!`;
-          stars += alreadyFound ? 0 : 1;
+          animateLetter(letter, () => {});
+          promptSubtitle.textContent = "Great job! A new letter is coming...";
         } else {
-          message.textContent = `${praise} I guessed ${letter}. Now watch the right way to write ${letter}! ${animal.name} says "${animal.sound}"`;
-          stars += alreadyFound ? 1 : 2;
+          stars += alreadyFound ? 0 : 1;
         }
 
-        animateCorrectLetter(letter);
         found.add(letter);
         updateScore();
-        markLetter(letter);
+        markLetter();
         animalCard.classList.remove("pop");
         void animalCard.offsetWidth;
         animalCard.classList.add("pop");
-
-        burstConfetti(isTarget ? 70 : 42);
+        burstConfetti(isTarget ? 70 : 36);
         cheer(letter, isTarget);
         speakAnimal(letter, animal);
-        showToast(isTarget ? `You matched ${letter}! ⭐⭐⭐` : `${letter} is for ${animal.name}!`);
-
-        if (!manual && isTarget) {
-          promptSubtitle.textContent = "Great match! A new letter is coming...";
-        }
-
-        if (!isTarget) {
-          scheduleAutoErase(5400, "I cleaned the board. Draw another letter!");
-        }
+        showToast(isTarget ? `You did ${letter}! ⭐⭐⭐` : `${letter} is for ${animal.name}!`);
       }
 
       function updateScore() {
@@ -1682,15 +1869,25 @@
         foundCountEl.textContent = found.size;
       }
 
-      function markLetter(letter) {
-        alphabetChips.forEach((chip, chipLetter) => {
-          chip.classList.toggle("found", found.has(chipLetter));
-          chip.classList.toggle("target", chipLetter === targetLetter);
-          chip.setAttribute(
-            "aria-label",
-            `${chipLetter}${found.has(chipLetter) ? " discovered" : " not discovered yet"}${chipLetter === targetLetter ? ", current target" : ""}`
-          );
+      function markLetter() {
+        alphabetChips.forEach((chip, l) => {
+          chip.classList.toggle("found", found.has(l));
+          chip.classList.toggle("target", l === targetLetter);
+          chip.setAttribute("aria-label", `${l}${found.has(l) ? " discovered" : " not discovered yet"}${l === targetLetter ? ", current target" : ""}`);
         });
+      }
+
+      function clearDrawing(keepMessage = false) {
+        clearTimers();
+        strokes = [];
+        currentStroke = [];
+        glowDots = null;
+        ictx.clearRect(0, 0, width, height);
+        if (guide) LetterEngine.resetCoverage(guide);
+        hint.classList.remove("hidden");
+        if (!keepMessage) message.textContent = "Start at the green dot and follow the dots!";
+        if (!teaching) drawGuide();
+        render();
       }
 
       function resetAnimalStageForTracing() {
@@ -1699,28 +1896,38 @@
         animalEmoji.textContent = "✏️";
         recognized.textContent = "";
         animalName.textContent = "Trace the letter";
-        message.textContent = "Write the new letter to meet an animal!";
+        message.textContent = "Start at the green dot and follow the dots!";
+      }
+
+      function setTarget(letter) {
+        targetLetter = letter;
+        targetIndex = targetLetters.indexOf(letter);
+        targetLetterEl.textContent = letter;
+        promptTitle.textContent = `Can you trace ${letter}?`;
+        promptSubtitle.textContent = "Start at the green dot. Follow the dots!";
+        leniency = 0;
+        glowDots = null;
+        guide = LetterEngine.buildGuide(letter, width, height);
       }
 
       function nextTarget() {
-        // Cycle through the alphabet in order instead of random selection.
-        // This guarantees every letter, including M, appears regularly.
-        targetIndex = (targetIndex + 1) % targetLetters.length;
-        targetLetter = targetLetters[targetIndex];
-        targetLetterEl.textContent = targetLetter;
-        promptTitle.textContent = `Can you write ${targetLetter}?`;
-        promptSubtitle.textContent = `${targetLetter} brings a zoo surprise!`;
+        clearTimeout(nextTimer); nextTimer = null;
+        clearTimeout(celebrateTimer); celebrateTimer = null;
+        cancelTeachingAnimation();
+        setTarget(targetLetters[(targetIndex + 1) % targetLetters.length]);
         resetAnimalStageForTracing();
-        markLetter(targetLetter);
+        markLetter();
         clearDrawing(true);
-        drawGuideLetter();
+        phase = "play";
+        say(`Can you trace ${targetLetter}?`, 350);
       }
 
+      // ---------- effects ----------
       function showToast(text) {
         toast.textContent = text;
         toast.classList.add("show");
-        window.clearTimeout(showToast.timer);
-        showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1500);
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove("show"), 1600);
       }
 
       function burstConfetti(count) {
@@ -1743,11 +1950,11 @@
       function sparkleAt(point) {
         if (!point) return;
         const icons = ["✨", "⭐", "💫", "🌟"];
+        const rect = drawCanvas.getBoundingClientRect();
         for (let i = 0; i < 5; i++) {
           const sp = document.createElement("div");
           sp.className = "sparkle";
           sp.textContent = icons[Math.floor(Math.random() * icons.length)];
-          const rect = drawCanvas.getBoundingClientRect();
           sp.style.left = `${rect.left + point.x}px`;
           sp.style.top = `${rect.top + point.y}px`;
           sp.style.setProperty("--dx", `${-45 + Math.random() * 90}px`);
@@ -1757,6 +1964,7 @@
         }
       }
 
+      // ---------- audio ----------
       function ensureAudio() {
         if (!audioEnabled) return null;
         if (!audioCtx) {
@@ -1789,29 +1997,29 @@
         tone(base, 0.14, "triangle", 0, 0.055);
         tone(base * 1.25, 0.14, "triangle", 0.13, 0.065);
         tone(base * 1.5, 0.18, "triangle", 0.26, 0.075);
-        if (big) {
-          tone(base * 2, 0.22, "sine", 0.43, 0.055);
-        }
+        if (big) tone(base * 2, 0.22, "sine", 0.43, 0.055);
       }
 
-      function boop(happy) {
-        if (!audioEnabled) return;
-        tone(happy ? 540 : 190, 0.15, happy ? "triangle" : "sawtooth", 0, 0.04);
-      }
+      // Only happy sounds: no "wrong" buzzer for preschoolers.
+      function boop() { if (audioEnabled) tone(540, 0.15, "triangle", 0, 0.04); }
+      function playTinyTap() { if (audioEnabled) tone(640, 0.035, "sine", 0, 0.015); }
 
-      function playTinyTap() {
-        if (!audioEnabled) return;
-        tone(640, 0.035, "sine", 0, 0.015);
+      // Rising "pling" as dots light up: progress you can hear.
+      function pling() {
+        if (!audioEnabled || !guide) return;
+        const now = performance.now();
+        if (now - lastPling < 70) return;
+        lastPling = now;
+        const frac = guide.dots.filter(d => d.covered).length / guide.dots.length;
+        tone(520 + 520 * frac, 0.06, "sine", 0, 0.025);
       }
 
       function chooseVoice() {
         if (!("speechSynthesis" in window)) return null;
         const voices = window.speechSynthesis.getVoices();
         preferredVoice =
-          voices.find(voice => /^en(-|_)?/i.test(voice.lang) && /female|samantha|victoria|karen|zira|google/i.test(voice.name)) ||
-          voices.find(voice => /^en(-|_)?/i.test(voice.lang)) ||
-          voices[0] ||
-          null;
+          voices.find(v => /^en(-|_)?/i.test(v.lang) && /female|samantha|victoria|karen|zira|google/i.test(v.name)) ||
+          voices.find(v => /^en(-|_)?/i.test(v.lang)) || voices[0] || null;
         return preferredVoice;
       }
 
@@ -1819,69 +2027,46 @@
         if (speechUnlocked || !audioEnabled || !("speechSynthesis" in window)) return;
         speechUnlocked = true;
         chooseVoice();
-
-        // Several tablet browsers only allow speech after a direct user gesture.
-        // A tiny silent utterance during touch/click unlocks later animal speech.
         try {
           const warmup = new SpeechSynthesisUtterance(" ");
           warmup.volume = 0;
-          warmup.rate = 1;
-          warmup.pitch = 1;
           if (preferredVoice) warmup.voice = preferredVoice;
           window.speechSynthesis.speak(warmup);
           window.speechSynthesis.cancel();
-        } catch (error) {
-          // Speech is optional; the game still works with visual feedback.
-        }
+        } catch (error) { /* speech is optional */ }
+      }
+
+      function say(text, delay = 60) {
+        if (!audioEnabled || !speechUnlocked || !("speechSynthesis" in window)) return;
+        const speak = () => {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = "en-US"; u.rate = 0.8; u.pitch = 1.18; u.volume = 1;
+          const voice = chooseVoice();
+          if (voice) u.voice = voice;
+          window.speechSynthesis.cancel();
+          setTimeout(() => window.speechSynthesis.speak(u), delay);
+        };
+        if (window.speechSynthesis.getVoices().length === 0) {
+          window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.onvoiceschanged = null; speak(); };
+          setTimeout(speak, 250);
+        } else speak();
       }
 
       function speakAnimal(letter, animal) {
-        if (!audioEnabled || !("speechSynthesis" in window)) return;
-
-        const speak = () => {
-          const utterance = new SpeechSynthesisUtterance(`${letter} is for ${animal.name}`);
-          utterance.lang = "en-US";
-          utterance.rate = 0.78;
-          utterance.pitch = 1.18;
-          utterance.volume = 1;
-          const voice = chooseVoice();
-          if (voice) utterance.voice = voice;
-
-          window.speechSynthesis.cancel();
-          // Small delay helps older WebKit/Android engines after cancel().
-          window.setTimeout(() => window.speechSynthesis.speak(utterance), 60);
-        };
-
-        if (window.speechSynthesis.getVoices().length === 0) {
-          window.speechSynthesis.onvoiceschanged = () => {
-            window.speechSynthesis.onvoiceschanged = null;
-            speak();
-          };
-          window.setTimeout(speak, 250);
-        } else {
-          speak();
-        }
+        speechUnlocked = speechUnlocked || audioEnabled;
+        say(`${letter} is for ${animal.name}`);
       }
 
       function toggleSound() {
         audioEnabled = !audioEnabled;
         soundButton.textContent = audioEnabled ? "🔊 Sound On" : "🔇 Sound Off";
-        if (audioEnabled) {
-          ensureAudio();
-          boop(true);
-          showToast("Sound on!");
-        } else {
-          if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-          showToast("Sound off");
-        }
+        if (audioEnabled) { ensureAudio(); boop(); showToast("Sound on!"); }
+        else { if ("speechSynthesis" in window) window.speechSynthesis.cancel(); showToast("Sound off"); }
       }
 
+      // ---------- install ----------
       async function installWebApp() {
-        if (!deferredInstallPrompt) {
-          showToast("Use your browser menu to add this game to the home screen.");
-          return;
-        }
-
+        if (!deferredInstallPrompt) { showToast("Use your browser menu to add this game to the home screen."); return; }
         deferredInstallPrompt.prompt();
         await deferredInstallPrompt.userChoice;
         deferredInstallPrompt = null;
@@ -1890,20 +2075,13 @@
 
       function setupWebAppInstall() {
         if ("serviceWorker" in navigator) {
-          window.addEventListener("load", () => {
-            navigator.serviceWorker.register("./sw.js").catch(() => {
-              // The game still works without service worker support.
-            });
-          });
+          window.addEventListener("load", () => { navigator.serviceWorker.register("./sw.js").catch(() => {}); });
         }
-
         window.addEventListener("beforeinstallprompt", event => {
           event.preventDefault();
           deferredInstallPrompt = event;
           installButton.classList.add("show");
-          showToast("You can install Magic Letter Zoo!");
         });
-
         window.addEventListener("appinstalled", () => {
           deferredInstallPrompt = null;
           installButton.classList.remove("show");
@@ -1911,76 +2089,66 @@
         });
       }
 
+      // ---------- wiring ----------
       function initEvents() {
-        drawCanvas.addEventListener("pointerdown", startDraw);
-        drawCanvas.addEventListener("pointermove", moveDraw);
-        drawCanvas.addEventListener("pointerup", endDraw);
-        drawCanvas.addEventListener("pointercancel", endDraw);
-        drawCanvas.addEventListener("lostpointercapture", event => {
-          if (event.pointerType === "touch") {
-            activeTouchPointers.delete(event.pointerId);
-          }
-          if (drawing && event.pointerId === activePointerId) {
-            drawing = false;
-            activePointerId = null;
-            currentStroke = [];
-            lastPoint = null;
-          }
+        drawCanvas.addEventListener("pointerdown", onPointerDown);
+        drawCanvas.addEventListener("pointermove", onPointerMove);
+        // Listen on window so a finger lifted outside the canvas is never "stuck down".
+        window.addEventListener("pointerup", onPointerUp);
+        window.addEventListener("pointercancel", onPointerUp);
+        drawCanvas.addEventListener("lostpointercapture", e => {
+          if (drawing && e.pointerId === arbiter.activeId) onPointerUp(e);
         });
+
+        // Stop the browser from hijacking little fingers: no pinch-zoom, no
+        // long-press menus, no text-selection magnifier, no pull-to-refresh.
+        canvasWrap.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
+        canvasWrap.addEventListener("contextmenu", e => e.preventDefault());
+        document.addEventListener("gesturestart", e => e.preventDefault());
+        document.addEventListener("dblclick", e => e.preventDefault());
 
         tryButton.addEventListener("click", () => {
-          ensureAudio();
-          unlockSpeech();
-          guessLetter(true);
+          ensureAudio(); unlockSpeech();
+          if (phase === "play") finalCheck(true);
         });
-
         clearButton.addEventListener("click", () => {
-          ensureAudio();
-          unlockSpeech();
+          ensureAudio(); unlockSpeech();
+          if (phase !== "play") return;
+          cancelTeachingAnimation();
           clearDrawing();
-          boop(true);
+          boop();
         });
-
         newLetterButton.addEventListener("click", () => {
-          ensureAudio();
-          unlockSpeech();
+          ensureAudio(); unlockSpeech();
           nextTarget();
-          boop(true);
-          showToast(`Try ${targetLetter}!`);
+          boop();
         });
-
         installButton.addEventListener("click", installWebApp);
-        soundButton.addEventListener("click", () => {
-          unlockSpeech();
-          toggleSound();
-        });
+        soundButton.addEventListener("click", () => { unlockSpeech(); toggleSound(); });
+
+        if ("ResizeObserver" in window) new ResizeObserver(() => resizeCanvases()).observe(canvasWrap);
         window.addEventListener("resize", resizeCanvases);
         window.addEventListener("orientationchange", () => setTimeout(resizeCanvases, 180));
       }
 
       function welcome() {
-        targetLetter = "A";
-        targetIndex = targetLetters.indexOf(targetLetter);
-        targetLetterEl.textContent = targetLetter;
-        promptTitle.textContent = `Can you write ${targetLetter}?`;
-        promptSubtitle.textContent = "Trace the big guide or draw your own!";
+        setTarget("A");
+        promptSubtitle.textContent = "Start at the green dot. Follow the dots!";
         animalEmoji.textContent = "🦁";
         recognized.textContent = "Hello, little writer!";
         animalName.textContent = "Welcome to the Zoo";
-        message.textContent = "Draw a letter. I will guess and bring an animal friend!";
+        message.textContent = "Follow the dots to make the letter. An animal friend will come!";
         updateScore();
-        markLetter(targetLetter);
+        markLetter();
       }
 
       setupAlphabet();
       setupWebAppInstall();
       initEvents();
       welcome();
-
-      // Let layout settle before sizing canvases.
       requestAnimationFrame(resizeCanvases);
+
     })();
   </script>
 </body>
 </html>
-]]>

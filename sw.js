@@ -1,4 +1,4 @@
-const CACHE_NAME = "magic-letter-zoo-v16";
+const CACHE_NAME = "magic-letter-zoo-v17";
 const ASSETS = [
   "./",
   "./index.html",
@@ -26,17 +26,34 @@ self.addEventListener("activate", event => {
   );
 });
 
-self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
+function putInCache(request, response) {
+  // Only cache good, same-origin responses (never cache a 404 or an opaque error).
+  if (response && response.ok && response.type === "basic") {
+    const copy = response.clone();
+    caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+  }
+  return response;
+}
 
+self.addEventListener("fetch", event => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+
+  // The page itself: network first, so a new version shows up on the next
+  // launch instead of one launch later. Falls back to the cache when offline.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then(response => putInCache(request, response))
+        .catch(() => caches.match(request).then(cached => cached || caches.match("./index.html")))
+    );
+    return;
+  }
+
+  // Everything else (icons, manifest): cache first.
   event.respondWith(
-    caches.match(event.request)
-      .then(cached => cached || fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => caches.match("./index.html")))
+    caches.match(request)
+      .then(cached => cached || fetch(request).then(response => putInCache(request, response)))
+      .catch(() => caches.match("./index.html"))
   );
 });

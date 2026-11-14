@@ -718,6 +718,7 @@
       let deferredInstallPrompt = null;
       let teachingAnimationId = null;
       let teachingAnimationToken = 0;
+      let autoEraseTimer = null;
       const found = new Set();
 
       const alphabetChips = new Map();
@@ -1002,7 +1003,24 @@
         drawGuideLetter();
       }
 
+      function clearAutoEraseTimer() {
+        window.clearTimeout(autoEraseTimer);
+        autoEraseTimer = null;
+      }
+
+      function scheduleAutoErase(delay = 8500, text = "All clean! Try another letter!") {
+        clearAutoEraseTimer();
+        autoEraseTimer = window.setTimeout(() => {
+          if (drawing || strokes.length === 0) return;
+          clearDrawing(true);
+          message.textContent = text;
+          showToast("I wiped the board for you!");
+          boop(true);
+        }, delay);
+      }
+
       function clearDrawing(keepMessage = false) {
+        clearAutoEraseTimer();
         strokes = [];
         currentStroke = [];
         lastPoint = null;
@@ -1221,6 +1239,7 @@
 
       function startDraw(event) {
         event.preventDefault();
+        clearAutoEraseTimer();
         drawGuideLetter();
         if (event.pointerType === "touch") {
           drawCanvas.setPointerCapture(event.pointerId);
@@ -1258,6 +1277,8 @@
         if (flattenStrokes(strokes).length > 10) {
           window.clearTimeout(endDraw.timer);
           endDraw.timer = window.setTimeout(() => guessLetter(false), 450);
+        } else {
+          scheduleAutoErase(9000, "The board is clean. Draw a big letter!");
         }
       }
 
@@ -1277,6 +1298,7 @@
           showToast("Try drawing a little bigger!");
           message.textContent = "I need a little more drawing to guess.";
           boop(false);
+          scheduleAutoErase(7000, "I wiped the board. Try a big letter!");
           return;
         }
 
@@ -1327,6 +1349,10 @@
 
         if (!manual && isTarget) {
           promptSubtitle.textContent = "Great match! A new letter is coming...";
+        }
+
+        if (!isTarget) {
+          scheduleAutoErase(5400, "I cleaned the board. Draw another letter!");
         }
       }
 

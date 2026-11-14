@@ -803,6 +803,55 @@
         Z: { name: "Zebra", emoji: "🦓", sound: "neigh!" }
       };
 
+      const animalVariants = {
+        A: [
+          { name: "Alligator", emoji: "🐊", sound: "snap snap!" },
+          { name: "Ant", emoji: "🐜", sound: "tiny steps!" }
+        ],
+        B: [
+          { name: "Bear", emoji: "🐻", sound: "grrr!" },
+          { name: "Bird", emoji: "🐦", sound: "tweet tweet!" },
+          { name: "Butterfly", emoji: "🦋", sound: "flutter flutter!" }
+        ],
+        C: [
+          { name: "Cat", emoji: "🐱", sound: "meow!" },
+          { name: "Cow", emoji: "🐮", sound: "moo!" }
+        ],
+        D: [
+          { name: "Dog", emoji: "🐶", sound: "woof!" },
+          { name: "Duck", emoji: "🦆", sound: "quack!" }
+        ],
+        E: [
+          { name: "Elephant", emoji: "🐘", sound: "toot toot!" },
+          { name: "Eagle", emoji: "🦅", sound: "screech!" }
+        ],
+        F: [
+          { name: "Fox", emoji: "🦊", sound: "ring-ding!" },
+          { name: "Frog", emoji: "🐸", sound: "ribbit!" },
+          { name: "Fish", emoji: "🐟", sound: "bubble bubble!" }
+        ],
+        M: [
+          { name: "Monkey", emoji: "🐵", sound: "ooh ooh!" },
+          { name: "Mouse", emoji: "🐭", sound: "squeak!" }
+        ],
+        P: [
+          { name: "Penguin", emoji: "🐧", sound: "waddle waddle!" },
+          { name: "Panda", emoji: "🐼", sound: "munch munch!" }
+        ],
+        R: [
+          { name: "Rabbit", emoji: "🐰", sound: "hop hop!" },
+          { name: "Rooster", emoji: "🐓", sound: "cock-a-doodle-doo!" }
+        ],
+        T: [
+          { name: "Tiger", emoji: "🐯", sound: "rawr!" },
+          { name: "Turtle", emoji: "🐢", sound: "slow steps!" }
+        ],
+        W: [
+          { name: "Whale", emoji: "🐳", sound: "whoooo!" },
+          { name: "Wolf", emoji: "🐺", sound: "awooo!" }
+        ]
+      };
+
       const targetLetters = Object.keys(animals);
       const canvasWrap = document.getElementById("canvasWrap");
       const drawCanvas = document.getElementById("drawCanvas");
@@ -838,6 +887,7 @@
       let lastPoint = null;
       let activePointerId = null;
       let targetLetter = "A";
+      let targetIndex = 0;
       let stars = 0;
       let audioEnabled = true;
       let audioCtx = null;
@@ -848,6 +898,8 @@
       let teachingAnimationToken = 0;
       let autoEraseTimer = null;
       const found = new Set();
+      const animalCycleState = {};
+      const activeTouchPointers = new Set();
 
       const alphabetChips = new Map();
 
@@ -1165,6 +1217,13 @@
         });
       }
 
+      function getAnimalForLetter(letter) {
+        const variants = animalVariants[letter] || [animals[letter] || animals.A];
+        const index = animalCycleState[letter] || 0;
+        animalCycleState[letter] = (index + 1) % variants.length;
+        return variants[index];
+      }
+
       function resizeCanvases() {
         const rect = canvasWrap.getBoundingClientRect();
         const ratio = window.devicePixelRatio || 1;
@@ -1432,11 +1491,26 @@
         return makePoint(event.clientX - rect.left, event.clientY - rect.top);
       }
 
+      function addPointToCurrentStroke(point) {
+        if (!lastPoint || dist(lastPoint, point) > 0.65) {
+          currentStroke.push(point);
+          lastPoint = point;
+          return true;
+        }
+        return false;
+      }
+
       function startDraw(event) {
         event.preventDefault();
 
-        // Ignore multi-touch. Only the first finger/stylus draws; extra fingers are ignored.
-        if (activePointerId !== null || (event.pointerType === "touch" && event.isPrimary === false)) {
+        // Reject multi-touch. Only one primary finger/stylus is allowed to draw.
+        if (event.pointerType === "touch") {
+          activeTouchPointers.add(event.pointerId);
+          if (activeTouchPointers.size > 1 || event.isPrimary === false || activePointerId !== null) {
+            activeTouchPointers.delete(event.pointerId);
+            return;
+          }
+        } else if (activePointerId !== null) {
           return;
         }
 
@@ -1458,15 +1532,23 @@
       function moveDraw(event) {
         if (!drawing || event.pointerId !== activePointerId) return;
         event.preventDefault();
-        const p = pointerPosition(event);
-        if (!lastPoint || dist(lastPoint, p) > 2.2) {
-          currentStroke.push(p);
-          lastPoint = p;
-          redraw();
-        }
+
+        const events = typeof event.getCoalescedEvents === "function"
+          ? event.getCoalescedEvents()
+          : [event];
+
+        let changed = false;
+        events.forEach(pointerEvent => {
+          changed = addPointToCurrentStroke(pointerPosition(pointerEvent)) || changed;
+        });
+
+        if (changed) redraw();
       }
 
       function endDraw(event) {
+        if (event.pointerType === "touch") {
+          activeTouchPointers.delete(event.pointerId);
+        }
         if (!drawing || event.pointerId !== activePointerId) return;
         event.preventDefault();
         drawing = false;
@@ -1511,7 +1593,7 @@
       }
 
       function revealAnimal(letter, confidence = 0.7, manual = false) {
-        const animal = animals[letter] || animals.A;
+        const animal = getAnimalForLetter(letter);
         const isTarget = letter === targetLetter;
         const alreadyFound = found.has(letter);
 
@@ -1579,9 +1661,10 @@
       }
 
       function nextTarget() {
-        const notFound = targetLetters.filter(letter => !found.has(letter));
-        const pool = notFound.length ? notFound : targetLetters;
-        targetLetter = pool[Math.floor(Math.random() * pool.length)];
+        // Cycle through the alphabet in order instead of random selection.
+        // This guarantees every letter, including M, appears regularly.
+        targetIndex = (targetIndex + 1) % targetLetters.length;
+        targetLetter = targetLetters[targetIndex];
         targetLetterEl.textContent = targetLetter;
         promptTitle.textContent = `Can you write ${targetLetter}?`;
         promptSubtitle.textContent = `${targetLetter} brings a zoo surprise!`;
@@ -1791,6 +1874,9 @@
         drawCanvas.addEventListener("pointerup", endDraw);
         drawCanvas.addEventListener("pointercancel", endDraw);
         drawCanvas.addEventListener("lostpointercapture", event => {
+          if (event.pointerType === "touch") {
+            activeTouchPointers.delete(event.pointerId);
+          }
           if (drawing && event.pointerId === activePointerId) {
             drawing = false;
             activePointerId = null;
@@ -1831,6 +1917,7 @@
 
       function welcome() {
         targetLetter = "A";
+        targetIndex = targetLetters.indexOf(targetLetter);
         targetLetterEl.textContent = targetLetter;
         promptTitle.textContent = `Can you write ${targetLetter}?`;
         promptSubtitle.textContent = "Trace the big guide or draw your own!";

@@ -1070,6 +1070,11 @@
         const lowerRightRatio = lowerHalfPoints.length
           ? lowerHalfPoints.filter(p => xNorm(p) > 0.45).length / lowerHalfPoints.length
           : 0;
+        const bottomBandPoints = rawPoints.filter(p => yNorm(p) > 0.72);
+        const bottomRightRatio = bottomBandPoints.length
+          ? bottomBandPoints.filter(p => xNorm(p) > 0.42).length / bottomBandPoints.length
+          : 0;
+        const bottomCoverage = bottomBandPoints.length / rawPoints.length;
         const endpointsRight = startXNorm > 0.52 && endXNorm > 0.58;
         const endInside = endXNorm < 0.72 && endYNorm > 0.35 && endYNorm < 0.9;
 
@@ -1085,6 +1090,8 @@
           endXNorm,
           endYNorm,
           lowerRightRatio,
+          bottomRightRatio,
+          bottomCoverage,
           endpointsRight,
           endInside
         };
@@ -1174,6 +1181,15 @@
             if (template.letter === "B") score += 9;
           }
 
+          // E vs F: E has a bottom bar extending to the right; F usually has no bottom bar.
+          if (userFeature.bottomCoverage > 0.08 && userFeature.bottomRightRatio > 0.18) {
+            if (template.letter === "E") score -= 14;
+            if (template.letter === "F") score += 18;
+          } else if (userFeature.bottomRightRatio < 0.08) {
+            if (template.letter === "F") score -= 5;
+            if (template.letter === "E") score += 8;
+          }
+
           return { letter: template.letter, score };
         }).sort((a, b) => a.score - b.score);
 
@@ -1188,6 +1204,7 @@
           const targetIsLookAlike =
             (["C", "G"].includes(targetLetter) && ["C", "G"].includes(best.letter)) ||
             (["B", "P", "R"].includes(targetLetter) && ["B", "P", "R"].includes(best.letter)) ||
+            (["E", "F"].includes(targetLetter) && ["E", "F"].includes(best.letter)) ||
             (["O", "Q"].includes(targetLetter) && ["O", "Q"].includes(best.letter)) ||
             (["I", "J", "L"].includes(targetLetter) && ["I", "J", "L"].includes(best.letter));
 

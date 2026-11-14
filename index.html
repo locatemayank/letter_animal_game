@@ -1,0 +1,1284 @@
+<![CDATA[<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Magic Letter Zoo</title>
+  <style>
+    :root {
+      --sky: #76d7ff;
+      --sun: #ffd85a;
+      --grass: #4bd269;
+      --ink: #243b6b;
+      --pink: #ff6fb1;
+      --purple: #7c5cff;
+      --card: rgba(255, 255, 255, 0.9);
+      --shadow: 0 20px 50px rgba(36, 59, 107, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: hidden;
+      font-family: "Comic Sans MS", "Trebuchet MS", system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 12%, #fff8b5 0 7rem, transparent 7.1rem),
+        linear-gradient(#8be3ff 0%, #d8f8ff 56%, #baf6c3 56%, #64db77 100%);
+      touch-action: manipulation;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      filter: blur(0.3px);
+    }
+
+    body::before {
+      width: 14rem;
+      height: 4.5rem;
+      left: 12%;
+      top: 12%;
+      box-shadow: 12rem 5rem 0 -0.6rem rgba(255,255,255,0.6), 36rem 2rem 0 0.4rem rgba(255,255,255,0.55);
+    }
+
+    body::after {
+      width: 10rem;
+      height: 3.5rem;
+      right: 8%;
+      top: 22%;
+      box-shadow: -18rem -8rem 0 0.2rem rgba(255,255,255,0.48);
+    }
+
+    .app {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(0.8rem, 2vw, 1.4rem);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 0.7rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 7vw, 5.4rem);
+      letter-spacing: 0.02em;
+      color: #fff;
+      text-shadow:
+        0 5px 0 #2faee5,
+        0 9px 0 #228cc3,
+        0 14px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    .subtitle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin: 0.5rem 0 0;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      font-weight: 900;
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      box-shadow: 0 9px 26px rgba(36, 59, 107, 0.12);
+    }
+
+    .game {
+      display: grid;
+      grid-template-columns: minmax(310px, 1.08fr) minmax(280px, 0.92fr);
+      gap: clamp(0.8rem, 2.2vw, 1.4rem);
+      align-items: stretch;
+    }
+
+    .panel {
+      border: 7px solid rgba(255, 255, 255, 0.95);
+      border-radius: 34px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .draw-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 560px;
+    }
+
+    .prompt {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.7rem;
+      align-items: center;
+      padding: 0.8rem 1rem;
+      background: linear-gradient(90deg, #ffec7a, #ffd1ee);
+      border-bottom: 6px solid rgba(255,255,255,0.72);
+    }
+
+    .star {
+      display: grid;
+      place-items: center;
+      width: 3.7rem;
+      height: 3.7rem;
+      font-size: 2rem;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: inset 0 -5px 0 rgba(0,0,0,0.08);
+      animation: wiggle 1.8s ease-in-out infinite;
+    }
+
+    .prompt-text {
+      min-width: 0;
+    }
+
+    .prompt-text strong {
+      display: block;
+      font-size: clamp(1.15rem, 3vw, 1.85rem);
+      line-height: 1.05;
+    }
+
+    .prompt-text span {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 1rem;
+      font-weight: 800;
+      opacity: 0.8;
+    }
+
+    .big-target {
+      display: grid;
+      place-items: center;
+      width: clamp(4.2rem, 12vw, 6.4rem);
+      height: clamp(4.2rem, 12vw, 6.4rem);
+      border-radius: 28px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      font-size: clamp(2.8rem, 8vw, 4.9rem);
+      font-weight: 1000;
+      line-height: 1;
+      text-shadow: 0 4px 0 rgba(0,0,0,0.16);
+      box-shadow: 0 12px 0 #cf4b8c, 0 17px 28px rgba(0,0,0,0.18);
+      transform: rotate(2deg);
+    }
+
+    .canvas-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 370px;
+      background:
+        linear-gradient(90deg, rgba(93, 121, 255, 0.12) 1px, transparent 1px) 0 0 / 42px 42px,
+        linear-gradient(rgba(93, 121, 255, 0.12) 1px, transparent 1px) 0 0 / 42px 42px,
+        #fffdf8;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    #drawCanvas,
+    #guideCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    #guideCanvas {
+      opacity: 0.22;
+      pointer-events: none;
+    }
+
+    .hint {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(88%, 520px);
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: rgba(36, 59, 107, 0.38);
+      font-size: clamp(1.2rem, 4vw, 2.2rem);
+      font-weight: 1000;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .hint.hidden {
+      opacity: 0;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      padding: 0.85rem;
+      background: linear-gradient(90deg, #e4fbff, #fff1fa);
+      border-top: 6px solid rgba(255,255,255,0.72);
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.85rem 1.05rem;
+      min-height: 3.2rem;
+      color: #fff;
+      background: linear-gradient(180deg, #7c5cff, #5135dc);
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 1000;
+      box-shadow: 0 8px 0 #34249e, 0 12px 24px rgba(52, 36, 158, 0.22);
+      cursor: pointer;
+      transform: translateY(0);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.14s ease;
+    }
+
+    button:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 #34249e, 0 4px 12px rgba(52, 36, 158, 0.18);
+    }
+
+    button.secondary {
+      color: var(--ink);
+      background: linear-gradient(180deg, #fff, #eafaff);
+      box-shadow: 0 8px 0 #a6d9e8, 0 12px 20px rgba(20, 120, 160, 0.12);
+    }
+
+    button.secondary:active {
+      box-shadow: 0 2px 0 #a6d9e8, 0 4px 12px rgba(20, 120, 160, 0.12);
+    }
+
+    button.sound {
+      margin-left: auto;
+      background: linear-gradient(180deg, #ff9f43, #ff6b35);
+      box-shadow: 0 8px 0 #be4320, 0 12px 20px rgba(190, 67, 32, 0.18);
+    }
+
+    .zoo-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 560px;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,0.85) 0 4rem, transparent 4.1rem),
+        linear-gradient(160deg, #fffdf6, #f0f9ff 50%, #eafced);
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.7rem;
+      padding: 0.95rem 1rem 0;
+    }
+
+    .pill {
+      flex: 1;
+      padding: 0.55rem 0.65rem;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,0.06), 0 7px 18px rgba(36, 59, 107, 0.1);
+      font-weight: 1000;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .animal-stage {
+      display: grid;
+      place-items: center;
+      flex: 1;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .animal-card {
+      width: min(100%, 440px);
+      min-height: 430px;
+      padding: 1.1rem;
+      border-radius: 34px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: inset 0 -8px 0 rgba(0,0,0,0.06), 0 18px 38px rgba(36, 59, 107, 0.14);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 4px dashed rgba(124, 92, 255, 0.25);
+      transition: transform 0.18s ease;
+    }
+
+    .animal-card.pop {
+      animation: pop 0.58s cubic-bezier(.18, 1.5, .45, 1);
+    }
+
+    .animal-emoji {
+      font-size: clamp(6.5rem, 18vw, 12rem);
+      line-height: 1;
+      filter: drop-shadow(0 14px 0 rgba(36, 59, 107, 0.08));
+      animation: floaty 2.4s ease-in-out infinite;
+    }
+
+    .recognized {
+      margin-top: 0.5rem;
+      font-size: clamp(1.6rem, 4.8vw, 3.3rem);
+      font-weight: 1000;
+      line-height: 1.05;
+    }
+
+    .animal-name {
+      margin-top: 0.45rem;
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(90deg, #00b894, #00cec9);
+      font-size: clamp(1.6rem, 4.8vw, 3.1rem);
+      font-weight: 1000;
+      text-shadow: 0 3px 0 rgba(0,0,0,0.12);
+    }
+
+    .message {
+      min-height: 4.2rem;
+      margin-top: 0.8rem;
+      font-size: clamp(1.05rem, 3vw, 1.55rem);
+      font-weight: 1000;
+      color: #4f3cc9;
+    }
+
+    .alphabet {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: center;
+      padding: 0 1rem 1rem;
+    }
+
+    .letter-chip {
+      width: 2.35rem;
+      height: 2.35rem;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.78);
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,0.07);
+      font-weight: 1000;
+      color: rgba(36, 59, 107, 0.65);
+    }
+
+    .letter-chip.found {
+      color: #fff;
+      background: linear-gradient(180deg, #ff6fb1, #f6388a);
+      animation: chipBounce 0.45s ease;
+    }
+
+    .letter-chip.target {
+      outline: 4px solid #ffd85a;
+    }
+
+    .confetti,
+    .sparkle {
+      position: fixed;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .confetti {
+      width: 0.75rem;
+      height: 1.05rem;
+      border-radius: 0.2rem;
+      animation: confettiFall var(--dur) ease-in forwards;
+      transform: rotate(var(--rot));
+    }
+
+    .sparkle {
+      font-size: 1.6rem;
+      animation: sparkle 0.9s ease-out forwards;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 1.2rem;
+      z-index: 20;
+      transform: translateX(-50%);
+      max-width: min(92%, 620px);
+      padding: 0.75rem 1rem;
+      border: 4px solid #fff;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(90deg, #7c5cff, #ff6fb1);
+      font-size: clamp(1rem, 3vw, 1.35rem);
+      font-weight: 1000;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, -0.25rem);
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-8deg) scale(1); }
+      50% { transform: rotate(8deg) scale(1.08); }
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.72) rotate(-4deg); }
+      60% { transform: scale(1.08) rotate(2deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-0.45rem) rotate(2deg); }
+    }
+
+    @keyframes chipBounce {
+      0% { transform: scale(0.6); }
+      60% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes confettiFall {
+      0% {
+        opacity: 1;
+        transform: translate3d(0, -12vh, 0) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--drift), 108vh, 0) rotate(var(--spin));
+      }
+    }
+
+    @keyframes sparkle {
+      0% { opacity: 0; transform: scale(0.2) rotate(0); }
+      25% { opacity: 1; }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.6) rotate(120deg); }
+    }
+
+    @media (max-width: 820px) {
+      .game {
+        grid-template-columns: 1fr;
+      }
+
+      .draw-panel,
+      .zoo-panel {
+        min-height: auto;
+      }
+
+      .canvas-wrap {
+        min-height: 46vh;
+      }
+
+      .animal-card {
+        min-height: 330px;
+      }
+
+      button.sound {
+        margin-left: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app {
+        padding: 0.55rem;
+      }
+
+      .panel {
+        border-width: 5px;
+        border-radius: 26px;
+      }
+
+      .prompt {
+        grid-template-columns: auto 1fr;
+      }
+
+      .big-target {
+        grid-column: 1 / -1;
+        justify-self: center;
+      }
+
+      .controls button {
+        flex: 1 1 42%;
+      }
+
+      .score-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Magic Letter Zoo</h1>
+      <div class="subtitle">✏️ Draw a letter. Meet an animal friend! 🐾</div>
+    </header>
+
+    <section class="game" aria-label="Magic Letter Zoo game">
+      <div class="panel draw-panel">
+        <div class="prompt">
+          <div class="star" aria-hidden="true">⭐</div>
+          <div class="prompt-text">
+            <strong id="promptTitle">Can you write this letter?</strong>
+            <span id="promptSubtitle">Use your finger, mouse, or stylus.</span>
+          </div>
+          <div class="big-target" id="targetLetter" aria-label="Target letter">A</div>
+        </div>
+
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="guideCanvas" aria-hidden="true"></canvas>
+          <canvas id="drawCanvas" aria-label="Drawing area"></canvas>
+          <div class="hint" id="hint">Draw your letter here!</div>
+        </div>
+
+        <div class="controls">
+          <button id="tryButton" type="button">✨ Guess My Letter</button>
+          <button id="clearButton" class="secondary" type="button">🧽 Wipe</button>
+          <button id="newLetterButton" class="secondary" type="button">🎲 New Letter</button>
+          <button id="soundButton" class="sound" type="button">🔊 Sound On</button>
+        </div>
+      </div>
+
+      <div class="panel zoo-panel">
+        <div class="score-row">
+          <div class="pill">🏆 Stars: <span id="stars">0</span></div>
+          <div class="pill">🦁 Zoo friends: <span id="foundCount">0</span></div>
+        </div>
+
+        <div class="animal-stage">
+          <div class="animal-card" id="animalCard">
+            <div class="animal-emoji" id="animalEmoji" aria-hidden="true">🦄</div>
+            <div class="recognized" id="recognized">Ready?</div>
+            <div class="animal-name" id="animalName">Magic Zoo</div>
+            <div class="message" id="message">Pick up your finger when you finish. I will try to guess!</div>
+          </div>
+        </div>
+
+        <div class="alphabet" id="alphabet" aria-label="Letters discovered"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const animals = {
+        A: { name: "Alligator", emoji: "🐊", sound: "snap snap!" },
+        B: { name: "Bear", emoji: "🐻", sound: "grrr!" },
+        C: { name: "Cat", emoji: "🐱", sound: "meow!" },
+        D: { name: "Dog", emoji: "🐶", sound: "woof!" },
+        E: { name: "Elephant", emoji: "🐘", sound: "toot toot!" },
+        F: { name: "Fox", emoji: "🦊", sound: "ring-ding!" },
+        G: { name: "Giraffe", emoji: "🦒", sound: "munch munch!" },
+        H: { name: "Hippo", emoji: "🦛", sound: "splash!" },
+        I: { name: "Iguana", emoji: "🦎", sound: "scurry!" },
+        J: { name: "Jaguar", emoji: "🐆", sound: "roar!" },
+        K: { name: "Koala", emoji: "🐨", sound: "sleepy munch!" },
+        L: { name: "Lion", emoji: "🦁", sound: "roar!" },
+        M: { name: "Monkey", emoji: "🐵", sound: "ooh ooh!" },
+        N: { name: "Narwhal", emoji: "🦄", sound: "splash sparkle!" },
+        O: { name: "Owl", emoji: "🦉", sound: "hoot hoot!" },
+        P: { name: "Penguin", emoji: "🐧", sound: "waddle waddle!" },
+        Q: { name: "Quail", emoji: "🐦", sound: "tweet!" },
+        R: { name: "Rabbit", emoji: "🐰", sound: "hop hop!" },
+        S: { name: "Snake", emoji: "🐍", sound: "ssss!" },
+        T: { name: "Tiger", emoji: "🐯", sound: "rawr!" },
+        U: { name: "Unicorn", emoji: "🦄", sound: "sparkle!" },
+        V: { name: "Vulture", emoji: "🦅", sound: "whoosh!" },
+        W: { name: "Whale", emoji: "🐳", sound: "whoooo!" },
+        X: { name: "X-ray Fish", emoji: "🐟", sound: "bubble bubble!" },
+        Y: { name: "Yak", emoji: "🐂", sound: "moo!" },
+        Z: { name: "Zebra", emoji: "🦓", sound: "neigh!" }
+      };
+
+      const targetLetters = Object.keys(animals);
+      const canvasWrap = document.getElementById("canvasWrap");
+      const drawCanvas = document.getElementById("drawCanvas");
+      const guideCanvas = document.getElementById("guideCanvas");
+      const dctx = drawCanvas.getContext("2d");
+      const gctx = guideCanvas.getContext("2d");
+
+      const hint = document.getElementById("hint");
+      const targetLetterEl = document.getElementById("targetLetter");
+      const promptTitle = document.getElementById("promptTitle");
+      const promptSubtitle = document.getElementById("promptSubtitle");
+      const animalCard = document.getElementById("animalCard");
+      const animalEmoji = document.getElementById("animalEmoji");
+      const recognized = document.getElementById("recognized");
+      const animalName = document.getElementById("animalName");
+      const message = document.getElementById("message");
+      const starsEl = document.getElementById("stars");
+      const foundCountEl = document.getElementById("foundCount");
+      const alphabetEl = document.getElementById("alphabet");
+      const toast = document.getElementById("toast");
+
+      const tryButton = document.getElementById("tryButton");
+      const clearButton = document.getElementById("clearButton");
+      const newLetterButton = document.getElementById("newLetterButton");
+      const soundButton = document.getElementById("soundButton");
+
+      let width = 0;
+      let height = 0;
+      let drawing = false;
+      let strokes = [];
+      let currentStroke = [];
+      let lastPoint = null;
+      let targetLetter = "A";
+      let stars = 0;
+      let audioEnabled = true;
+      let audioCtx = null;
+      const found = new Set();
+
+      const alphabetChips = new Map();
+
+      function makePoint(x, y) {
+        return { x, y };
+      }
+
+      function dist(a, b) {
+        return Math.hypot(a.x - b.x, a.y - b.y);
+      }
+
+      function pathLength(points) {
+        let len = 0;
+        for (let i = 1; i < points.length; i++) len += dist(points[i - 1], points[i]);
+        return len;
+      }
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function flattenStrokes(sourceStrokes) {
+        const flat = [];
+        sourceStrokes.forEach((stroke, strokeIndex) => {
+          stroke.forEach((p, pointIndex) => {
+            flat.push({ x: p.x, y: p.y, stroke: strokeIndex, start: pointIndex === 0 });
+          });
+        });
+        return flat;
+      }
+
+      function normalize(points, size = 100) {
+        if (points.length === 0) return [];
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        points.forEach(p => {
+          minX = Math.min(minX, p.x);
+          minY = Math.min(minY, p.y);
+          maxX = Math.max(maxX, p.x);
+          maxY = Math.max(maxY, p.y);
+        });
+
+        const boxW = Math.max(1, maxX - minX);
+        const boxH = Math.max(1, maxY - minY);
+        const scale = size / Math.max(boxW, boxH);
+        const normalized = points.map(p => ({
+          x: (p.x - minX) * scale,
+          y: (p.y - minY) * scale,
+          stroke: p.stroke,
+          start: p.start
+        }));
+
+        const center = normalized.reduce((acc, p) => {
+          acc.x += p.x;
+          acc.y += p.y;
+          return acc;
+        }, { x: 0, y: 0 });
+        center.x /= normalized.length;
+        center.y /= normalized.length;
+
+        return normalized.map(p => ({
+          x: p.x - center.x,
+          y: p.y - center.y,
+          stroke: p.stroke,
+          start: p.start
+        }));
+      }
+
+      function resample(points, n = 64) {
+        if (points.length === 0) return [];
+        if (points.length === 1) return Array.from({ length: n }, () => ({ ...points[0] }));
+
+        const output = [{ ...points[0] }];
+        let segmentRemainder = 0;
+        const total = pathLength(points);
+        const interval = total / (n - 1);
+
+        if (!isFinite(interval) || interval <= 0.01) {
+          return Array.from({ length: n }, (_, i) => ({ ...points[Math.min(points.length - 1, i)] }));
+        }
+
+        let prev = { ...points[0] };
+        for (let i = 1; i < points.length; i++) {
+          let curr = { ...points[i] };
+          let d = dist(prev, curr);
+
+          while ((segmentRemainder + d) >= interval && output.length < n) {
+            const t = (interval - segmentRemainder) / d;
+            const nx = lerp(prev.x, curr.x, t);
+            const ny = lerp(prev.y, curr.y, t);
+            const newPoint = { x: nx, y: ny, stroke: curr.stroke, start: false };
+            output.push(newPoint);
+            prev = newPoint;
+            d = dist(prev, curr);
+            segmentRemainder = 0;
+          }
+          segmentRemainder += d;
+          prev = curr;
+        }
+
+        while (output.length < n) output.push({ ...points[points.length - 1] });
+        return output.slice(0, n);
+      }
+
+      function vectorDistance(a, b) {
+        let sum = 0;
+        const n = Math.min(a.length, b.length);
+        for (let i = 0; i < n; i++) {
+          const dx = a[i].x - b[i].x;
+          const dy = a[i].y - b[i].y;
+          sum += Math.hypot(dx, dy);
+        }
+        return sum / Math.max(1, n);
+      }
+
+      function angleBetween(a, b) {
+        return Math.atan2(b.y - a.y, b.x - a.x);
+      }
+
+      function basicFeatures(rawPoints, sourceStrokes) {
+        if (rawPoints.length === 0) {
+          return {
+            strokeCount: 0, aspect: 1, closedness: 9, turnCount: 0,
+            endpoints: [], minX: 0, maxX: 0, minY: 0, maxY: 0
+          };
+        }
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        rawPoints.forEach(p => {
+          minX = Math.min(minX, p.x);
+          minY = Math.min(minY, p.y);
+          maxX = Math.max(maxX, p.x);
+          maxY = Math.max(maxY, p.y);
+        });
+
+        const w = Math.max(1, maxX - minX);
+        const h = Math.max(1, maxY - minY);
+        const diagonal = Math.max(1, Math.hypot(w, h));
+        const start = rawPoints[0];
+        const end = rawPoints[rawPoints.length - 1];
+        const closedness = dist(start, end) / diagonal;
+
+        let turnCount = 0;
+        const pts = resample(rawPoints, 28);
+        for (let i = 2; i < pts.length; i++) {
+          const a1 = angleBetween(pts[i - 2], pts[i - 1]);
+          const a2 = angleBetween(pts[i - 1], pts[i]);
+          let delta = Math.abs(a2 - a1);
+          delta = Math.min(delta, Math.PI * 2 - delta);
+          if (delta > 1.08) turnCount++;
+        }
+
+        const endpoints = [];
+        sourceStrokes.forEach(stroke => {
+          if (stroke.length) {
+            endpoints.push(stroke[0], stroke[stroke.length - 1]);
+          }
+        });
+
+        return {
+          strokeCount: sourceStrokes.length,
+          aspect: w / h,
+          closedness,
+          turnCount,
+          endpoints,
+          minX, maxX, minY, maxY
+        };
+      }
+
+      function makeStroke(points) {
+        return points.map(([x, y]) => ({ x, y }));
+      }
+
+      const templateDefinitions = {
+        A: [[[10,100],[30,10],[50,100]], [[22,62],[42,62]]],
+        B: [[[10,100],[10,10],[45,12],[58,25],[46,43],[10,47],[48,49],[62,68],[48,94],[10,100]]],
+        C: [[[70,15],[35,5],[12,28],[10,72],[35,97],[72,84]]],
+        D: [[[12,100],[12,10],[48,12],[72,35],[72,72],[48,96],[12,100]]],
+        E: [[[70,10],[12,10],[12,52],[55,52],[12,52],[12,96],[72,96]]],
+        F: [[[12,98],[12,10],[72,10],[12,10],[12,52],[55,52]]],
+        G: [[[74,18],[42,7],[15,26],[10,62],[28,90],[62,92],[78,70],[52,70]]],
+        H: [[[12,10],[12,98]], [[70,10],[70,98]], [[12,54],[70,54]]],
+        I: [[[24,10],[76,10]], [[50,10],[50,96]], [[24,96],[76,96]]],
+        J: [[[72,10],[72,72],[58,94],[34,96],[18,80]]],
+        K: [[[14,10],[14,98]], [[70,10],[14,56],[72,98]]],
+        L: [[[16,10],[16,96],[74,96]]],
+        M: [[[10,98],[10,12],[42,65],[72,12],[72,98]]],
+        N: [[[12,98],[12,12],[72,98],[72,12]]],
+        O: [[[50,8],[22,18],[10,50],[22,84],[50,98],[78,84],[90,50],[78,18],[50,8]]],
+        P: [[[12,98],[12,10],[52,12],[70,28],[58,50],[12,52]]],
+        Q: [[[50,8],[22,18],[10,50],[22,84],[50,98],[78,84],[90,50],[78,18],[50,8]], [[60,72],[88,100]]],
+        R: [[[12,98],[12,10],[52,12],[70,28],[58,50],[12,52],[46,52],[74,98]]],
+        S: [[[74,18],[45,8],[16,20],[18,44],[56,54],[78,70],[62,92],[24,88]]],
+        T: [[[15,10],[85,10]], [[50,10],[50,98]]],
+        U: [[[12,10],[12,70],[28,94],[52,98],[74,72],[74,10]]],
+        V: [[[10,10],[42,98],[78,10]]],
+        W: [[[8,10],[24,98],[45,42],[66,98],[84,10]]],
+        X: [[[12,12],[78,98]], [[78,12],[12,98]]],
+        Y: [[[10,12],[45,52],[80,12]], [[45,52],[45,98]]],
+        Z: [[[12,12],[78,12],[15,98],[82,98]]]
+      };
+
+      const templates = Object.entries(templateDefinitions).map(([letter, strokes]) => {
+        const flat = flattenStrokes(strokes.map(makeStroke));
+        return {
+          letter,
+          strokes,
+          vector: resample(normalize(flat), 64),
+          feature: basicFeatures(flat, strokes.map(makeStroke))
+        };
+      });
+
+      function recognizeLetter(sourceStrokes) {
+        const raw = flattenStrokes(sourceStrokes);
+        if (raw.length < 7) return null;
+
+        const userVector = resample(normalize(raw), 64);
+        const userFeature = basicFeatures(raw, sourceStrokes);
+
+        let best = { letter: "A", score: Infinity };
+        const ranked = templates.map(template => {
+          const shape = vectorDistance(userVector, template.vector);
+          const strokePenalty = Math.min(14, Math.abs(userFeature.strokeCount - template.feature.strokeCount) * 2.3);
+          const aspectPenalty = Math.min(16, Math.abs(Math.log(userFeature.aspect / template.feature.aspect)) * 7);
+          const closedPenalty = Math.min(12, Math.abs(userFeature.closedness - template.feature.closedness) * 6);
+          let score = shape + strokePenalty + aspectPenalty + closedPenalty;
+
+          // Friendly nudges for common child-written shapes.
+          if (userFeature.closedness < 0.22 && ["O", "Q"].includes(template.letter)) score -= 9;
+          if (userFeature.aspect > 1.85 && ["L", "T", "Z", "E", "F"].includes(template.letter)) score -= 2;
+          if (userFeature.aspect < 0.48 && ["I", "J", "L"].includes(template.letter)) score -= 4;
+          if (userFeature.turnCount > 9 && ["S", "G", "B"].includes(template.letter)) score -= 3;
+
+          return { letter: template.letter, score };
+        }).sort((a, b) => a.score - b.score);
+
+        best = ranked[0];
+
+        // If the target letter is close enough, prefer it. This keeps practice encouraging.
+        const targetRank = ranked.find(r => r.letter === targetLetter);
+        if (targetRank && targetRank.score < best.score + 8) {
+          best = { ...targetRank, encouraged: true };
+        }
+
+        return {
+          letter: best.letter,
+          score: best.score,
+          confidence: Math.max(0, Math.min(1, 1 - best.score / 58)),
+          alternatives: ranked.slice(0, 4)
+        };
+      }
+
+      function setupAlphabet() {
+        alphabetEl.innerHTML = "";
+        alphabetChips.clear();
+        targetLetters.forEach(letter => {
+          const chip = document.createElement("div");
+          chip.className = "letter-chip";
+          chip.textContent = letter;
+          chip.setAttribute("aria-label", `${letter} not discovered yet`);
+          alphabetEl.appendChild(chip);
+          alphabetChips.set(letter, chip);
+        });
+      }
+
+      function resizeCanvases() {
+        const rect = canvasWrap.getBoundingClientRect();
+        const ratio = window.devicePixelRatio || 1;
+        width = Math.max(1, rect.width);
+        height = Math.max(1, rect.height);
+
+        [drawCanvas, guideCanvas].forEach(canvas => {
+          canvas.width = Math.floor(width * ratio);
+          canvas.height = Math.floor(height * ratio);
+          canvas.style.width = `${width}px`;
+          canvas.style.height = `${height}px`;
+          const ctx = canvas.getContext("2d");
+          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        });
+
+        redraw();
+        drawGuideLetter();
+      }
+
+      function clearDrawing(keepMessage = false) {
+        strokes = [];
+        currentStroke = [];
+        lastPoint = null;
+        dctx.clearRect(0, 0, width, height);
+        hint.classList.remove("hidden");
+        if (!keepMessage) {
+          message.textContent = "Draw a big letter, then I will guess!";
+        }
+      }
+
+      function redraw() {
+        dctx.clearRect(0, 0, width, height);
+        dctx.lineCap = "round";
+        dctx.lineJoin = "round";
+
+        strokes.forEach(stroke => {
+          drawStroke(stroke);
+        });
+
+        if (currentStroke.length) drawStroke(currentStroke);
+      }
+
+      function drawStroke(stroke) {
+        if (stroke.length < 2) return;
+        dctx.save();
+        dctx.lineWidth = Math.max(13, Math.min(26, width / 32));
+        dctx.strokeStyle = "#4f7cff";
+        dctx.shadowColor = "rgba(79, 124, 255, 0.28)";
+        dctx.shadowBlur = 8;
+        dctx.beginPath();
+        dctx.moveTo(stroke[0].x, stroke[0].y);
+        for (let i = 1; i < stroke.length; i++) {
+          const midX = (stroke[i - 1].x + stroke[i].x) / 2;
+          const midY = (stroke[i - 1].y + stroke[i].y) / 2;
+          dctx.quadraticCurveTo(stroke[i - 1].x, stroke[i - 1].y, midX, midY);
+        }
+        const last = stroke[stroke.length - 1];
+        dctx.lineTo(last.x, last.y);
+        dctx.stroke();
+
+        dctx.lineWidth = Math.max(5, Math.min(10, width / 74));
+        dctx.strokeStyle = "rgba(255,255,255,0.75)";
+        dctx.shadowBlur = 0;
+        dctx.stroke();
+        dctx.restore();
+      }
+
+      function drawGuideLetter() {
+        gctx.clearRect(0, 0, width, height);
+        gctx.save();
+        gctx.font = `900 ${Math.min(width * 0.78, height * 0.88)}px "Comic Sans MS", system-ui, sans-serif`;
+        gctx.textAlign = "center";
+        gctx.textBaseline = "middle";
+        gctx.lineWidth = Math.max(2, width / 95);
+        gctx.strokeStyle = "#7c5cff";
+        gctx.setLineDash([16, 18]);
+        gctx.strokeText(targetLetter, width / 2, height / 2 + height * 0.045);
+        gctx.restore();
+      }
+
+      function pointerPosition(event) {
+        const rect = drawCanvas.getBoundingClientRect();
+        return makePoint(event.clientX - rect.left, event.clientY - rect.top);
+      }
+
+      function startDraw(event) {
+        event.preventDefault();
+        if (event.pointerType === "touch") {
+          drawCanvas.setPointerCapture(event.pointerId);
+        }
+        drawing = true;
+        hint.classList.add("hidden");
+        currentStroke = [pointerPosition(event)];
+        lastPoint = currentStroke[0];
+        playTinyTap();
+      }
+
+      function moveDraw(event) {
+        if (!drawing) return;
+        event.preventDefault();
+        const p = pointerPosition(event);
+        if (!lastPoint || dist(lastPoint, p) > 2.2) {
+          currentStroke.push(p);
+          lastPoint = p;
+          redraw();
+        }
+      }
+
+      function endDraw(event) {
+        if (!drawing) return;
+        event.preventDefault();
+        drawing = false;
+        if (currentStroke.length > 1) {
+          strokes.push(simplifyStroke(currentStroke));
+          sparkleAt(currentStroke[currentStroke.length - 1]);
+        }
+        currentStroke = [];
+        lastPoint = null;
+        redraw();
+
+        if (flattenStrokes(strokes).length > 10) {
+          window.clearTimeout(endDraw.timer);
+          endDraw.timer = window.setTimeout(() => guessLetter(false), 450);
+        }
+      }
+
+      function simplifyStroke(stroke) {
+        const simplified = [];
+        stroke.forEach(p => {
+          if (!simplified.length || dist(simplified[simplified.length - 1], p) > 3) {
+            simplified.push(p);
+          }
+        });
+        return simplified;
+      }
+
+      function guessLetter(manual) {
+        const result = recognizeLetter(strokes);
+        if (!result) {
+          showToast("Try drawing a little bigger!");
+          message.textContent = "I need a little more drawing to guess.";
+          boop(false);
+          return;
+        }
+
+        revealAnimal(result.letter, result.confidence, manual);
+      }
+
+      function revealAnimal(letter, confidence = 0.7, manual = false) {
+        const animal = animals[letter] || animals.A;
+        const isTarget = letter === targetLetter;
+        const alreadyFound = found.has(letter);
+
+        animalEmoji.textContent = animal.emoji;
+        recognized.textContent = `I see ${letter}!`;
+        animalName.textContent = `${letter} is for ${animal.name}!`;
+
+        const praise = [
+          "Amazing!",
+          "Wow!",
+          "Super writing!",
+          "Zoo-rific!",
+          "You did it!",
+          "Fantastic!"
+        ][Math.floor(Math.random() * 6)];
+
+        if (isTarget) {
+          message.textContent = `${praise} You found the letter ${letter}! ${animal.name} says "${animal.sound}"`;
+          stars += alreadyFound ? 1 : 3;
+          setTimeout(nextTarget, 1450);
+        } else if (confidence < 0.34) {
+          message.textContent = `Hmm... I think it might be ${letter}. ${animal.name} came to say hi!`;
+          stars += alreadyFound ? 0 : 1;
+        } else {
+          message.textContent = `${praise} I guessed ${letter}. ${animal.name} says "${animal.sound}"`;
+          stars += alreadyFound ? 1 : 2;
+        }
+
+        found.add(letter);
+        updateScore();
+        markLetter(letter);
+        animalCard.classList.remove("pop");
+        void animalCard.offsetWidth;
+        animalCard.classList.add("pop");
+
+        burstConfetti(isTarget ? 70 : 42);
+        cheer(letter, isTarget);
+        showToast(isTarget ? `You matched ${letter}! ⭐⭐⭐` : `${letter} is for ${animal.name}!`);
+
+        if (!manual && isTarget) {
+          promptSubtitle.textContent = "Great match! A new letter is coming...";
+        }
+      }
+
+      function updateScore() {
+        starsEl.textContent = stars;
+        foundCountEl.textContent = found.size;
+      }
+
+      function markLetter(letter) {
+        alphabetChips.forEach((chip, chipLetter) => {
+          chip.classList.toggle("found", found.has(chipLetter));
+          chip.classList.toggle("target", chipLetter === targetLetter);
+          chip.setAttribute(
+            "aria-label",
+            `${chipLetter}${found.has(chipLetter) ? " discovered" : " not discovered yet"}${chipLetter === targetLetter ? ", current target" : ""}`
+          );
+        });
+      }
+
+      function nextTarget() {
+        const notFound = targetLetters.filter(letter => !found.has(letter));
+        const pool = notFound.length ? notFound : targetLetters;
+        targetLetter = pool[Math.floor(Math.random() * pool.length)];
+        targetLetterEl.textContent = targetLetter;
+        promptTitle.textContent = `Can you write ${targetLetter}?`;
+        promptSubtitle.textContent = `${targetLetter} brings a zoo surprise!`;
+        markLetter(targetLetter);
+        clearDrawing(true);
+        drawGuideLetter();
+      }
+
+      function showToast(text) {
+        toast.textContent = text;
+        toast.classList.add("show");
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1500);
+      }
+
+      function burstConfetti(count) {
+        const colors = ["#ff6fb1", "#ffd85a", "#4bd269", "#7c5cff", "#00cec9", "#ff9f43"];
+        for (let i = 0; i < count; i++) {
+          const piece = document.createElement("div");
+          piece.className = "confetti";
+          piece.style.left = `${Math.random() * 100}vw`;
+          piece.style.top = `${-8 - Math.random() * 20}vh`;
+          piece.style.background = colors[i % colors.length];
+          piece.style.setProperty("--dur", `${1.6 + Math.random() * 1.6}s`);
+          piece.style.setProperty("--drift", `${-80 + Math.random() * 160}px`);
+          piece.style.setProperty("--spin", `${360 + Math.random() * 720}deg`);
+          piece.style.setProperty("--rot", `${Math.random() * 180}deg`);
+          document.body.appendChild(piece);
+          piece.addEventListener("animationend", () => piece.remove(), { once: true });
+        }
+      }
+
+      function sparkleAt(point) {
+        if (!point) return;
+        const icons = ["✨", "⭐", "💫", "🌟"];
+        for (let i = 0; i < 5; i++) {
+          const sp = document.createElement("div");
+          sp.className = "sparkle";
+          sp.textContent = icons[Math.floor(Math.random() * icons.length)];
+          const rect = drawCanvas.getBoundingClientRect();
+          sp.style.left = `${rect.left + point.x}px`;
+          sp.style.top = `${rect.top + point.y}px`;
+          sp.style.setProperty("--dx", `${-45 + Math.random() * 90}px`);
+          sp.style.setProperty("--dy", `${-55 + Math.random() * 60}px`);
+          document.body.appendChild(sp);
+          sp.addEventListener("animationend", () => sp.remove(), { once: true });
+        }
+      }
+
+      function ensureAudio() {
+        if (!audioEnabled) return null;
+        if (!audioCtx) {
+          const Context = window.AudioContext || window.webkitAudioContext;
+          if (!Context) return null;
+          audioCtx = new Context();
+        }
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        return audioCtx;
+      }
+
+      function tone(freq, duration, type = "sine", delay = 0, gainValue = 0.06) {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(gainValue, ctx.currentTime + delay + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + duration + 0.02);
+      }
+
+      function cheer(letter, big) {
+        if (!audioEnabled) return;
+        const base = 240 + (letter.charCodeAt(0) - 65) * 9;
+        tone(base, 0.14, "triangle", 0, 0.055);
+        tone(base * 1.25, 0.14, "triangle", 0.13, 0.065);
+        tone(base * 1.5, 0.18, "triangle", 0.26, 0.075);
+        if (big) {
+          tone(base * 2, 0.22, "sine", 0.43, 0.055);
+        }
+      }
+
+      function boop(happy) {
+        if (!audioEnabled) return;
+        tone(happy ? 540 : 190, 0.15, happy ? "triangle" : "sawtooth", 0, 0.04);
+      }
+
+      function playTinyTap() {
+        if (!audioEnabled) return;
+        tone(640, 0.035, "sine", 0, 0.015);
+      }
+
+      function toggleSound() {
+        audioEnabled = !audioEnabled;
+        soundButton.textContent = audioEnabled ? "🔊 Sound On" : "🔇 Sound Off";
+        if (audioEnabled) {
+          ensureAudio();
+          boop(true);
+          showToast("Sound on!");
+        } else {
+          showToast("Sound off");
+        }
+      }
+
+      function initEvents() {
+        drawCanvas.addEventListener("pointerdown", startDraw);
+        drawCanvas.addEventListener("pointermove", moveDraw);
+        drawCanvas.addEventListener("pointerup", endDraw);
+        drawCanvas.addEventListener("pointercancel", endDraw);
+        drawCanvas.addEventListener("lostpointercapture", () => {
+          if (drawing) endDraw(new PointerEvent("pointerup"));
+        });
+
+        tryButton.addEventListener("click", () => {
+          ensureAudio();
+          guessLetter(true);
+        });
+
+        clearButton.addEventListener("click", () => {
+          ensureAudio();
+          clearDrawing();
+          boop(true);
+        });
+
+        newLetterButton.addEventListener("click", () => {
+          ensureAudio();
+          nextTarget();
+          boop(true);
+          showToast(`Try ${targetLetter}!`);
+        });
+
+        soundButton.addEventListener("click", toggleSound);
+        window.addEventListener("resize", resizeCanvases);
+        window.addEventListener("orientationchange", () => setTimeout(resizeCanvases, 180));
+      }
+
+      function welcome() {
+        targetLetter = "A";
+        targetLetterEl.textContent = targetLetter;
+        promptTitle.textContent = `Can you write ${targetLetter}?`;
+        promptSubtitle.textContent = "Trace the big guide or draw your own!";
+        animalEmoji.textContent = "🦁";
+        recognized.textContent = "Hello, little writer!";
+        animalName.textContent = "Welcome to the Zoo";
+        message.textContent = "Draw a letter. I will guess and bring an animal friend!";
+        updateScore();
+        markLetter(targetLetter);
+      }
+
+      setupAlphabet();
+      initEvents();
+      welcome();
+
+      // Let layout settle before sizing canvases.
+      requestAnimationFrame(resizeCanvases);
+    })();
+  </script>
+</body>
+</html>
+]]>

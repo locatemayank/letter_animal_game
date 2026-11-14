@@ -1688,6 +1688,15 @@
         });
       }
 
+      function resetAnimalStageForTracing() {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        animalCard.classList.remove("pop");
+        animalEmoji.textContent = "✏️";
+        recognized.textContent = "";
+        animalName.textContent = "Trace the letter";
+        message.textContent = "Write the new letter to meet an animal!";
+      }
+
       function nextTarget() {
         // Cycle through the alphabet in order instead of random selection.
         // This guarantees every letter, including M, appears regularly.
@@ -1696,6 +1705,7 @@
         targetLetterEl.textContent = targetLetter;
         promptTitle.textContent = `Can you write ${targetLetter}?`;
         promptSubtitle.textContent = `${targetLetter} brings a zoo surprise!`;
+        resetAnimalStageForTracing();
         markLetter(targetLetter);
         clearDrawing(true);
         drawGuideLetter();

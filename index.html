@@ -1211,7 +1211,12 @@
             userFeature.aspect < 0.48 &&
             userFeature.strokeCount <= 2 &&
             userFeature.turnCount < 5;
-          const targetIsPlausible = targetRank.score < 60 || targetRank.score < best.score + 30;
+          // Very strong tracing bias: this game is about practicing the prompted
+          // letter, not generic OCR. If the child's drawing has enough signal to
+          // guess at all, heavily prefer the letter shown in the trace guide.
+          const targetIsPlausible = targetRank.score < 95 || targetRank.score < best.score + 80;
+          const targetIsCloseEnough = targetRank.score < best.score + 110;
+          const drawingHasEnoughSignal = raw.length >= 7 && pathLength(raw) > 18;
           const targetIsLookAlike =
             (["C", "G"].includes(targetLetter) && ["C", "G"].includes(best.letter)) ||
             (["B", "P", "R"].includes(targetLetter) && ["B", "P", "R"].includes(best.letter)) ||
@@ -1219,7 +1224,7 @@
             (["O", "Q"].includes(targetLetter) && ["O", "Q"].includes(best.letter)) ||
             (["I", "J", "L"].includes(targetLetter) && ["I", "J", "L"].includes(best.letter));
 
-          if (targetIsSimpleI || targetIsPlausible || targetIsLookAlike) {
+          if (targetIsSimpleI || targetIsPlausible || targetIsLookAlike || targetIsCloseEnough || drawingHasEnoughSignal) {
             best = { ...targetRank, encouraged: true };
           }
         }

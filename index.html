@@ -1000,13 +1000,35 @@
           }
         });
 
+        const xNorm = p => (p.x - minX) / w;
+        const yNorm = p => (p.y - minY) / h;
+        const first = rawPoints[0];
+        const last = rawPoints[rawPoints.length - 1];
+        const startXNorm = xNorm(first);
+        const startYNorm = yNorm(first);
+        const endXNorm = xNorm(last);
+        const endYNorm = yNorm(last);
+        const lowerHalfPoints = rawPoints.filter(p => yNorm(p) > 0.52);
+        const lowerRightRatio = lowerHalfPoints.length
+          ? lowerHalfPoints.filter(p => xNorm(p) > 0.45).length / lowerHalfPoints.length
+          : 0;
+        const endpointsRight = startXNorm > 0.52 && endXNorm > 0.58;
+        const endInside = endXNorm < 0.72 && endYNorm > 0.35 && endYNorm < 0.9;
+
         return {
           strokeCount: sourceStrokes.length,
           aspect: w / h,
           closedness,
           turnCount,
           endpoints,
-          minX, maxX, minY, maxY
+          minX, maxX, minY, maxY,
+          startXNorm,
+          startYNorm,
+          endXNorm,
+          endYNorm,
+          lowerRightRatio,
+          endpointsRight,
+          endInside
         };
       }
 
@@ -1074,14 +1096,35 @@
           if (userFeature.aspect < 0.48 && ["I", "J", "L"].includes(template.letter)) score -= 4;
           if (userFeature.turnCount > 9 && ["S", "G", "B"].includes(template.letter)) score -= 3;
 
+          // Extra toddler-writing disambiguation:
+          // C vs G: a C usually starts and ends on the right side; a G usually finishes inward.
+          if (userFeature.endpointsRight && userFeature.endXNorm > 0.68 && userFeature.closedness > 0.24) {
+            if (template.letter === "C") score -= 10;
+            if (template.letter === "G") score += 13;
+          }
+          if (userFeature.endInside) {
+            if (template.letter === "G") score -= 5;
+            if (template.letter === "C") score += 5;
+          }
+
+          // B vs P: a B has meaningful drawing on the lower-right; a P mostly does not.
+          if (userFeature.lowerRightRatio > 0.2) {
+            if (template.letter === "B") score -= 10;
+            if (template.letter === "P") score += 14;
+          } else if (userFeature.lowerRightRatio < 0.1) {
+            if (template.letter === "P") score -= 5;
+            if (template.letter === "B") score += 9;
+          }
+
           return { letter: template.letter, score };
         }).sort((a, b) => a.score - b.score);
 
         best = ranked[0];
 
-        // If the target letter is close enough, prefer it. This keeps practice encouraging.
+        // If the target letter is very close, prefer it. Keep the margin small to avoid
+        // turning look-alike letters such as C/G or B/P into the target by accident.
         const targetRank = ranked.find(r => r.letter === targetLetter);
-        if (targetRank && targetRank.score < best.score + 8) {
+        if (targetRank && targetRank.score < best.score + 4) {
           best = { ...targetRank, encouraged: true };
         }
 
@@ -1398,7 +1441,7 @@
 
         if (flattenStrokes(strokes).length > 10) {
           window.clearTimeout(endDraw.timer);
-          endDraw.timer = window.setTimeout(() => guessLetter(false), 450);
+          endDraw.timer = window.setTimeout(() => guessLetter(false), 1000);
         } else {
           scheduleAutoErase(9000, "The board is clean. Draw a big letter!");
         }

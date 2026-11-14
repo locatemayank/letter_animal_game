@@ -204,7 +204,7 @@
     }
 
     #guideCanvas {
-      opacity: 0.22;
+      opacity: 1;
       pointer-events: none;
     }
 
@@ -716,6 +716,8 @@
       let audioEnabled = true;
       let audioCtx = null;
       let deferredInstallPrompt = null;
+      let teachingAnimationId = null;
+      let teachingAnimationToken = 0;
       const found = new Set();
 
       const alphabetChips = new Map();
@@ -1009,6 +1011,7 @@
         if (!keepMessage) {
           message.textContent = "Draw a big letter, then I will guess!";
         }
+        drawGuideLetter();
       }
 
       function redraw() {
@@ -1048,17 +1051,167 @@
         dctx.restore();
       }
 
+      function cancelTeachingAnimation() {
+        teachingAnimationToken += 1;
+        if (teachingAnimationId) {
+          cancelAnimationFrame(teachingAnimationId);
+          teachingAnimationId = null;
+        }
+      }
+
       function drawGuideLetter() {
+        cancelTeachingAnimation();
+        drawFaintGuideLetter(targetLetter);
+      }
+
+      function drawFaintGuideLetter(letter) {
         gctx.clearRect(0, 0, width, height);
         gctx.save();
         gctx.font = `900 ${Math.min(width * 0.78, height * 0.88)}px "Comic Sans MS", system-ui, sans-serif`;
         gctx.textAlign = "center";
         gctx.textBaseline = "middle";
         gctx.lineWidth = Math.max(2, width / 95);
-        gctx.strokeStyle = "#7c5cff";
+        gctx.strokeStyle = "rgba(124, 92, 255, 0.22)";
         gctx.setLineDash([16, 18]);
-        gctx.strokeText(targetLetter, width / 2, height / 2 + height * 0.045);
+        gctx.strokeText(letter, width / 2, height / 2 + height * 0.045);
         gctx.restore();
+      }
+
+      function templateToCanvasStrokes(letter) {
+        const rawStrokes = templateDefinitions[letter] || templateDefinitions.A;
+        const flat = rawStrokes.flat();
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        flat.forEach(([x, y]) => {
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        });
+
+        const padding = Math.max(28, Math.min(width, height) * 0.16);
+        const rawW = Math.max(1, maxX - minX);
+        const rawH = Math.max(1, maxY - minY);
+        const scale = Math.min((width - padding * 2) / rawW, (height - padding * 2) / rawH);
+        const offsetX = (width - rawW * scale) / 2 - minX * scale;
+        const offsetY = (height - rawH * scale) / 2 - minY * scale + height * 0.04;
+
+        return rawStrokes.map(stroke =>
+          stroke.map(([x, y]) => ({
+            x: x * scale + offsetX,
+            y: y * scale + offsetY
+          }))
+        );
+      }
+
+      function drawTeachingStroke(points, progress, color, lineWidth) {
+        if (points.length < 2 || progress <= 0) return;
+
+        const total = pathLength(points);
+        const target = total * Math.min(1, progress);
+        let travelled = 0;
+
+        gctx.save();
+        gctx.lineCap = "round";
+        gctx.lineJoin = "round";
+        gctx.lineWidth = lineWidth;
+        gctx.strokeStyle = color;
+        gctx.shadowColor = "rgba(0, 184, 148, 0.26)";
+        gctx.shadowBlur = 10;
+        gctx.beginPath();
+        gctx.moveTo(points[0].x, points[0].y);
+
+        for (let i = 1; i < points.length; i++) {
+          const segment = dist(points[i - 1], points[i]);
+          if (travelled + segment <= target) {
+            gctx.lineTo(points[i].x, points[i].y);
+            travelled += segment;
+          } else {
+            const t = Math.max(0, Math.min(1, (target - travelled) / segment));
+            gctx.lineTo(lerp(points[i - 1].x, points[i].x, t), lerp(points[i - 1].y, points[i].y, t));
+            break;
+          }
+        }
+
+        gctx.stroke();
+        gctx.lineWidth = Math.max(4, lineWidth * 0.36);
+        gctx.strokeStyle = "rgba(255,255,255,0.78)";
+        gctx.shadowBlur = 0;
+        gctx.stroke();
+        gctx.restore();
+      }
+
+      function drawStartDot(point, number) {
+        gctx.save();
+        gctx.fillStyle = "#ffd85a";
+        gctx.strokeStyle = "#ff9f43";
+        gctx.lineWidth = 4;
+        gctx.beginPath();
+        gctx.arc(point.x, point.y, Math.max(15, Math.min(width, height) / 34), 0, Math.PI * 2);
+        gctx.fill();
+        gctx.stroke();
+        gctx.fillStyle = "#243b6b";
+        gctx.font = `900 ${Math.max(16, Math.min(width, height) / 22)}px "Comic Sans MS", system-ui, sans-serif`;
+        gctx.textAlign = "center";
+        gctx.textBaseline = "middle";
+        gctx.fillText(String(number), point.x, point.y + 1);
+        gctx.restore();
+      }
+
+      function drawMovingStar(stroke, progress) {
+        if (stroke.length < 2 || progress <= 0) return;
+        const sampled = resample(stroke, 80);
+        const index = Math.min(sampled.length - 1, Math.floor(progress * (sampled.length - 1)));
+        const p = sampled[index];
+        gctx.save();
+        gctx.font = `${Math.max(24, Math.min(width, height) / 13)}px "Comic Sans MS", system-ui, sans-serif`;
+        gctx.textAlign = "center";
+        gctx.textBaseline = "middle";
+        gctx.fillText("⭐", p.x, p.y);
+        gctx.restore();
+      }
+
+      function animateCorrectLetter(letter) {
+        cancelTeachingAnimation();
+        const token = teachingAnimationToken;
+        const teachingStrokes = templateToCanvasStrokes(letter);
+        const duration = Math.max(2300, teachingStrokes.length * 850 + 700);
+        const lineWidth = Math.max(16, Math.min(34, width / 26));
+        const start = performance.now();
+
+        function frame(now) {
+          if (token !== teachingAnimationToken) return;
+
+          const elapsed = now - start;
+          const progress = Math.min(1, elapsed / duration);
+          const active = progress * teachingStrokes.length;
+
+          drawFaintGuideLetter(letter);
+
+          gctx.save();
+          gctx.fillStyle = "#4f3cc9";
+          gctx.font = `900 ${Math.max(22, Math.min(width, height) / 18)}px "Comic Sans MS", system-ui, sans-serif`;
+          gctx.textAlign = "center";
+          gctx.textBaseline = "top";
+          gctx.fillText(`This is how we write ${letter}!`, width / 2, 16);
+          gctx.restore();
+
+          teachingStrokes.forEach((stroke, index) => {
+            drawStartDot(stroke[0], index + 1);
+            const strokeProgress = Math.max(0, Math.min(1, active - index));
+            drawTeachingStroke(stroke, strokeProgress, index % 2 ? "#ff6fb1" : "#00b894", lineWidth);
+            if (strokeProgress > 0 && strokeProgress < 1) {
+              drawMovingStar(stroke, strokeProgress);
+            }
+          });
+
+          if (progress < 1) {
+            teachingAnimationId = requestAnimationFrame(frame);
+          } else {
+            teachingAnimationId = null;
+          }
+        }
+
+        teachingAnimationId = requestAnimationFrame(frame);
       }
 
       function pointerPosition(event) {
@@ -1068,6 +1221,7 @@
 
       function startDraw(event) {
         event.preventDefault();
+        drawGuideLetter();
         if (event.pointerType === "touch") {
           drawCanvas.setPointerCapture(event.pointerId);
         }
@@ -1148,17 +1302,18 @@
         ][Math.floor(Math.random() * 6)];
 
         if (isTarget) {
-          message.textContent = `${praise} You found the letter ${letter}! ${animal.name} says "${animal.sound}"`;
+          message.textContent = `${praise} You found the letter ${letter}! Watch how to write ${letter}! ${animal.name} says "${animal.sound}"`;
           stars += alreadyFound ? 1 : 3;
-          setTimeout(nextTarget, 1450);
+          setTimeout(nextTarget, 4200);
         } else if (confidence < 0.34) {
           message.textContent = `Hmm... I think it might be ${letter}. ${animal.name} came to say hi!`;
           stars += alreadyFound ? 0 : 1;
         } else {
-          message.textContent = `${praise} I guessed ${letter}. ${animal.name} says "${animal.sound}"`;
+          message.textContent = `${praise} I guessed ${letter}. Now watch the right way to write ${letter}! ${animal.name} says "${animal.sound}"`;
           stars += alreadyFound ? 1 : 2;
         }
 
+        animateCorrectLetter(letter);
         found.add(letter);
         updateScore();
         markLetter(letter);

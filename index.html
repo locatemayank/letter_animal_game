@@ -1110,7 +1110,7 @@
         F: [[[12,98],[12,10],[72,10],[12,10],[12,52],[55,52]]],
         G: [[[74,18],[42,7],[15,26],[10,62],[28,90],[62,92],[78,70],[52,70]]],
         H: [[[12,10],[12,98]], [[70,10],[70,98]], [[12,54],[70,54]]],
-        I: [[[24,10],[76,10]], [[50,10],[50,96]], [[24,96],[76,96]]],
+        I: [[[50,10],[50,96]]],
         J: [[[72,10],[72,72],[58,94],[34,96],[18,80]]],
         K: [[[14,10],[14,98]], [[70,10],[14,56],[72,98]]],
         L: [[[16,10],[16,96],[74,96]]],
@@ -1161,6 +1161,12 @@
           if (userFeature.aspect < 0.48 && ["I", "J", "L"].includes(template.letter)) score -= 4;
           if (userFeature.turnCount > 9 && ["S", "G", "B"].includes(template.letter)) score -= 3;
 
+          // I vs K and other tall letters: a preschool "I" is often just one tall line.
+          if (userFeature.aspect < 0.38 && userFeature.strokeCount <= 2 && userFeature.turnCount < 4) {
+            if (template.letter === "I") score -= 22;
+            if (["K", "X", "Y", "N", "M", "H"].includes(template.letter)) score += 18;
+          }
+
           // Extra toddler-writing disambiguation:
           // C vs G: a C usually starts and ends on the right side; a G usually finishes inward.
           if (userFeature.endpointsRight && userFeature.endXNorm > 0.68 && userFeature.closedness > 0.24) {
@@ -1200,7 +1206,12 @@
         // 3-4 year old handwriting while still avoiding completely unrelated marks.
         const targetRank = ranked.find(r => r.letter === targetLetter);
         if (targetRank) {
-          const targetIsPlausible = targetRank.score < 46 || targetRank.score < best.score + 22;
+          const targetIsSimpleI =
+            targetLetter === "I" &&
+            userFeature.aspect < 0.48 &&
+            userFeature.strokeCount <= 2 &&
+            userFeature.turnCount < 5;
+          const targetIsPlausible = targetRank.score < 60 || targetRank.score < best.score + 30;
           const targetIsLookAlike =
             (["C", "G"].includes(targetLetter) && ["C", "G"].includes(best.letter)) ||
             (["B", "P", "R"].includes(targetLetter) && ["B", "P", "R"].includes(best.letter)) ||
@@ -1208,7 +1219,7 @@
             (["O", "Q"].includes(targetLetter) && ["O", "Q"].includes(best.letter)) ||
             (["I", "J", "L"].includes(targetLetter) && ["I", "J", "L"].includes(best.letter));
 
-          if (targetIsPlausible || targetIsLookAlike) {
+          if (targetIsSimpleI || targetIsPlausible || targetIsLookAlike) {
             best = { ...targetRank, encouraged: true };
           }
         }

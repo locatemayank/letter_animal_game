@@ -833,6 +833,7 @@
       let strokes = [];
       let currentStroke = [];
       let lastPoint = null;
+      let activePointerId = null;
       let targetLetter = "A";
       let stars = 0;
       let audioEnabled = true;
@@ -1404,8 +1405,16 @@
 
       function startDraw(event) {
         event.preventDefault();
+
+        // Ignore multi-touch. Only the first finger/stylus draws; extra fingers are ignored.
+        if (activePointerId !== null || (event.pointerType === "touch" && event.isPrimary === false)) {
+          return;
+        }
+
+        window.clearTimeout(endDraw.timer);
         clearAutoEraseTimer();
         drawGuideLetter();
+        activePointerId = event.pointerId;
         if (event.pointerType === "touch") {
           drawCanvas.setPointerCapture(event.pointerId);
         }
@@ -1417,7 +1426,7 @@
       }
 
       function moveDraw(event) {
-        if (!drawing) return;
+        if (!drawing || event.pointerId !== activePointerId) return;
         event.preventDefault();
         const p = pointerPosition(event);
         if (!lastPoint || dist(lastPoint, p) > 2.2) {
@@ -1428,9 +1437,10 @@
       }
 
       function endDraw(event) {
-        if (!drawing) return;
+        if (!drawing || event.pointerId !== activePointerId) return;
         event.preventDefault();
         drawing = false;
+        activePointerId = null;
         if (currentStroke.length > 1) {
           strokes.push(simplifyStroke(currentStroke));
           sparkleAt(currentStroke[currentStroke.length - 1]);
@@ -1441,7 +1451,7 @@
 
         if (flattenStrokes(strokes).length > 10) {
           window.clearTimeout(endDraw.timer);
-          endDraw.timer = window.setTimeout(() => guessLetter(false), 1000);
+          endDraw.timer = window.setTimeout(() => guessLetter(false), 2200);
         } else {
           scheduleAutoErase(9000, "The board is clean. Draw a big letter!");
         }
@@ -1689,8 +1699,13 @@
         drawCanvas.addEventListener("pointermove", moveDraw);
         drawCanvas.addEventListener("pointerup", endDraw);
         drawCanvas.addEventListener("pointercancel", endDraw);
-        drawCanvas.addEventListener("lostpointercapture", () => {
-          if (drawing) endDraw(new PointerEvent("pointerup"));
+        drawCanvas.addEventListener("lostpointercapture", event => {
+          if (drawing && event.pointerId === activePointerId) {
+            drawing = false;
+            activePointerId = null;
+            currentStroke = [];
+            lastPoint = null;
+          }
         });
 
         tryButton.addEventListener("click", () => {

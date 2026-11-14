@@ -2,7 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#76d7ff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Letter Zoo" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="A touchscreen letter writing and animal reveal game for young kids." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/icon.svg" />
   <title>Magic Letter Zoo</title>
   <style>
     :root {
@@ -61,9 +70,9 @@
     }
 
     .app {
-      width: min(1180px, 100%);
+      width: min(1480px, 100%);
       margin: 0 auto;
-      padding: clamp(0.8rem, 2vw, 1.4rem);
+      padding: clamp(0.8rem, 1.6vw, 1.4rem);
     }
 
     header {
@@ -97,8 +106,8 @@
 
     .game {
       display: grid;
-      grid-template-columns: minmax(310px, 1.08fr) minmax(280px, 0.92fr);
-      gap: clamp(0.8rem, 2.2vw, 1.4rem);
+      grid-template-columns: minmax(520px, 1.35fr) minmax(360px, 0.85fr);
+      gap: clamp(0.8rem, 1.8vw, 1.4rem);
       align-items: stretch;
     }
 
@@ -229,12 +238,12 @@
     button {
       border: 0;
       border-radius: 999px;
-      padding: 0.85rem 1.05rem;
-      min-height: 3.2rem;
+      padding: 1.05rem 1.35rem;
+      min-height: 4.1rem;
       color: #fff;
       background: linear-gradient(180deg, #7c5cff, #5135dc);
       font-family: inherit;
-      font-size: 1.05rem;
+      font-size: clamp(1.12rem, 1.8vw, 1.45rem);
       font-weight: 1000;
       box-shadow: 0 8px 0 #34249e, 0 12px 24px rgba(52, 36, 158, 0.22);
       cursor: pointer;
@@ -261,6 +270,18 @@
       margin-left: auto;
       background: linear-gradient(180deg, #ff9f43, #ff6b35);
       box-shadow: 0 8px 0 #be4320, 0 12px 20px rgba(190, 67, 32, 0.18);
+    }
+
+    button.install {
+      display: none;
+      background: linear-gradient(180deg, #00cec9, #00a8a8);
+      box-shadow: 0 8px 0 #007979, 0 12px 20px rgba(0, 121, 121, 0.18);
+    }
+
+    button.install.show {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .zoo-panel {
@@ -464,7 +485,60 @@
       100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.6) rotate(120deg); }
     }
 
-    @media (max-width: 820px) {
+    @media (min-width: 980px) and (orientation: landscape) {
+      html,
+      body {
+        min-height: 100vh;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        margin-bottom: 0.55rem;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 5.4vw, 4.9rem);
+      }
+
+      .game {
+        flex: 1;
+        min-height: 0;
+        grid-template-columns: minmax(600px, 1.42fr) minmax(390px, 0.78fr);
+      }
+
+      .draw-panel,
+      .zoo-panel {
+        min-height: min(650px, calc(100vh - 8.5rem));
+      }
+
+      .canvas-wrap {
+        min-height: 0;
+      }
+
+      .animal-card {
+        min-height: 0;
+        height: 100%;
+      }
+
+      .controls {
+        gap: 0.75rem;
+      }
+
+      .controls button {
+        flex: 1 1 auto;
+      }
+
+      .controls button.sound {
+        margin-left: 0;
+      }
+    }
+
+    @media (max-width: 900px) {
       .game {
         grid-template-columns: 1fr;
       }
@@ -544,6 +618,7 @@
           <button id="tryButton" type="button">✨ Guess My Letter</button>
           <button id="clearButton" class="secondary" type="button">🧽 Wipe</button>
           <button id="newLetterButton" class="secondary" type="button">🎲 New Letter</button>
+          <button id="installButton" class="install" type="button">📲 Install App</button>
           <button id="soundButton" class="sound" type="button">🔊 Sound On</button>
         </div>
       </div>
@@ -627,6 +702,7 @@
       const tryButton = document.getElementById("tryButton");
       const clearButton = document.getElementById("clearButton");
       const newLetterButton = document.getElementById("newLetterButton");
+      const installButton = document.getElementById("installButton");
       const soundButton = document.getElementById("soundButton");
 
       let width = 0;
@@ -639,6 +715,7 @@
       let stars = 0;
       let audioEnabled = true;
       let audioCtx = null;
+      let deferredInstallPrompt = null;
       const found = new Set();
 
       const alphabetChips = new Map();
@@ -1226,6 +1303,41 @@
         }
       }
 
+      async function installWebApp() {
+        if (!deferredInstallPrompt) {
+          showToast("Use your browser menu to add this game to the home screen.");
+          return;
+        }
+
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        installButton.classList.remove("show");
+      }
+
+      function setupWebAppInstall() {
+        if ("serviceWorker" in navigator) {
+          window.addEventListener("load", () => {
+            navigator.serviceWorker.register("./sw.js").catch(() => {
+              // The game still works without service worker support.
+            });
+          });
+        }
+
+        window.addEventListener("beforeinstallprompt", event => {
+          event.preventDefault();
+          deferredInstallPrompt = event;
+          installButton.classList.add("show");
+          showToast("You can install Magic Letter Zoo!");
+        });
+
+        window.addEventListener("appinstalled", () => {
+          deferredInstallPrompt = null;
+          installButton.classList.remove("show");
+          showToast("Magic Letter Zoo installed!");
+        });
+      }
+
       function initEvents() {
         drawCanvas.addEventListener("pointerdown", startDraw);
         drawCanvas.addEventListener("pointermove", moveDraw);
@@ -1253,6 +1365,7 @@
           showToast(`Try ${targetLetter}!`);
         });
 
+        installButton.addEventListener("click", installWebApp);
         soundButton.addEventListener("click", toggleSound);
         window.addEventListener("resize", resizeCanvases);
         window.addEventListener("orientationchange", () => setTimeout(resizeCanvases, 180));
@@ -1272,6 +1385,7 @@
       }
 
       setupAlphabet();
+      setupWebAppInstall();
       initEvents();
       welcome();
 

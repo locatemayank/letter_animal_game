@@ -1,0 +1,20 @@
+{
+  "name": "Magic Letter Zoo",
+  "short_name": "Letter Zoo",
+  "description": "A touchscreen letter writing and animal reveal game for young kids.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape-primary",
+  "background_color": "#76d7ff",
+  "theme_color": "#76d7ff",
+  "categories": ["education", "games", "kids"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -5,6 +5,20 @@ Audience: children aged 3 to 4 tracing uppercase letters on a phone or tablet.
 
 The game is charming. It has a clear loop (trace, then meet an animal), good audio and confetti feedback, it installs as a PWA, and it cycles A to Z so every letter comes up. Most of the problems are in the parts a parent can't see: the letter check accepts almost anything, and the touch handling ignores real drawing or draws when it shouldn't. Both are fixed in the new `index.html`. Ideas for further work are at the end.
 
+## Update 2: lowercase letters and the Garden (November 2026)
+
+**Home screen.** The game now opens on "Where shall we play?" with two big picture buttons, 🦁 Zoo and 🍎 Garden. Each shows how many of the 26 friends have been found. A 🏠 button (where the wiggling star was) goes back to it.
+
+**Garden world.** Tracing a letter grows a fruit or vegetable: A Apple/Avocado, B Banana/Broccoli/Blueberries, C Carrot/Cherries/Corn … X Xigua, Y Yam, Z Zucchini (36 items). All are hand-drawn inline SVG in one friendly style (dark outline, little smile), so they look the same on every tablet with no emoji gaps. The voice says "A is for Apple" and the card adds a line such as "Crunchy and red!". The Garden has its own green tint and its own found count.
+
+**Lowercase.** A big **ABC ⇄ abc** button next to the target letter switches case at any time. It keeps the same letter (A → a), and anything already found counts for both cases. Lowercase letters are traced on school lines (top line, dashed midline, baseline, descender line) at their real relative size, so "o" is short, "h" is tall and "p" hangs below the line. The strokes follow the usual preschool order: a, d, g and q start with a "magic c", and the dot on i and j is a single tap target. The voice says "Can you trace little A?", because text-to-speech reads a lone "a" as "uh". The target tile now draws the letter from the same strokes as the guide, because fonts disagree on shapes like "a" and "g".
+
+**Recognition for lowercase.** It uses the same tracing-coverage check and free-draw fallback as uppercase. It never compares "a" with "A", and it has lowercase lookalike groups (b/d/p/q, n/h/r/m, i/j/l/t, u/v/w/y, …). A new "stray ink" limit stops a different letter from passing just because it happens to cover a short guide. That limit also improved uppercase: wrong letter on the guide is now rejected 94.4% of the time, up from 91.3%. Simulation results for both cases are in `tests/README.md`.
+
+**Saved progress.** World, case, stars, found friends per world and the current letter are kept in `localStorage`, so closing the app no longer empties the zoo. The sound setting is saved too. If storage is blocked (private mode), the game still works and starts fresh.
+
+**Service worker** cache is now v18.
+
 ## 1. Bugs found in the current version
 
 **The letter check always says yes.** Inside `recognizeLetter`, the target letter is "encouraged" whenever `drawingHasEnoughSignal` is true. That condition is just "at least 7 points and more than 18 px of ink", so a scribble, a half-traced letter or a completely different letter all count as the target. In a simulation of 780 attempts per case, the old check passed 100% of scribbles, 100% of half-traced letters and 100% of wrong letters. Children learn quickly that any wiggle wins, so the game stops teaching letter shapes.
@@ -176,7 +190,7 @@ These are ordered by how much they help a 3 to 4-year-old learn, and by effort.
 ## 5. Files
 
 - `index.html` is the new game, as a single file.
-- `sw.js` is the service worker, v17.
+- `sw.js` is the service worker, v18.
 - `index_original.html` is the version reviewed, for diffing.
 - `tests/` holds the standalone engine (`engine.js`), the touch arbiter (`arbiter.js`) and the game controller source (`game.js`), plus:
   - `build.py`, which builds `index.html` from these files;

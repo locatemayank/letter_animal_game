@@ -700,10 +700,6 @@
         grid-template-columns: auto 1fr;
       }
 
-      .big-target {
-        grid-column: 1 / -1;
-        justify-self: center;
-      }
 
       .controls button {
         flex: 1 1 42%;
@@ -726,24 +722,230 @@
     .canvas-wrap {
       overscroll-behavior: contain;
     }
+    /* ---------- home screen (pick a world) ---------- */
+    .home {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(1rem, 4vh, 2.4rem);
+      padding: 1.2rem;
+      background:
+        radial-gradient(circle at 12% 12%, #fff8b5 0 7rem, transparent 7.1rem),
+        linear-gradient(#8be3ff 0%, #d8f8ff 56%, #baf6c3 56%, #64db77 100%);
+    }
+    .home.hidden {
+      display: none;
+    }
+    .home-title {
+      margin: 0;
+      text-align: center;
+      font-size: clamp(2rem, 6.5vw, 4.6rem);
+      color: #fff;
+      text-shadow: 0 5px 0 #2faee5, 0 9px 0 #228cc3, 0 14px 22px rgba(0, 0, 0, 0.18);
+    }
+    .worlds {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: clamp(1rem, 4vw, 3rem);
+    }
+    button.world-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      width: clamp(13rem, 34vw, 22rem);
+      min-height: 0;
+      padding: 1.1rem 1rem 1.2rem;
+      border: 7px solid #fff;
+      border-radius: 40px;
+      color: var(--ink);
+      background: linear-gradient(180deg, #fffef4, #fff3c4);
+      box-shadow: 0 12px 0 #e2b93b, 0 20px 36px rgba(36, 59, 107, 0.2);
+    }
+    button.world-btn.garden {
+      background: linear-gradient(180deg, #f6fff0, #d6f5c4);
+      box-shadow: 0 12px 0 #5fb85a, 0 20px 36px rgba(36, 59, 107, 0.2);
+    }
+    button.world-btn:active {
+      transform: translateY(9px);
+      box-shadow: 0 3px 0 #e2b93b, 0 6px 14px rgba(36, 59, 107, 0.16);
+    }
+    button.world-btn.garden:active {
+      box-shadow: 0 3px 0 #5fb85a, 0 6px 14px rgba(36, 59, 107, 0.16);
+    }
+    button.world-btn.last {
+      outline: 6px solid rgba(255, 216, 90, 0.95);
+      outline-offset: 4px;
+    }
+    .world-pic {
+      display: grid;
+      place-items: center;
+      height: clamp(7rem, 22vw, 13rem);
+      font-size: clamp(6rem, 19vw, 11rem);
+      line-height: 1;
+      animation: floaty 2.4s ease-in-out infinite;
+    }
+    .world-pic svg {
+      width: 1.1em;
+      height: 1.1em;
+      display: block;
+    }
+    .world-name {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 1000;
+      line-height: 1;
+    }
+    .world-progress {
+      padding: 0.25rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: clamp(1rem, 2.6vw, 1.35rem);
+      font-weight: 1000;
+    }
+    @media (max-height: 520px) and (orientation: landscape) {
+      .home { gap: 0.6rem; padding: 0.6rem; }
+      .home-title { font-size: clamp(1.6rem, 5vh, 2.4rem); }
+      .world-pic { height: 34vh; font-size: 28vh; }
+      button.world-btn { padding: 0.6rem 0.8rem 0.8rem; }
+    }
+
+    /* ---------- prompt bar: home button, ABC ⇄ abc, target tile ---------- */
+    button.home-btn {
+      display: grid;
+      place-items: center;
+      width: 3.9rem;
+      height: 3.9rem;
+      min-height: 0;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 2rem;
+      color: var(--ink);
+      background: #fff;
+      box-shadow: inset 0 -5px 0 rgba(0,0,0,0.08), 0 6px 0 rgba(36, 59, 107, 0.18);
+    }
+    button.home-btn:active {
+      box-shadow: inset 0 -5px 0 rgba(0,0,0,0.08), 0 1px 0 rgba(36, 59, 107, 0.18);
+    }
+    .target-box {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    button.case-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      min-height: 0;
+      height: clamp(4.2rem, 12vw, 6.4rem);
+      padding: 0.3rem 0.85rem;
+      border-radius: 24px;
+      color: var(--ink);
+      background: linear-gradient(180deg, #ffffff, #eef3ff);
+      box-shadow: 0 8px 0 #b9c4f2, 0 12px 20px rgba(52, 36, 158, 0.14);
+      line-height: 1;
+    }
+    button.case-btn:active {
+      box-shadow: 0 2px 0 #b9c4f2, 0 4px 10px rgba(52, 36, 158, 0.12);
+    }
+    .case-btn .cb-up,
+    .case-btn .cb-low {
+      padding: 0.08rem 0.45rem;
+      border-radius: 12px;
+      font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+      opacity: 0.45;
+    }
+    .case-btn .cb-arrow {
+      font-size: 1rem;
+      opacity: 0.6;
+    }
+    .case-btn:not(.lower) .cb-up,
+    .case-btn.lower .cb-low {
+      opacity: 1;
+      color: #fff;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+    }
+    .big-target svg {
+      width: 84%;
+      height: 84%;
+      overflow: visible;
+      filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.16));
+    }
+    .canvas-wrap.ruled {
+      background: #fffdf8;
+    }
+    .animal-emoji.is-svg svg {
+      display: block;
+      width: 0.95em;
+      height: 0.95em;
+    }
+    @media (min-width: 900px) and (orientation: landscape) {
+      button.home-btn { width: 2.9rem; height: 2.9rem; font-size: 1.5rem; }
+      .target-box { gap: 0.45rem; }
+      button.case-btn { height: clamp(3rem, 5.2vw, 4.1rem); padding: 0.2rem 0.6rem; border-radius: 16px; box-shadow: 0 6px 0 #b9c4f2, 0 9px 14px rgba(52, 36, 158, 0.12); }
+      .case-btn .cb-up, .case-btn .cb-low { font-size: clamp(0.95rem, 1.4vw, 1.2rem); }
+      .case-btn .cb-arrow { font-size: 0.8rem; }
+    }
+    @media (max-width: 480px) {
+      .target-box {
+        grid-column: 1 / -1;
+        justify-self: center;
+      }
+      .home-title { font-size: 2rem; }
+      button.world-btn { width: min(80vw, 18rem); }
+      .world-pic { height: 7rem; font-size: 6.5rem; }
+    }
+
+    /* ---------- Garden world tint ---------- */
+    body.world-garden {
+      background:
+        radial-gradient(circle at 12% 12%, #fff3b0 0 7rem, transparent 7.1rem),
+        linear-gradient(#a5ecd0 0%, #e6fbe9 56%, #c8f0a8 56%, #6cc64e 100%);
+    }
+    body.world-garden h1 {
+      text-shadow: 0 5px 0 #4cae4f, 0 9px 0 #2f8a3a, 0 14px 22px rgba(0, 0, 0, 0.18);
+    }
+    body.world-garden .prompt {
+      background: linear-gradient(90deg, #e3f9a6, #ffe0c2);
+    }
+    body.world-garden .letter-chip.found {
+      background: linear-gradient(180deg, #ffa94d, #f2711c);
+    }
+    body.world-garden .animal-name {
+      background: linear-gradient(90deg, #4cae4f, #8bc34a);
+    }
+    @media (min-width: 900px) and (orientation: landscape) {
+      body.world-garden h1 {
+        text-shadow: 0 3px 0 #4cae4f, 0 5px 0 #2f8a3a, 0 8px 14px rgba(0, 0, 0, 0.14);
+      }
+    }
   </style>
 </head>
 <body>
   <main class="app">
     <header>
-      <h1>Magic Letter Zoo</h1>
-      <div class="subtitle">✏️ Trace a letter. Meet an animal friend! 🐾</div>
+      <h1 id="appTitle">Magic Letter Zoo</h1>
+      <div class="subtitle" id="appSubtitle">✏️ Trace a letter. Meet an animal friend! 🐾</div>
     </header>
 
     <section class="game" aria-label="Magic Letter Zoo game">
       <div class="panel draw-panel">
         <div class="prompt">
-          <div class="star" aria-hidden="true">⭐</div>
+          <button class="home-btn" id="homeButton" type="button" aria-label="Choose a world">🏠</button>
           <div class="prompt-text">
             <strong id="promptTitle">Can you trace this letter?</strong>
             <span id="promptSubtitle">Start at the green dot. Follow the dots!</span>
           </div>
-          <div class="big-target" id="targetLetter" aria-label="Target letter">A</div>
+          <div class="target-box">
+            <button class="case-btn" id="caseButton" type="button" aria-pressed="false" aria-label="Big letters. Tap for small letters"><span class="cb-up">ABC</span><span class="cb-arrow" aria-hidden="true">⇄</span><span class="cb-low">abc</span></button>
+            <div class="big-target" id="targetLetter" role="img" aria-label="Target letter A"></div>
+          </div>
         </div>
 
         <div class="canvas-wrap" id="canvasWrap">
@@ -764,7 +966,7 @@
       <div class="panel zoo-panel">
         <div class="score-row">
           <div class="pill">🏆 Stars: <span id="stars">0</span></div>
-          <div class="pill">🦁 Zoo friends: <span id="foundCount">0</span></div>
+          <div class="pill"><span id="foundIcon">🦁</span> <span id="foundLabel">Zoo friends</span>: <span id="foundCount">0</span></div>
         </div>
 
         <div class="animal-stage">
@@ -781,6 +983,21 @@
     </section>
   </main>
 
+  <div class="home" id="home" role="dialog" aria-modal="true" aria-labelledby="homeTitle">
+    <h2 class="home-title" id="homeTitle">Where shall we play?</h2>
+    <div class="worlds">
+      <button class="world-btn zoo" id="worldZoo" type="button" data-world="zoo">
+        <span class="world-pic" aria-hidden="true">🦁</span>
+        <span class="world-name">Zoo</span>
+        <span class="world-progress" id="progressZoo">⭐ 0 / 26</span>
+      </button>
+      <button class="world-btn garden" id="worldGarden" type="button" data-world="garden">
+        <span class="world-pic" id="gardenPic" aria-hidden="true">🍎</span>
+        <span class="world-name">Garden</span>
+        <span class="world-progress" id="progressGarden">⭐ 0 / 26</span>
+      </button>
+    </div>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -823,8 +1040,77 @@ const LetterEngine = (() => {
     Z: [[[14,8],[84,8],[14,98],[86,98]]]
   };
 
+  // ---------- lowercase on school lines ----------
+  // Lowercase letters sit on ruled lines: top line y=0, dashed midline y=45,
+  // baseline y=100, descender line y=132. They keep their true size on the
+  // lines (o is short, h is tall, p hangs below), so they are NOT stretched
+  // to fill the board the way capitals are.
+  const RULE = { top: 0, mid: 45, base: 100, desc: 132 };
+  const TUNE = (k, d) => +(typeof process !== "undefined" && process.env && process.env[k] || d);   // test-only overrides
+  const LOWER_R = TUNE("LOWER_R", 0.10); // finger tolerance as a fraction of the x-height-to-baseline line height (sim-calibrated)
+  const XC = 72.5, RX = 24, RY = 27.5;     // centre/radii of an x-height "o"
+  // Elliptical arc in template units. Angles in degrees, screen style
+  // (0 = right, 90 = down): decreasing angles run anticlockwise on screen.
+  function arc(cx, cy, rx, ry, a0, a1, step = 15) {
+    const n = Math.max(2, Math.ceil(Math.abs(a1 - a0) / step));
+    const out = [];
+    for (let i = 0; i <= n; i++) {
+      const a = (a0 + (a1 - a0) * i / n) * Math.PI / 180;
+      out.push([Math.round((cx + rx * Math.cos(a)) * 10) / 10, Math.round((cy + ry * Math.sin(a)) * 10) / 10]);
+    }
+    return out;
+  }
+  const magicC = arc(48, XC, RX, RY, -30, -380);      // a d g q: "magic c" all the way round
+  const bowlR = arc(52, XC, RX, RY, 200, 520);         // b p: bump on the right, clockwise
+  const LOWER = {
+    a: [magicC, [[72,45],[72,100]]],
+    b: [[[28,0],[28,100]], bowlR],
+    c: [arc(52, XC, RX, RY, -40, -320)],
+    d: [magicC, [[72,0],[72,100]]],
+    e: [[[28,72.5], ...arc(51, XC, 23, RY, 0, -320)]],
+    f: [[[72,8],[66,2],[57,0],[49,3],[45,12],[44,24],[44,100]], [[28,45],[62,45]]],
+    g: [magicC, [[72,45],[72,118],[67,127],[56,131],[42,130],[31,124]]],
+    h: [[[28,0],[28,100]], [[28,64],[33,52],[43,46],[56,45],[67,50],[72,62],[72,100]]],
+    i: [[[50,45],[50,100]], [[50,22],[50,23]]],
+    j: [[[58,45],[58,116],[53,126],[43,131],[31,128],[24,120]], [[58,22],[58,23]]],
+    k: [[[30,0],[30,100]], [[70,45],[31,76],[72,100]]],
+    l: [[[50,0],[50,100]]],
+    m: [[[18,45],[18,100]], [[18,60],[23,49],[32,45],[42,47],[48,56],[49,66],[49,100]], [[49,60],[54,49],[63,45],[73,47],[79,56],[80,66],[80,100]]],
+    n: [[[28,45],[28,100]], [[28,62],[33,51],[43,45.5],[56,45],[67,50],[72,62],[72,100]]],
+    o: [arc(50, XC, 25, RY, -90, -450)],
+    p: [[[28,45],[28,132]], bowlR],
+    q: [magicC, [[72,45],[72,132]]],
+    r: [[[32,45],[32,100]], [[32,64],[37,52],[47,46],[59,45],[70,50]]],
+    s: [[[70,52],[62,46],[50,45],[38,46.5],[31,53],[33,62],[43,68],[57,73],[67,79],[70,88],[65,96],[53,100],[40,100],[30,94]]],
+    t: [[[46,12],[46,100]], [[28,45],[66,45]]],
+    u: [[[28,45],[28,82],[33,94],[43,100],[57,100],[67,94],[72,82]], [[72,45],[72,100]]],
+    v: [[[26,45],[50,100],[74,45]]],
+    w: [[[14,45],[31,100],[50,55],[69,100],[86,45]]],
+    x: [[[28,45],[72,100]], [[72,45],[28,100]]],
+    y: [[[28,45],[50,100]], [[72,45],[36,132]]],
+    z: [[[28,45],[72,45],[28,100],[74,100]]]
+  };
+  Object.assign(TEMPLATES, LOWER);
+
+  const isLower = letter => typeof letter === "string" && letter !== letter.toUpperCase();
+  const setOf = letter => (isLower(letter) ? "lower" : "upper");
+  const LOWER_MAX_W = Math.max(...Object.values(LOWER).map(s => {
+    const xs = s.flat().map(p => p[0]);
+    return Math.max(...xs) - Math.min(...xs);
+  }));
+
   // Extra shapes accepted by the free-draw recognizer (common kid variants).
   const VARIANTS = {
+    a: [[[...magicC, [72,45], [72,100]]]],
+    d: [[[...magicC, [72,0], [72,100]]]],
+    g: [[[...magicC, [72,45], [72,118], [67,127], [56,131], [42,130], [31,124]]]],
+    q: [[[...magicC, [72,45], [72,132]]]],
+    b: [[[[28,0],[28,100],[28,63], ...bowlR.slice(1)]]],
+    k: [[[[30,0],[30,100]], [[70,45],[31,76]], [[44,68],[72,100]]]],
+    t: [[[[46,12],[46,90],[52,99],[62,100],[68,96]], [[28,45],[66,45]]]],
+    y: [[[[28,45],[28,80],[34,94],[46,100],[60,96],[72,82]], [[72,45],[72,120],[64,130],[50,132],[38,128]]]],
+    n: [[[[28,45],[28,100],[28,62],[33,51],[43,45.5],[56,45],[67,50],[72,62],[72,100]]]],
+    h: [[[[28,0],[28,100],[28,64],[33,52],[43,46],[56,45],[67,50],[72,62],[72,100]]]],
     I: [[[[50,8],[50,98]], [[28,8],[72,8]], [[28,98],[72,98]]]],
     J: [[[[66,8],[66,72],[60,88],[47,98],[31,96],[18,84]], [[40,8],[86,8]]]],
     G: [[[[82,22],[68,11],[50,8],[32,13],[18,28],[12,50],[16,73],[30,90],[50,98],[68,94],[80,82],[82,62]]]],
@@ -836,7 +1122,9 @@ const LetterEngine = (() => {
 
   const LOOKALIKE = [
     ["C", "G", "O", "Q", "U"], ["B", "P", "R", "D"], ["E", "F"], ["I", "J", "L", "T"],
-    ["M", "N", "W", "V"], ["K", "X", "Y"], ["S", "Z"], ["H", "N"]
+    ["M", "N", "W", "V"], ["K", "X", "Y"], ["S", "Z"], ["H", "N"],
+    ["b", "d", "p", "q"], ["a", "d", "g", "q"], ["n", "h", "r", "m"], ["i", "j", "l", "t"],
+    ["u", "v", "w", "y"], ["c", "e", "o", "a"], ["f", "t"], ["k", "x"]
   ];
 
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -882,6 +1170,17 @@ const LetterEngine = (() => {
       minX = Math.min(minX, x); minY = Math.min(minY, y);
       maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
     });
+    if (isLower(letter)) {
+      // Same scale + vertical position for every lowercase letter (school lines),
+      // each glyph just centred horizontally.
+      const span = RULE.desc - RULE.top;
+      const padY = Math.max(16, height * 0.06);
+      const padX = Math.max(24, width * 0.1);
+      const scale = Math.min((height - padY * 2) / span, (width - padX * 2) / LOWER_MAX_W);
+      const offY = (height - span * scale) / 2 - RULE.top * scale + height * 0.02;
+      const offX = width / 2 - ((minX + maxX) / 2) * scale;
+      return { scale, offX, offY };
+    }
     const padding = Math.max(28, Math.min(width, height) * 0.14);
     const rawW = Math.max(1, maxX - minX), rawH = Math.max(1, maxY - minY);
     const scale = Math.min((width - padding * 2) / rawW, (height - padding * 2) / rawH);
@@ -896,13 +1195,24 @@ const LetterEngine = (() => {
     return raw.map(s => s.map(([x, y]) => ({ x: x * scale + offX, y: y * scale + offY })));
   }
 
+  // Canvas y of the school lines (for drawing them under lowercase letters).
+  function ruledLines(width, height) {
+    const { scale, offY } = layoutTransform("o", width, height);
+    const y = v => v * scale + offY;
+    return { top: y(RULE.top), mid: y(RULE.mid), base: y(RULE.base), desc: y(RULE.desc), scale };
+  }
+
   function buildGuide(letter, width, height) {
     const strokes = layoutStrokes(letter, width, height);
     const ys = strokes.flat().map(p => p.y);
-    const letterH = Math.max(...ys) - Math.min(...ys);
+    const lower = isLower(letter);
+    // Lowercase: size tolerances by the line height (top line to baseline), not by the
+    // glyph, so a short "o" keeps the same finger-sized tolerance as a tall "h".
+    const letterH = lower ? (RULE.base - RULE.top) * layoutTransform(letter, width, height).scale
+                          : Math.max(...ys) - Math.min(...ys);
     // Fat-finger tolerance: ~12% of letter height (≈ a preschooler's fingertip on a tablet).
-    const R = clamp(letterH * 0.12, 22, 58);
-    const spacing = clamp(letterH / 15, 12, 30);
+    const R = lower ? clamp(letterH * LOWER_R, 20, 50) : clamp(letterH * 0.12, 22, 58);
+    const spacing = lower ? clamp(letterH / 16, 10, 26) : clamp(letterH / 15, 12, 30);
     const dots = [];
     strokes.forEach((s, si) => {
       const len = polylineLength(s);
@@ -925,7 +1235,9 @@ const LetterEngine = (() => {
     const segments = [];
     strokes.forEach(s => { for (let i = 1; i < s.length; i++) segments.push([s[i - 1], s[i]]); });
     const guideLength = strokes.reduce((acc, s) => acc + polylineLength(s), 0);
-    return { letter, strokes, dots, segments, R, letterH, guideLength, spacing };
+    // Tiny strokes are "dots" (the dot on i and j): the child taps them.
+    const dotStrokes = strokes.map((s, i) => (polylineLength(s) < R * 0.5 ? i : -1)).filter(i => i >= 0);
+    return { letter, strokes, dots, segments, R, letterH, guideLength, spacing, dotStrokes, lower };
   }
 
   function resetCoverage(guide) { guide.dots.forEach(d => { d.covered = false; }); }
@@ -945,9 +1257,9 @@ const LetterEngine = (() => {
 
   // Thresholds get kinder each time the child is told "almost".
   const LENIENCY = [
-    { overall: 0.78, perStroke: 0.55, precision: 0.72, align: 0.70, maxInk: 2.4 },
-    { overall: 0.66, perStroke: 0.40, precision: 0.62, align: 0.64, maxInk: 2.8 },
-    { overall: 0.55, perStroke: 0.25, precision: 0.55, align: 0.62, maxInk: 3.0 }
+    { overall: 0.78, perStroke: 0.55, precision: 0.72, align: 0.70, maxInk: 2.4, stray: TUNE("STRAY0", 0.12) },
+    { overall: 0.66, perStroke: 0.40, precision: 0.62, align: 0.64, maxInk: 2.8, stray: TUNE("STRAY1", 0.16) },
+    { overall: 0.55, perStroke: 0.25, precision: 0.55, align: 0.62, maxInk: 3.0, stray: TUNE("STRAY2", 0.22) }
   ];
 
   function traceReport(guide, inkStrokes, leniency = 0) {
@@ -973,7 +1285,7 @@ const LetterEngine = (() => {
     const perStroke = perStrokeTotals.map((t, i) => (t ? perStrokeHit[i] / t : 0));
 
     // Precision + alignment: is the ink ON the letter and moving ALONG it?
-    let near = 0, alignSum = 0, alignN = 0, segCount = 0;
+    let near = 0, stray = 0, alignSum = 0, alignN = 0, segCount = 0;
     ink.forEach(s => {
       for (let i = 0; i < s.length; i++) {
         let best = { d: Infinity, ux: 0, uy: 0 };
@@ -982,6 +1294,7 @@ const LetterEngine = (() => {
           if (info.d < best.d) best = info;
         }
         segCount++;
+        if (best.d > R * 1.5) stray++;
         if (best.d <= R * 1.3) {
           near++;
           if (i > 0) {
@@ -993,6 +1306,8 @@ const LetterEngine = (() => {
       }
     });
     const precision = segCount ? near / segCount : 0;
+    // Stray ink: share of ink clearly off the letter (an extra stick, a missing-letter part).
+    const strayFrac = segCount ? stray / segCount : 0;
     const align = alignN ? alignSum / alignN : 0;
     const inkRatio = guide.guideLength ? inkLength / guide.guideLength : 0;
 
@@ -1001,7 +1316,8 @@ const LetterEngine = (() => {
       Math.min(...perStroke) >= L.perStroke &&
       precision >= L.precision &&
       align >= L.align &&
-      inkRatio <= L.maxInk;
+      inkRatio <= L.maxInk &&
+      strayFrac <= L.stray;
 
     const onGuide = precision >= 0.45 && align >= 0.55 && inkRatio <= L.maxInk + 0.6;
     const almost = !pass && onGuide && coverage >= 0.22;
@@ -1010,7 +1326,7 @@ const LetterEngine = (() => {
     let weakest = 0;
     perStroke.forEach((c, i) => { if (c < perStroke[weakest]) weakest = i; });
 
-    return { coverage, perStroke, precision, align, inkRatio, inkLength, pass, onGuide, almost, tracingEffort, weakestStroke: weakest, uncovered };
+    return { coverage, perStroke, precision, align, inkRatio, inkLength, strayFrac, pass, onGuide, almost, tracingEffort, weakestStroke: weakest, uncovered };
   }
 
   // ---------- $P point-cloud recognizer (order/direction independent) ----------
@@ -1078,8 +1394,17 @@ const LetterEngine = (() => {
 
   const toPts = strokes => strokes.map(s => s.map(([x, y]) => ({ x, y })));
   const CLOUDS = [];
-  Object.entries(TEMPLATES).forEach(([letter, s]) => CLOUDS.push({ letter, cloud: cloudOf(toPts(s)), aspect: aspectOf(toPts(s)) }));
-  Object.entries(VARIANTS).forEach(([letter, list]) => list.forEach(s => CLOUDS.push({ letter, cloud: cloudOf(toPts(s)), aspect: aspectOf(toPts(s)) })));
+  const addCloud = (letter, s) => CLOUDS.push({ letter, set: setOf(letter), cloud: cloudOf(toPts(s)), aspect: aspectOf(toPts(s)) });
+  Object.entries(TEMPLATES).forEach(([letter, s]) => addCloud(letter, s));
+  Object.entries(VARIANTS).forEach(([letter, list]) => list.forEach(s => addCloud(letter, s)));
+  // How much ink a neat copy of each letter uses relative to its size (m, w, g are "busy").
+  const INK_DENSITY = {};
+  Object.entries(TEMPLATES).forEach(([letter, s]) => {
+    const pts = toPts(s), f = pts.flat();
+    const xs = f.map(p => p.x), ys = f.map(p => p.y);
+    const diag = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+    INK_DENSITY[letter] = pts.reduce((a, st) => a + polylineLength(st), 0) / Math.max(1, diag);
+  });
 
   function aspectOf(strokes) {
     const f = strokes.flat();
@@ -1098,12 +1423,14 @@ const LetterEngine = (() => {
     const inkLength = strokes.reduce((a, s) => a + polylineLength(s), 0);
     if (diag < 30) return { tooSmall: true };
     // Scribble: lots of ink packed into a small box.
-    const isScribble = inkLength / Math.max(1, diag) > 4.4;
+    const isScribble = inkLength / Math.max(1, diag) > Math.max(4.4, (INK_DENSITY[targetLetter] || 0) * 1.6);
+    const set = setOf(targetLetter);
 
     const cloud = cloudOf(strokes);
     const userAspect = Math.max(4, w) / Math.max(4, h);
     const byLetter = {};
     CLOUDS.forEach(t => {
+      if (t.set !== set) return;          // never compare "a" with "A"
       let d = greedyMatch(cloud, t.cloud);
       // Gentle aspect-ratio tie-breaker (helps I vs L vs T, O vs Q stays shape-driven).
       d += Math.min(1.2, Math.abs(Math.log(userAspect / t.aspect)) * 0.6);
@@ -1127,7 +1454,10 @@ const LetterEngine = (() => {
   // ---------- Top-level decision ----------
   // verdict: pass | almost | other | retry | scribble | wait | empty
   function evaluate(guide, inkStrokes, targetLetter, { final = false, leniency = 0 } = {}) {
-    const real = inkStrokes.filter(s => polylineLength(s) >= Math.max(8, guide.R * 0.3));
+    const minLen = Math.max(8, guide.R * 0.3);
+    // Taps count when they land on a dot (i, j); other tiny marks are ignored.
+    const onDot = s => (guide.dotStrokes || []).some(i => s.every(p => dist(p, guide.strokes[i][0]) <= guide.R * 1.6));
+    const real = inkStrokes.filter(s => s.length && (polylineLength(s) >= minLen || onDot(s)));
     if (!real.length) return { verdict: final ? "empty" : "wait" };
     const trace = traceReport(guide, real, leniency);
     if (trace.pass) return { verdict: "pass", letter: targetLetter, mode: "trace", trace };
@@ -1146,7 +1476,7 @@ const LetterEngine = (() => {
     return { verdict: "retry", trace, free };
   }
 
-  return { TEMPLATES, layoutTransform, layoutStrokes, buildGuide, resetCoverage, markCoverage, traceReport, freeRecognize, evaluate, polylineLength, densify };
+  return { TEMPLATES, RULE, isLower, ruledLines, layoutTransform, layoutStrokes, buildGuide, resetCoverage, markCoverage, traceReport, freeRecognize, evaluate, polylineLength, densify };
 })();
 // ==ENGINE END==
 
@@ -1266,6 +1596,102 @@ const createTouchArbiter = (opts = {}) => {
 };
 // ==ARBITER END==
 
+// ==GARDEN START==
+// Garden world: fruit & vegetables A–Z, all hand-made SVG (viewBox 0 0 100 100).
+const GARDEN_ITEMS = {
+  A: [
+    { name: "Apple", line: "Crunchy and red!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 30C40 20 16 22 16 50C16 76 34 90 50 85C66 90 84 76 84 50C84 22 60 20 50 30Z" fill="#d92b2b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 31Q49 20 54 11" fill="none" stroke="#7a4a2a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M54 20Q62 8 76 12Q68 25 54 20Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="44" rx="5" ry="10" fill="#fff" opacity=".55" transform="rotate(20 30 44)"/><circle cx="44" cy="58" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="58" r="2.5" fill="#3b2a1e"/><path d="M46 63Q50 67 54 63" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Avocado", line: "Green and creamy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 10C38 10 36 26 30 38C20 52 18 66 24 78C32 92 68 92 76 78C82 66 80 52 70 38C64 26 62 10 50 10Z" fill="#3e6b23" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 17C42 17 41 29 36 40C27 53 25 65 30 75C36 86 64 86 70 75C75 65 73 53 64 40C59 29 58 17 50 17Z" fill="#d6ea8c" stroke="#a9c25a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="66" r="13" fill="#9a5b2c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="46" cy="61" rx="3" ry="5" fill="#fff" opacity=".55" transform="rotate(30 46 61)"/><circle cx="45.2" cy="42" r="2" fill="#3b2a1e"/><circle cx="54.8" cy="42" r="2" fill="#3b2a1e"/><path d="M46.8 46Q50 49.2 53.2 46" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  B: [
+    { name: "Banana", line: "Long and yellow!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M22 22C10 62 44 90 86 68Q90 64 84 60C56 64 34 48 32 22Z" fill="#ffd83a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M21 23L20 13L30 12L32 22Z" fill="#8a5a2b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M86 68Q91 64 84 60L82 64Z" fill="#5a3a1a" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M30 40C34 54 46 64 62 68" fill="none" stroke="#e0b020" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="38.9" cy="58" r="2.125" fill="#3b2a1e"/><circle cx="49.1" cy="58" r="2.125" fill="#3b2a1e"/><path d="M40.6 62.25Q44 65.65 47.4 62.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Broccoli", line: "Green little trees!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M42 58L38 88Q50 93 62 88L58 58Z" fill="#9ccc65" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 66L50 84" fill="none" stroke="#7cb342" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M22 58A13 13 0 0 1 22 36A15 15 0 0 1 44 18A15 15 0 0 1 70 22A14 14 0 0 1 80 44A12 12 0 0 1 70 62Q50 66 22 58Z" fill="#43a047" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="30" cy="40" r="3" fill="#2e7d32"/><circle cx="70" cy="34" r="3" fill="#2e7d32"/><circle cx="62" cy="24" r="2.5" fill="#2e7d32"/><circle cx="36" cy="26" r="2.5" fill="#2e7d32"/><ellipse cx="34" cy="30" rx="4" ry="7" fill="#fff" opacity=".55" transform="rotate(40 34 30)"/><circle cx="44.6" cy="44" r="2.25" fill="#3b2a1e"/><circle cx="55.4" cy="44" r="2.25" fill="#3b2a1e"/><path d="M46.4 48.5Q50 52.1 53.6 48.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Blueberries", line: "Small, round and blue!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="31" cy="40" r="18" fill="#3f51b5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="69" cy="40" r="18" fill="#3f51b5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M29.0 30.0 30.1 32.5 32.8 32.8 30.7 34.6 31.4 37.2 29.0 35.8 26.6 37.2 27.3 34.6 25.2 32.8 27.9 32.5Z" fill="#1f2a6b"/><path d="M71.0 30.0 72.1 32.5 74.8 32.8 72.7 34.6 73.4 37.2 71.0 35.8 68.6 37.2 69.3 34.6 67.2 32.8 69.9 32.5Z" fill="#1f2a6b"/><circle cx="50" cy="63" r="24" fill="#4a63d0" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50.0 41.5 50.9 43.7 53.3 43.9 51.5 45.5 52.1 47.8 50.0 46.6 47.9 47.8 48.5 45.5 46.7 43.9 49.1 43.7Z" fill="#1f2a6b"/><ellipse cx="37" cy="55" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(30 37 55)"/><circle cx="44" cy="64" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="64" r="2.5" fill="#3b2a1e"/><path d="M46 69Q50 73 54 69" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  C: [
+    { name: "Carrot", line: "Crunchy and orange!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M44 30Q34 14 38 8Q46 16 48 28Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M52 28Q54 10 62 8Q64 20 56 30Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 28Q48 12 50 6Q56 14 54 28Z" fill="#4caf50" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 34Q50 22 72 34L55 88Q50 94 45 88Z" fill="#fb8c00" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M36 48L41 48M57 60L61 60M45 76L48 76" fill="none" stroke="#c25e00" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="37" cy="40" rx="3" ry="6" fill="#fff" opacity=".55" transform="rotate(-20 37 40)"/><circle cx="44.6" cy="46" r="2.25" fill="#3b2a1e"/><circle cx="55.4" cy="46" r="2.25" fill="#3b2a1e"/><path d="M46.4 50.5Q50 54.1 53.6 50.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Cherries", line: "Sweet and red!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M34 56Q38 30 58 14" fill="none" stroke="#3f8f3f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M66 52Q64 32 58 14" fill="none" stroke="#3f8f3f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M58 14Q70 4 84 10Q74 22 58 14Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="66" cy="64" r="16" fill="#c2185b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="34" cy="68" r="18" fill="#e01e3c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="26" cy="62" rx="3.5" ry="6" fill="#fff" opacity=".55" transform="rotate(30 26 62)"/><ellipse cx="60" cy="58" rx="3" ry="5" fill="#fff" opacity=".55" transform="rotate(30 60 58)"/><circle cx="28.6" cy="70" r="2.25" fill="#3b2a1e"/><circle cx="39.4" cy="70" r="2.25" fill="#3b2a1e"/><path d="M30.4 74.5Q34 78.1 37.6 74.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Corn", line: "Sweet and yellow!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 10C34 10 32 32 32 50C32 70 40 82 50 82C60 82 68 70 68 50C68 32 66 10 50 10Z" fill="#ffd23f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M38 22L62 22M35 32L65 32M34 62L66 62M37 72L63 72" fill="none" stroke="#e8a900" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M43 13L41 30M57 13L59 30M42 64L43 80M58 64L57 80" fill="none" stroke="#e8a900" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 92Q22 86 20 44Q30 60 46 70Z" fill="#66bb6a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 92Q78 86 80 44Q70 60 54 70Z" fill="#4caf50" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="40" cy="40" rx="3" ry="6" fill="#fff" opacity=".55" transform="rotate(0 40 40)"/><circle cx="44.6" cy="46" r="2.25" fill="#3b2a1e"/><circle cx="55.4" cy="46" r="2.25" fill="#3b2a1e"/><path d="M46.4 50.5Q50 54.1 53.6 50.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  D: [
+    { name: "Dragon fruit", line: "Pink and spiky!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="#8bc34a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M40 26Q34 12 44 6Q48 16 50 24Z"/><path d="M56 24Q60 10 70 10Q66 20 62 28Z"/><path d="M24 44Q10 40 8 30Q20 30 30 36Z"/><path d="M76 44Q90 40 92 30Q80 30 70 36Z"/><path d="M22 70Q10 74 8 84Q20 82 28 76Z"/><path d="M78 70Q90 74 92 84Q80 82 72 76Z"/></g><ellipse cx="50" cy="56" rx="30" ry="32" fill="#e8338a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><g fill="#9ccc65" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M28 50Q22 42 24 36Q32 42 34 48Z"/><path d="M72 50Q78 42 76 36Q68 42 66 48Z"/><path d="M36 78Q30 84 32 90Q40 86 42 80Z"/><path d="M64 78Q70 84 68 90Q60 86 58 80Z"/></g><ellipse cx="38" cy="40" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(30 38 40)"/><circle cx="44" cy="58" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="58" r="2.5" fill="#3b2a1e"/><path d="M46 63Q50 67 54 63" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  E: [
+    { name: "Edamame", line: "Green beans in a pod!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M8 60Q4 54 10 50" fill="#3f8f3f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M10 52Q12 34 30 34Q40 28 50 34Q60 28 70 34Q90 34 90 52Q90 68 70 66Q60 72 50 66Q40 72 30 66Q12 68 10 52Z" fill="#7cb342" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="30" cy="50" r="12" fill="#b5dc6e" stroke="#3f8f3f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="50" r="13" fill="#b5dc6e" stroke="#3f8f3f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="70" cy="50" r="12" fill="#b5dc6e" stroke="#3f8f3f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="26" cy="45" rx="2.5" ry="4" fill="#fff" opacity=".55" transform="rotate(30 26 45)"/><ellipse cx="66" cy="45" rx="2.5" ry="4" fill="#fff" opacity=".55" transform="rotate(30 66 45)"/><circle cx="45.5" cy="49" r="2" fill="#3b2a1e"/><circle cx="54.5" cy="49" r="2" fill="#3b2a1e"/><path d="M47 52.75Q50 55.75 53 52.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  F: [
+    { name: "Fig", line: "Soft and sweet!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 20C44 20 44 30 40 36C24 46 16 62 22 76C28 90 72 90 78 76C84 62 76 46 60 36C56 30 56 20 50 20Z" fill="#7b3f8c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M38 46Q30 62 34 80M62 46Q70 62 66 80" fill="none" stroke="#5a2a6a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M47 22L46 10Q52 8 54 10L53 22Z" fill="#7cb342" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M53 14Q66 4 78 12Q68 22 53 14Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="36" cy="54" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(25 36 54)"/><circle cx="44" cy="62" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="62" r="2.5" fill="#3b2a1e"/><path d="M46 67Q50 71 54 67" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  G: [
+    { name: "Grapes", line: "Juicy and purple!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 22L52 8" fill="none" stroke="#7a4a2a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M52 12Q66 2 80 10Q68 20 52 12Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><g fill="#8e44ad" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><circle cx="23" cy="30" r="11"/><circle cx="41" cy="27" r="11"/><circle cx="59" cy="27" r="11"/><circle cx="77" cy="30" r="11"/><circle cx="32" cy="47" r="11"/><circle cx="68" cy="47" r="11"/><circle cx="41" cy="64" r="11"/><circle cx="59" cy="64" r="11"/><circle cx="50" cy="81" r="11"/></g><circle cx="50" cy="47" r="13" fill="#a05cc0" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="26" cy="26" rx="2" ry="4" fill="#fff" opacity=".55" transform="rotate(30 26 26)"/><ellipse cx="42" cy="42" rx="2.5" ry="5" fill="#fff" opacity=".55" transform="rotate(30 42 42)"/><circle cx="45.2" cy="48" r="2" fill="#3b2a1e"/><circle cx="54.8" cy="48" r="2" fill="#3b2a1e"/><path d="M46.8 52Q50 55.2 53.2 52" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Garlic", line: "White and smelly!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 8Q47 22 42 28C18 38 14 72 30 84Q50 92 70 84C86 72 82 38 58 28Q53 22 50 8Z" fill="#f7f1e3" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M42 30Q30 52 36 84M58 30Q70 52 64 84" fill="none" stroke="#c9b9d9" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M42 88L40 94M50 89L50 95M58 88L60 94" fill="none" stroke="#a08a70" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="52" rx="3" ry="8" fill="#fff" opacity=".55" transform="rotate(15 30 52)"/><circle cx="44" cy="60" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="60" r="2.5" fill="#3b2a1e"/><path d="M46 65Q50 69 54 65" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  H: [
+    { name: "Honeydew", line: "Sweet and green!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="44" cy="42" r="32" fill="#cfe69a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M26 24Q18 42 24 60M62 20Q72 30 74 44" fill="none" stroke="#b0cf72" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M38 70L92 70Q90 91 65 91Q40 91 38 70Z" fill="#a8cf5f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M43 70L87 70Q85 86 65 86Q45 86 43 70Z" fill="#e4f7c0"/><circle cx="55" cy="75" r="1.6" fill="#f5f0d0"/><circle cx="65" cy="77" r="1.6" fill="#f5f0d0"/><circle cx="75" cy="75" r="1.6" fill="#f5f0d0"/><path d="M38 70L92 70Q90 91 65 91Q40 91 38 70Z" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="30" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(40 30 30)"/><circle cx="38" cy="44" r="2.5" fill="#3b2a1e"/><circle cx="50" cy="44" r="2.5" fill="#3b2a1e"/><path d="M40 49Q44 53 48 49" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  I: [
+    { name: "Iceberg lettuce", line: "Cool and crunchy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="52" r="34" fill="#d4ed9a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 22Q46 40 50 56M34 30Q42 40 44 52M66 30Q58 40 56 52" fill="none" stroke="#a8d060" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 88C22 88 10 66 16 44Q22 34 30 30Q24 50 30 64Q38 80 50 88Z" fill="#8bc34a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 88C78 88 90 66 84 44Q78 34 70 30Q76 50 70 64Q62 80 50 88Z" fill="#7cb342" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="38" cy="36" rx="4" ry="7" fill="#fff" opacity=".55" transform="rotate(40 38 36)"/><circle cx="44" cy="62" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="62" r="2.5" fill="#3b2a1e"/><path d="M46 67Q50 71 54 67" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  J: [
+    { name: "Jackfruit", line: "Big and bumpy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 18Q50 10 56 6" fill="none" stroke="#7a4a2a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M80.0 54.0 81.9 58.3 79.2 62.0 80.3 66.7 77.0 69.6 77.2 74.5 73.5 76.4 72.7 81.2 68.7 82.1 67.1 86.6 63.0 86.4 60.6 90.4 56.7 89.1 53.6 92.3 50.0 90.0 46.4 92.3 43.3 89.1 39.4 90.4 37.0 86.4 32.9 86.6 31.3 82.1 27.3 81.2 26.5 76.4 22.8 74.5 23.0 69.6 19.7 66.7 20.8 62.0 18.1 58.3 20.0 54.0 18.1 49.7 20.8 46.0 19.7 41.3 23.0 38.4 22.8 33.5 26.5 31.6 27.3 26.8 31.3 25.9 32.9 21.4 37.0 21.6 39.4 17.6 43.3 18.9 46.4 15.7 50.0 18.0 53.6 15.7 56.7 18.9 60.6 17.6 63.0 21.6 67.1 21.4 68.7 25.9 72.7 26.8 73.5 31.6 77.2 33.5 77.0 38.4 80.3 41.3 79.2 46.0 81.9 49.7Z" fill="#b8c43a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M34 37.5L36 34.5L38 37.5M48 31.5L50 28.5L52 31.5M62 37.5L64 34.5L66 37.5M30 53.5L32 50.5L34 53.5M66 53.5L68 50.5L70 53.5M34 75.5L36 72.5L38 75.5M48 81.5L50 78.5L52 81.5M62 75.5L64 72.5L66 75.5M26 67.5L28 64.5L30 67.5M70 67.5L72 64.5L74 67.5M40 23.5L42 20.5L44 23.5M56 23.5L58 20.5L60 23.5" fill="none" stroke="#7f8f1a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="34" cy="42" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(25 34 42)"/><circle cx="44" cy="56" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="56" r="2.5" fill="#3b2a1e"/><path d="M46 61Q50 65 54 61" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  K: [
+    { name: "Kiwi", line: "Green and fuzzy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#8b6a3e" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="50" r="34" fill="#7cc242" stroke="#5f9a2c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="46" rx="8" ry="10" fill="#f2f8d8" stroke="#d0e3a0" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="67.0" cy="46.0" rx="1.6" ry="3" fill="#222" transform="rotate(90 67.0 46.0)"/><ellipse cx="64.7" cy="54.5" rx="1.6" ry="3" fill="#222" transform="rotate(120 64.7 54.5)"/><ellipse cx="35.3" cy="54.5" rx="1.6" ry="3" fill="#222" transform="rotate(240 35.3 54.5)"/><ellipse cx="33.0" cy="46.0" rx="1.6" ry="3" fill="#222" transform="rotate(270 33.0 46.0)"/><ellipse cx="35.3" cy="37.5" rx="1.6" ry="3" fill="#222" transform="rotate(300 35.3 37.5)"/><ellipse cx="41.5" cy="31.3" rx="1.6" ry="3" fill="#222" transform="rotate(330 41.5 31.3)"/><ellipse cx="50.0" cy="29.0" rx="1.6" ry="3" fill="#222" transform="rotate(360 50.0 29.0)"/><ellipse cx="58.5" cy="31.3" rx="1.6" ry="3" fill="#222" transform="rotate(390 58.5 31.3)"/><ellipse cx="64.7" cy="37.5" rx="1.6" ry="3" fill="#222" transform="rotate(420 64.7 37.5)"/><ellipse cx="30" cy="34" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(40 30 34)"/><circle cx="44.6" cy="70" r="2.25" fill="#3b2a1e"/><circle cx="55.4" cy="70" r="2.25" fill="#3b2a1e"/><path d="M46.4 74.5Q50 78.1 53.6 74.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  L: [
+    { name: "Lemon", line: "Sour and yellow!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 54Q12 48 18 46C26 22 74 22 82 46Q88 48 90 54Q88 60 82 62C74 86 26 86 18 62Q12 60 10 54Z" fill="#ffe23a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 26Q58 12 74 14Q66 28 50 26Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="32" cy="42" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(50 32 42)"/><circle cx="44" cy="56" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="56" r="2.5" fill="#3b2a1e"/><path d="M46 61Q50 65 54 61" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Lime", line: "Small, green and sour!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M84 52Q90 52 90 56Q88 60 84 58Z" fill="#5c9a25" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="52" cy="56" r="32" fill="#7cbf3a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M52 24Q48 12 36 10Q36 24 52 24Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="66" cy="44" r="1.4" fill="#5c9a25"/><circle cx="70" cy="62" r="1.4" fill="#5c9a25"/><circle cx="38" cy="74" r="1.4" fill="#5c9a25"/><circle cx="60" cy="76" r="1.4" fill="#5c9a25"/><ellipse cx="38" cy="42" rx="4" ry="7" fill="#fff" opacity=".55" transform="rotate(40 38 42)"/><circle cx="46" cy="58" r="2.5" fill="#3b2a1e"/><circle cx="58" cy="58" r="2.5" fill="#3b2a1e"/><path d="M48 63Q52 67 56 63" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  M: [
+    { name: "Mango", line: "Sweet and juicy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M58 16C82 18 92 48 82 70C72 90 40 94 24 80C12 68 18 46 34 38C46 32 44 16 58 16Z" fill="#ffb300" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M58 16C82 18 92 48 82 70C76 62 70 44 58 36Q50 30 54 17Z" fill="#f4511e" opacity=".75"/><path d="M58 17Q58 10 62 6" fill="none" stroke="#7a4a2a" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M60 10Q72 2 84 8Q74 18 60 10Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M58 16C82 18 92 48 82 70C72 90 40 94 24 80C12 68 18 46 34 38C46 32 44 16 58 16Z" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="34" cy="52" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(30 34 52)"/><circle cx="46" cy="62" r="2.5" fill="#3b2a1e"/><circle cx="58" cy="62" r="2.5" fill="#3b2a1e"/><path d="M48 67Q52 71 56 67" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Mushroom", line: "Soft and brown!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M38 52L35 84Q50 92 65 84L62 52Z" fill="#f6e7c8" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M12 54C10 20 90 20 88 54Q50 62 12 54Z" fill="#b06a3a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="34" cy="36" r="4" fill="#d9a47a"/><circle cx="64" cy="32" r="3" fill="#d9a47a"/><circle cx="72" cy="46" r="3.5" fill="#d9a47a"/><ellipse cx="28" cy="40" rx="3" ry="6" fill="#fff" opacity=".55" transform="rotate(40 28 40)"/><circle cx="44.9" cy="70" r="2.125" fill="#3b2a1e"/><circle cx="55.1" cy="70" r="2.125" fill="#3b2a1e"/><path d="M46.6 74.25Q50 77.65 53.4 74.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  N: [
+    { name: "Nectarine", line: "Smooth and sweet!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="56" r="34" fill="#ffb52e" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 22A34 34 0 0 1 84 56Q82 74 66 84Q60 60 40 46Q30 30 50 22Z" fill="#e8402c" opacity=".9"/><path d="M48 24Q34 38 36 64" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="56" r="34" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 24Q50 14 52 10" fill="#7a4a2a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M52 16Q62 6 76 10Q68 22 52 16Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 16Q40 6 28 12Q38 22 50 16Z" fill="#6cc26c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="50" rx="3.5" ry="7" fill="#fff" opacity=".55" transform="rotate(15 30 50)"/><circle cx="54" cy="60" r="2.5" fill="#3b2a1e"/><circle cx="66" cy="60" r="2.5" fill="#3b2a1e"/><path d="M56 65Q60 69 64 65" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  O: [
+    { name: "Orange", line: "Round and juicy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="54" r="34" fill="#ff9a1f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 20Q56 8 70 10Q64 22 50 20Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="22" r="2.5" fill="#6b8e23"/><circle cx="68" cy="40" r="1.3" fill="#e07b00"/><circle cx="72" cy="54" r="1.3" fill="#e07b00"/><circle cx="66" cy="72" r="1.3" fill="#e07b00"/><circle cx="32" cy="70" r="1.3" fill="#e07b00"/><circle cx="60" cy="30" r="1.3" fill="#e07b00"/><ellipse cx="34" cy="40" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(40 34 40)"/><circle cx="44" cy="58" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="58" r="2.5" fill="#3b2a1e"/><path d="M46 63Q50 67 54 63" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Onion", line: "Crunchy and purple!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M44 86L42 94M50 88L50 95M56 86L58 94" fill="none" stroke="#a08a70" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 6Q48 20 44 24C14 30 12 74 32 84Q50 92 68 84C88 74 86 30 56 24Q52 20 50 6Z" fill="#b04a8a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M44 26Q28 50 38 84M56 26Q72 50 62 84" fill="none" stroke="#83306a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="48" rx="3.5" ry="8" fill="#fff" opacity=".55" transform="rotate(15 30 48)"/><circle cx="44" cy="60" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="60" r="2.5" fill="#3b2a1e"/><path d="M46 65Q50 69 54 65" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  P: [
+    { name: "Pear", line: "Soft and sweet!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 20C40 20 40 34 36 44C22 54 18 70 26 80C34 92 66 92 74 80C82 70 78 54 64 44C60 34 60 20 50 20Z" fill="#b5d33a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 21Q50 12 54 7" fill="none" stroke="#7a4a2a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M54 14Q66 6 76 12Q66 22 54 14Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="34" cy="62" rx="3.5" ry="7" fill="#fff" opacity=".55" transform="rotate(15 34 62)"/><circle cx="44" cy="66" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="66" r="2.5" fill="#3b2a1e"/><path d="M46 71Q50 75 54 71" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Pineapple", line: "Spiky and sweet!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 34Q40 18 30 12Q42 14 46 22Q44 8 50 2Q56 8 54 22Q58 14 70 12Q60 18 50 34Z" fill="#4caf50" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M38 34Q32 26 24 26Q30 34 40 38Z" fill="#43a047" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M62 34Q68 26 76 26Q70 34 60 38Z" fill="#43a047" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="64" rx="26" ry="30" fill="#ffc928" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M30 48L60 90M40 38L72 82M28 66L46 92M54 36L76 66M70 48L40 90M60 38L28 82M72 66L54 92M46 36L24 66" fill="none" stroke="#d79a00" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="64" rx="26" ry="30" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="34" cy="54" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(15 34 54)"/><circle cx="44" cy="64" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="64" r="2.5" fill="#3b2a1e"/><path d="M46 69Q50 73 54 69" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Pumpkin", line: "Big and orange!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 26Q50 14 58 10" fill="none" stroke="#6d4c1d" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="58" rx="18" ry="28" fill="#f57c00" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="70" cy="58" rx="18" ry="28" fill="#f57c00" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="58" rx="20" ry="30" fill="#fb8c00" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M58 16Q72 10 80 20Q68 26 58 16Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="42" cy="42" rx="3" ry="6" fill="#fff" opacity=".55" transform="rotate(15 42 42)"/><circle cx="44" cy="60" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="60" r="2.5" fill="#3b2a1e"/><path d="M46 65Q50 69 54 65" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  Q: [
+    { name: "Quince", line: "Golden and fuzzy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 21Q49 12 52 8" fill="none" stroke="#7a4a2a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M52 12Q68 0 86 8Q72 22 52 12Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M56 12Q70 8 80 9" fill="none" stroke="#3f8f3f" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50.0 20.0C52.7 20.0 55.7 20.3 58.0 22.0C60.3 23.7 62.3 27.3 64.0 30.0C65.7 32.7 65.7 35.3 68.0 38.0C70.3 40.7 75.3 42.7 78.0 46.0C80.7 49.3 83.3 53.7 84.0 58.0C84.7 62.3 84.0 67.7 82.0 72.0C80.0 76.3 76.0 81.0 72.0 84.0C68.0 87.0 61.7 89.3 58.0 90.0C54.3 90.7 53.0 88.0 50.0 88.0C47.0 88.0 44.0 90.7 40.0 90.0C36.0 89.3 29.7 87.0 26.0 84.0C22.3 81.0 19.3 76.3 18.0 72.0C16.7 67.7 17.0 62.3 18.0 58.0C19.0 53.7 21.3 49.3 24.0 46.0C26.7 42.7 31.7 40.7 34.0 38.0C36.3 35.3 36.7 32.7 38.0 30.0C39.3 27.3 40.0 23.7 42.0 22.0C44.0 20.3 47.3 20.0 50.0 20.0Z" fill="#f2c018" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 60l-2 1M76 56l2 1M30 76l-2 2M70 78l2 2M50 86l0 2M36 44l-2 -1M64 44l2 -1" fill="none" stroke="#c89a00" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><circle cx="34" cy="62" r="1.3" fill="#c89a00"/><circle cx="68" cy="66" r="1.3" fill="#c89a00"/><circle cx="56" cy="34" r="1.3" fill="#c89a00"/><circle cx="42" cy="78" r="1.3" fill="#c89a00"/><ellipse cx="30" cy="58" rx="3.5" ry="7" fill="#fff" opacity=".55" transform="rotate(15 30 58)"/><circle cx="44" cy="62" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="62" r="2.5" fill="#3b2a1e"/><path d="M46 67Q50 71 54 67" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  R: [
+    { name: "Radish", line: "Crunchy and pink!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M44 32Q36 14 26 8Q24 22 40 34Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M56 32Q64 14 74 8Q76 22 60 34Z" fill="#5cb85c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 30Q46 12 50 4Q56 12 52 30Z" fill="#4caf50" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 82L50 96" fill="none" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 30C24 30 18 50 24 64C30 78 44 84 50 84C56 84 70 78 76 64C82 50 76 30 50 30Z" fill="#e3245c" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M38 78Q50 88 62 78Q56 84 50 84Q44 84 38 78Z" fill="#fff"/><ellipse cx="32" cy="46" rx="3.5" ry="6" fill="#fff" opacity=".55" transform="rotate(30 32 46)"/><circle cx="44" cy="56" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="56" r="2.5" fill="#3b2a1e"/><path d="M46 61Q50 65 54 61" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` },
+    { name: "Raspberry", line: "Soft and sweet!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 30C26 30 18 46 22 62C26 80 40 92 50 92C60 92 74 80 78 62C82 46 74 30 50 30Z" fill="#e83358" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><g fill="#ef4a6a" stroke="#b81d42" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><circle cx="36" cy="42" r="6"/><circle cx="50" cy="40" r="6"/><circle cx="64" cy="42" r="6"/><circle cx="30" cy="56" r="6"/><circle cx="70" cy="56" r="6"/><circle cx="36" cy="70" r="6"/><circle cx="64" cy="70" r="6"/><circle cx="44" cy="82" r="6"/><circle cx="56" cy="82" r="6"/><circle cx="50" cy="70" r="6"/><circle cx="42" cy="56" r="6"/><circle cx="58" cy="56" r="6"/></g><path d="M50 34L38 26L44 22L50 18L56 22L62 26Z" fill="#66bb6a" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 18L50 8" fill="none" stroke="#3f8f3f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="58" r="12" fill="#ef4a6a" stroke="#b81d42" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="32" cy="50" rx="2.5" ry="5" fill="#fff" opacity=".55" transform="rotate(30 32 50)"/><circle cx="45.2" cy="57" r="2" fill="#3b2a1e"/><circle cx="54.8" cy="57" r="2" fill="#3b2a1e"/><path d="M46.8 61Q50 64.2 53.2 61" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  S: [
+    { name: "Strawberry", line: "Red and sweet!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 30C30 22 12 30 14 48C16 66 36 84 50 92C64 84 84 66 86 48C88 30 70 22 50 30Z" fill="#e8273b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="46" rx="1.6" ry="2.5" fill="#ffe36b"/><ellipse cx="70" cy="46" rx="1.6" ry="2.5" fill="#ffe36b"/><ellipse cx="40" cy="64" rx="1.6" ry="2.5" fill="#ffe36b"/><ellipse cx="60" cy="64" rx="1.6" ry="2.5" fill="#ffe36b"/><ellipse cx="50" cy="80" rx="1.6" ry="2.5" fill="#ffe36b"/><ellipse cx="26" cy="60" rx="1.6" ry="2.5" fill="#ffe36b"/><ellipse cx="74" cy="60" rx="1.6" ry="2.5" fill="#ffe36b"/><ellipse cx="36" cy="80" rx="1.6" ry="2.5" fill="#ffe36b"/><ellipse cx="64" cy="80" rx="1.6" ry="2.5" fill="#ffe36b"/><path d="M50 34L36 38L40 30L28 26L42 24L44 16L50 22L56 16L58 24L72 26L60 30L64 38Z" fill="#4caf50" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 22L52 10" fill="none" stroke="#3f8f3f" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="28" cy="44" rx="3.5" ry="6" fill="#fff" opacity=".55" transform="rotate(30 28 44)"/><circle cx="44" cy="52" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="52" r="2.5" fill="#3b2a1e"/><path d="M46 57Q50 61 54 57" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  T: [
+    { name: "Tomato", line: "Red and juicy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="58" rx="38" ry="32" fill="#f2412e" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 30L40 34L28 30L36 40L28 44L42 42L50 48L58 42L72 44L64 40L72 30L60 34Z" fill="#3fa34d" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 32L50 20" fill="none" stroke="#3f8f3f" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="28" cy="52" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(20 28 52)"/><circle cx="44" cy="64" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="64" r="2.5" fill="#3b2a1e"/><path d="M46 69Q50 73 54 69" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  U: [
+    { name: "Ugli fruit", line: "Bumpy and juicy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M82.5 54.0C82.1 57.9 84.9 62.0 83.8 65.3C82.6 68.6 78.3 70.9 75.6 73.8C73.0 76.6 71.2 80.8 67.9 82.5C64.5 84.2 59.8 83.2 55.7 84.0C51.7 84.8 47.2 88.0 43.6 87.2C40.0 86.4 37.8 81.1 34.2 79.2C30.5 77.4 24.0 78.4 21.6 75.9C19.3 73.3 21.7 67.6 20.3 63.9C18.9 60.3 13.2 57.3 13.2 54.0C13.2 50.7 18.6 47.5 20.2 44.0C21.8 40.5 20.4 35.5 22.6 32.8C24.8 30.2 30.1 30.1 33.6 27.9C37.1 25.7 39.8 20.0 43.4 19.6C47.1 19.1 51.4 24.2 55.5 25.1C59.6 26.1 64.7 23.7 68.1 25.2C71.4 26.7 72.6 31.5 75.6 34.3C78.6 37.1 84.9 38.6 86.0 41.9C87.2 45.2 82.8 50.1 82.5 54.0Z" fill="#c9d64a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 70Q30 80 40 82Q30 76 28 66Z" fill="#93b52a"/><path d="M70 30Q80 36 82 48Q74 40 66 36Z" fill="#93b52a"/><path d="M58 78Q70 76 76 66Q72 78 62 82Z" fill="#e6c53a"/><path d="M30 32Q38 26 46 26Q38 30 34 38Z" fill="#e6c53a"/><path d="M50 22Q48 16 52 14Q56 16 54 22Z" fill="#6b8e23" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="66" cy="50" r="1.3" fill="#8aa02a"/><circle cx="36" cy="66" r="1.3" fill="#8aa02a"/><circle cx="62" cy="68" r="1.3" fill="#8aa02a"/><ellipse cx="34" cy="44" rx="4" ry="7" fill="#fff" opacity=".55" transform="rotate(40 34 44)"/><circle cx="44" cy="56" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="56" r="2.5" fill="#3b2a1e"/><path d="M46 61Q50 65 54 61" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  V: [
+    { name: "Vegetable soup", line: "Warm and yummy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M36 26Q30 18 36 12Q42 6 36 2M50 24Q44 16 50 10Q56 4 50 0M64 26Q58 18 64 12Q70 6 64 2" fill="none" stroke="#b0bec5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M10 46Q12 88 50 90Q88 88 90 46Z" fill="#42a5f5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="46" rx="40" ry="9" fill="#f4a742" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="32" cy="46" r="4" fill="#ff7a1a" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="62" cy="44" r="4" fill="#ff7a1a" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="44" cy="48" r="3" fill="#5cb85c"/><circle cx="72" cy="48" r="3" fill="#5cb85c"/><circle cx="22" cy="46" r="2.6" fill="#5cb85c"/><path d="M50 42h5v5h-5Z M76 42h5v5h-5Z" fill="#ffe14d" stroke="#3b2a1e" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 90L76 90" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="24" cy="62" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(-20 24 62)"/><circle cx="44" cy="68" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="68" r="2.5" fill="#3b2a1e"/><path d="M46 73Q50 77 54 73" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  W: [
+    { name: "Watermelon", line: "Red, sweet and juicy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M8 36L92 36A42 42 0 0 1 8 36Z" fill="#3a9a3f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M14 36L86 36A36 36 0 0 1 14 36Z" fill="#e9f7d2"/><path d="M18 36L82 36A32 32 0 0 1 18 36Z" fill="#f2445a" stroke="#f2445a" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="50" rx="1.8" ry="3.2" fill="#2b1a12" transform="rotate(-30 30 50)"/><ellipse cx="44" cy="58" rx="1.8" ry="3.2" fill="#2b1a12" transform="rotate(-10 44 58)"/><ellipse cx="56" cy="58" rx="1.8" ry="3.2" fill="#2b1a12" transform="rotate(10 56 58)"/><ellipse cx="70" cy="50" rx="1.8" ry="3.2" fill="#2b1a12" transform="rotate(30 70 50)"/><ellipse cx="38" cy="70" rx="1.8" ry="3.2" fill="#2b1a12" transform="rotate(-20 38 70)"/><ellipse cx="62" cy="70" rx="1.8" ry="3.2" fill="#2b1a12" transform="rotate(20 62 70)"/><path d="M8 36L92 36A42 42 0 0 1 8 36Z" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="26" cy="44" rx="3" ry="6" fill="#fff" opacity=".55" transform="rotate(-40 26 44)"/><circle cx="44" cy="46" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="46" r="2.5" fill="#3b2a1e"/><path d="M46 51Q50 55 54 51" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  X: [
+    { name: "Xigua", line: "A big round melon!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="54" rx="38" ry="34" fill="#6cc04a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 20Q42 36 50 52Q42 70 50 86 M32 26Q22 40 28 56Q22 70 30 80 M68 26Q78 40 72 56Q78 70 70 80 M18 40Q12 54 18 68 M82 40Q88 54 82 68" fill="none" stroke="#2e7d32" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="54" rx="38" ry="34" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 20Q50 14 54 12" fill="none" stroke="#7a4a2a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="34" cy="36" rx="4" ry="7" fill="#fff" opacity=".55" transform="rotate(50 34 36)"/><circle cx="44" cy="56" r="2.5" fill="#1b1b1b"/><circle cx="56" cy="56" r="2.5" fill="#1b1b1b"/><path d="M46 61Q50 65 54 61" fill="none" stroke="#1b1b1b" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  Y: [
+    { name: "Yam", line: "Sweet and orange inside!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M8 66L3 68M30 48L27 42M58 66L60 72M40 76L38 82" fill="none" stroke="#5a2f38" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M8.0 66.0C8.3 63.0 12.3 59.0 16.0 56.0C19.7 53.0 25.0 50.3 30.0 48.0C35.0 45.7 41.0 44.3 46.0 42.0C51.0 39.7 55.3 36.3 60.0 34.0C64.7 31.7 70.0 29.0 74.0 28.0C78.0 27.0 81.3 26.7 84.0 28.0C86.7 29.3 89.0 32.7 90.0 36.0C91.0 39.3 91.3 45.0 90.0 48.0C88.7 51.0 85.7 52.0 82.0 54.0C78.3 56.0 72.7 57.7 68.0 60.0C63.3 62.3 58.7 65.3 54.0 68.0C49.3 70.7 44.7 74.3 40.0 76.0C35.3 77.7 30.3 78.3 26.0 78.0C21.7 77.7 17.0 76.0 14.0 74.0C11.0 72.0 7.7 69.0 8.0 66.0Z" fill="#9a566a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="84" cy="41" rx="7" ry="12" fill="#ffa94d" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(20 84 41)"/><circle cx="84" cy="41" r="3" fill="#ffc27a"/><path d="M20 66Q24 62 28 64M64 46Q68 42 72 44M30 72Q34 68 38 70" fill="none" stroke="#6e3546" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="58" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(60 30 58)"/><circle cx="42" cy="55" r="2.5" fill="#3b2a1e"/><circle cx="54" cy="55" r="2.5" fill="#3b2a1e"/><path d="M44 60Q48 64 52 60" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  Z: [
+    { name: "Zucchini", line: "Long and green!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M80 14Q90 10 92 18Q90 24 84 22Z" fill="#8bab4a" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M20 88C10 84 10 72 16 66L74 16C80 12 88 18 86 26L36 82C30 88 26 90 20 88Z" fill="#2f8a3a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 74L70 28M34 76L78 32" fill="none" stroke="#7bc47f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="30" cy="66" r="1.2" fill="#c8e6c9"/><circle cx="54" cy="48" r="1.2" fill="#c8e6c9"/><circle cx="62" cy="34" r="1.2" fill="#c8e6c9"/><ellipse cx="26" cy="70" rx="2.5" ry="6" fill="#fff" opacity=".55" transform="rotate(45 26 70)"/><circle cx="42.6" cy="52" r="2.25" fill="#13331a"/><circle cx="53.4" cy="52" r="2.25" fill="#13331a"/><path d="M44.4 56.5Q48 60.1 51.6 56.5" fill="none" stroke="#13331a" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ]
+};
+// ==GARDEN END==
+
       const animals = {
         A: { name: "Alligator", emoji: "🐊", sound: "snap snap!" },
         B: { name: "Bear", emoji: "🐻", sound: "grrr!" },
@@ -1309,6 +1735,28 @@ const createTouchArbiter = (opts = {}) => {
         W: [{ name: "Whale", emoji: "🐳", sound: "whoooo!" }, { name: "Wolf", emoji: "🐺", sound: "awooo!" }]
       };
 
+      // ---------- worlds (content packs) ----------
+      // Each world maps an uppercase letter to one or more items. Items have a name plus
+      // either an emoji or an inline SVG picture; `cheer` is what the stage says on success.
+      const WORLDS = {
+        zoo: {
+          icon: "🦁", title: "Magic Letter Zoo", subtitle: "✏️ Trace a letter. Meet an animal friend! 🐾",
+          foundLabel: "Zoo friends", welcome: "Welcome to the Zoo", hello: "🦁",
+          intro: "Follow the dots to make the letter. An animal friend will come!",
+          praise: ["Amazing!", "Wow!", "Super writing!", "Zoo-rific!", "You did it!", "Fantastic!"],
+          items: L => animalVariants[L] || [animals[L] || animals.A],
+          cheer: item => `${item.name} says "${item.sound}"`
+        },
+        garden: {
+          icon: "🍎", title: "Magic Letter Garden", subtitle: "✏️ Trace a letter. Pick something yummy! 🥕",
+          foundLabel: "Garden friends", welcome: "Welcome to the Garden", hello: null,
+          intro: "Follow the dots to make the letter. Something yummy will grow!",
+          praise: ["Yummy!", "Wow!", "Berry good!", "Super writing!", "You did it!", "Fantastic!"],
+          items: L => (typeof GARDEN_ITEMS !== "undefined" && GARDEN_ITEMS[L]) || [{ name: "Apple", emoji: "🍎", line: "Crunchy and red!" }],
+          cheer: item => item.line || "Yum yum!"
+        }
+      };
+
       const targetLetters = Object.keys(animals);
       const $ = id => document.getElementById(id);
       const canvasWrap = $("canvasWrap");
@@ -1324,6 +1772,9 @@ const createTouchArbiter = (opts = {}) => {
       const message = $("message"), starsEl = $("stars"), foundCountEl = $("foundCount"), alphabetEl = $("alphabet"), toast = $("toast");
       const tryButton = $("tryButton"), clearButton = $("clearButton"), newLetterButton = $("newLetterButton");
       const installButton = $("installButton"), soundButton = $("soundButton");
+      const homeEl = $("home"), homeButton = $("homeButton"), caseButton = $("caseButton");
+      const worldZooButton = $("worldZoo"), worldGardenButton = $("worldGarden");
+      const appTitle = $("appTitle"), appSubtitle = $("appSubtitle"), foundLabelEl = $("foundLabel"), foundIconEl = $("foundIcon");
 
       // ---------- state ----------
       let width = 0, height = 0, ratio = 1;
@@ -1333,7 +1784,10 @@ const createTouchArbiter = (opts = {}) => {
       let guide = null;           // LetterEngine guide for the current target + canvas size
       let glowDots = null;        // guide dots to highlight after an "almost"
       let targetLetter = "A", targetIndex = 0, stars = 0;
-      let phase = "play";         // "play" | "celebrate"
+      let phase = "home";         // "home" | "play" | "celebrate"
+      let world = "zoo";          // key of WORLDS
+      let letterCase = "upper";   // "upper" | "lower"
+      const pos = { zoo: 0, garden: 0 };   // next letter index per world
       let leniency = 0;           // 0..2, grows each time the child is told "almost"
       let idleTimer = null, wipeTimer = null, nextTimer = null, celebrateTimer = null;
       let renderQueued = false, guideQueued = false;
@@ -1341,8 +1795,10 @@ const createTouchArbiter = (opts = {}) => {
       let deferredInstallPrompt = null;
       let teachingAnimationId = null, teachingAnimationToken = 0, teaching = false;
       let lastPling = 0, lastOneFingerNudge = 0;
-      const found = new Set();
-      const animalCycleState = {};
+      // Found items per world, keyed by UPPERCASE letter (shared by A and a).
+      const foundBy = { zoo: new Set(), garden: new Set() };
+      const foundSet = () => foundBy[world];
+      const cycleState = { zoo: {}, garden: {} };
       const alphabetChips = new Map();
       const arbiter = createTouchArbiter();
 
@@ -1358,24 +1814,81 @@ const createTouchArbiter = (opts = {}) => {
 
       function lineWidthInk() { return Math.max(13, Math.min(26, width / 32)); }
 
+      const isLowerCase = () => letterCase === "lower";
+      const inCase = L => (isLowerCase() ? L.toLowerCase() : L.toUpperCase());
+      // What the voice says: "little A" reads better than a bare "a" (which TTS says as "uh").
+      const spoken = letter => (letter === letter.toLowerCase() ? `little ${letter.toUpperCase()}` : letter);
+
       function setupAlphabet() {
         alphabetEl.innerHTML = "";
         alphabetChips.clear();
         targetLetters.forEach(letter => {
           const chip = document.createElement("div");
           chip.className = "letter-chip";
-          chip.textContent = letter;
+          chip.textContent = inCase(letter);
           chip.setAttribute("aria-label", `${letter} not discovered yet`);
           alphabetEl.appendChild(chip);
           alphabetChips.set(letter, chip);
         });
       }
 
-      function getAnimalForLetter(letter) {
-        const variants = animalVariants[letter] || [animals[letter] || animals.A];
-        const index = animalCycleState[letter] || 0;
-        animalCycleState[letter] = (index + 1) % variants.length;
+      function getItemForLetter(letter) {
+        const L = letter.toUpperCase();
+        const variants = WORLDS[world].items(L);
+        const state = cycleState[world];
+        const index = (state[L] || 0) % variants.length;
+        state[L] = (index + 1) % variants.length;
         return variants[index];
+      }
+
+      // Show an emoji or an inline SVG picture on the big stage.
+      function setPicture(item) {
+        if (item && item.svg) { animalEmoji.innerHTML = item.svg; animalEmoji.classList.add("is-svg"); }
+        else { animalEmoji.textContent = (item && item.emoji) || "✏️"; animalEmoji.classList.remove("is-svg"); }
+      }
+
+      // The big target tile draws the letter from the same strokes the child traces,
+      // so the shape always matches the guide (fonts disagree on "a", "g", "t", ...).
+      function letterSVG(letter) {
+        const lower = LetterEngine.isLower(letter);
+        const R = LetterEngine.RULE;
+        const strokesRaw = LetterEngine.TEMPLATES[letter] || LetterEngine.TEMPLATES.A;
+        const lines = lower ? [
+          [R.top, 0.45, 3, ""], [R.mid, 0.6, 3, ' stroke-dasharray="9 7"'],
+          [R.base, 0.85, 4.5, ""], [R.desc, 0.35, 3, ' stroke-dasharray="9 7"']
+        ].map(([y, o, w, dash]) => `<line x1="-10" x2="110" y1="${y}" y2="${y}" stroke="rgba(255,255,255,${o})" stroke-width="${w}"${dash}/>`).join("") : "";
+        const paths = strokesRaw.map(s => {
+          const len = s.reduce((acc, p, i) => acc + (i ? Math.hypot(p[0] - s[i - 1][0], p[1] - s[i - 1][1]) : 0), 0);
+          return `<polyline points="${s.map(p => p.join(",")).join(" ")}"${len < 6 ? ' stroke-width="18"' : ""}/>`;
+        }).join("");
+        const vb = lower ? "-12 -8 124 148" : "-6 -1 112 108";
+        return `<svg viewBox="${vb}" aria-hidden="true" focusable="false">${lines}<g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">${paths}</g></svg>`;
+      }
+
+      // ---------- saved progress (best effort; private mode may block storage) ----------
+      const STORE_KEY = "magicLetterZoo.progress.v1";
+      function loadProgress() {
+        try {
+          const d = JSON.parse(window.localStorage.getItem(STORE_KEY) || "null");
+          if (!d || d.v !== 1) return;
+          if (WORLDS[d.world]) world = d.world;
+          if (d.letterCase === "lower" || d.letterCase === "upper") letterCase = d.letterCase;
+          if (Number.isFinite(d.stars) && d.stars >= 0) stars = Math.floor(d.stars);
+          Object.keys(WORLDS).forEach(w => {
+            (d.found && Array.isArray(d.found[w]) ? d.found[w] : []).forEach(L => { if (targetLetters.includes(L)) foundBy[w].add(L); });
+            const p = d.pos && d.pos[w];
+            if (Number.isInteger(p) && p >= 0 && p < targetLetters.length) pos[w] = p;
+          });
+          audioEnabled = d.sound !== false;
+        } catch (err) { /* start fresh */ }
+      }
+      function saveProgress() {
+        try {
+          window.localStorage.setItem(STORE_KEY, JSON.stringify({
+            v: 1, world, letterCase, stars, pos, sound: audioEnabled,
+            found: { zoo: [...foundBy.zoo], garden: [...foundBy.garden] }
+          }));
+        } catch (err) { /* storage is optional */ }
       }
 
       // ---------- canvas sizing ----------
@@ -1487,9 +2000,28 @@ const createTouchArbiter = (opts = {}) => {
         return -1;
       }
 
+      // School lines for lowercase: top line, dashed midline, strong baseline, faint
+      // descender line. Letters sit on them at their true size (o short, h tall, p hangs).
+      function drawRuledLines(ctx) {
+        const L = LetterEngine.ruledLines(width, height);
+        const x0 = Math.max(10, width * 0.04), x1 = width - x0;
+        const line = (y, color, lw, dash) => {
+          ctx.save();
+          ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineCap = "round";
+          ctx.setLineDash(dash || []);
+          ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+          ctx.restore();
+        };
+        line(L.top, "rgba(79, 124, 255, 0.45)", 3);
+        line(L.mid, "rgba(255, 111, 177, 0.70)", 3, [16, 12]);
+        line(L.base, "rgba(36, 59, 107, 0.65)", 5);
+        line(L.desc, "rgba(79, 124, 255, 0.28)", 3, [10, 12]);
+      }
+
       function drawGuide() {
         if (teaching || !guide) return;
         gctx.clearRect(0, 0, width, height);
+        if (guide.lower) drawRuledLines(gctx);
         const roadW = Math.max(18, guide.R * 1.1);
 
         // Soft "road" so the letter shape is obvious even before tracing.
@@ -1526,12 +2058,24 @@ const createTouchArbiter = (opts = {}) => {
           }
         });
 
+        // The dot on i / j: one big tap target instead of two tiny guide dots.
+        (guide.dotStrokes || []).forEach(si => {
+          const mine = guide.dots.filter(d => d.stroke === si);
+          const lit = mine.some(d => d.covered);
+          const p = guide.strokes[si][0];
+          gctx.beginPath();
+          gctx.fillStyle = lit ? "#ffc93c" : "rgba(124, 92, 255, 0.55)";
+          gctx.arc(p.x, p.y, Math.max(r * 2, guide.R * 0.5), 0, Math.PI * 2);
+          gctx.fill();
+        });
+
         // Green numbered start dot + arrow on the next stroke to trace.
         const next = nextStrokeToTrace();
         if (next >= 0 && !drawing) {
           const s = guide.strokes[next];
           drawStartDot(s[0], next + 1, "#4bd269", "#1f9e45");
-          drawArrow(s[0], s[1]);
+          // The dot on i / j is a tap, not a line: no arrow for it.
+          if (!(guide.dotStrokes || []).includes(next)) drawArrow(s[0], s[1]);
         }
       }
 
@@ -1622,6 +2166,7 @@ const createTouchArbiter = (opts = {}) => {
           const progress = Math.min(1, (now - start) / duration);
           const active = progress * tStrokes.length;
           gctx.clearRect(0, 0, width, height);
+          if (LetterEngine.isLower(letter)) drawRuledLines(gctx);
           gctx.save();
           gctx.fillStyle = "#4f3cc9";
           gctx.font = `900 ${Math.max(22, Math.min(width, height) / 18)}px "Comic Sans MS", system-ui, sans-serif`;
@@ -1804,7 +2349,7 @@ const createTouchArbiter = (opts = {}) => {
           case "scribble":
             clearDrawing(true);
             message.textContent = "Wow, lots of lines! Let's follow the dots.";
-            say(`Let's follow the dots to make ${targetLetter}.`);
+            say(`Let's follow the dots to make ${spoken(targetLetter)}.`);
             boop(true);
             animateLetter(targetLetter);
             break;
@@ -1812,7 +2357,7 @@ const createTouchArbiter = (opts = {}) => {
             leniency = Math.min(2, leniency + 1);
             clearDrawing(true);
             message.textContent = `Watch! Then start at the green dot.`;
-            say(`Watch me make ${targetLetter}. Then you try!`);
+            say(`Watch me make ${spoken(targetLetter)}. Then you try!`);
             boop(true);
             animateLetter(targetLetter);
             break;
@@ -1824,27 +2369,31 @@ const createTouchArbiter = (opts = {}) => {
 
       function succeed() {
         clearTimers();
-        revealAnimal(targetLetter, true);
+        // Remember progress right away, so leaving mid-celebration still moves on.
+        pos[world] = (targetIndex + 1) % targetLetters.length;
+        revealItem(targetLetter, true);
         clearTimeout(nextTimer);
         nextTimer = setTimeout(nextTarget, 4600);
       }
 
       function revealOther(letter) {
-        revealAnimal(letter, false);
+        revealItem(letter, false);
         message.textContent = `That looks like ${letter}! Now can you trace ${targetLetter}?`;
         wipeTimer = setTimeout(() => clearDrawing(true), 5200);
       }
 
-      function revealAnimal(letter, isTarget) {
-        const animal = getAnimalForLetter(letter);
-        const alreadyFound = found.has(letter);
-        animalEmoji.textContent = animal.emoji;
+      function revealItem(letter, isTarget) {
+        const W = WORLDS[world];
+        const L = letter.toUpperCase();
+        const item = getItemForLetter(letter);
+        const alreadyFound = foundSet().has(L);
+        setPicture(item);
         recognized.textContent = `I see ${letter}!`;
-        animalName.textContent = `${letter} is for ${animal.name}!`;
-        const praise = ["Amazing!", "Wow!", "Super writing!", "Zoo-rific!", "You did it!", "Fantastic!"][Math.floor(Math.random() * 6)];
+        animalName.textContent = `${letter} is for ${item.name}!`;
+        const praise = W.praise[Math.floor(Math.random() * W.praise.length)];
 
         if (isTarget) {
-          message.textContent = `${praise} ${animal.name} says "${animal.sound}"`;
+          message.textContent = `${praise} ${W.cheer(item)}`;
           stars += alreadyFound ? 1 : 3;
           animateLetter(letter, () => {});
           promptSubtitle.textContent = "Great job! A new letter is coming...";
@@ -1852,28 +2401,32 @@ const createTouchArbiter = (opts = {}) => {
           stars += alreadyFound ? 0 : 1;
         }
 
-        found.add(letter);
+        foundSet().add(L);
+        saveProgress();
         updateScore();
         markLetter();
         animalCard.classList.remove("pop");
         void animalCard.offsetWidth;
         animalCard.classList.add("pop");
         burstConfetti(isTarget ? 70 : 36);
-        cheer(letter, isTarget);
-        speakAnimal(letter, animal);
-        showToast(isTarget ? `You did ${letter}! ⭐⭐⭐` : `${letter} is for ${animal.name}!`);
+        cheer(L, isTarget);
+        speakItem(L, item);
+        showToast(isTarget ? `You did ${letter}! ⭐⭐⭐` : `${letter} is for ${item.name}!`);
       }
 
       function updateScore() {
         starsEl.textContent = stars;
-        foundCountEl.textContent = found.size;
+        foundCountEl.textContent = foundSet().size;
       }
 
       function markLetter() {
+        const base = targetLetter.toUpperCase();
         alphabetChips.forEach((chip, l) => {
-          chip.classList.toggle("found", found.has(l));
-          chip.classList.toggle("target", l === targetLetter);
-          chip.setAttribute("aria-label", `${l}${found.has(l) ? " discovered" : " not discovered yet"}${l === targetLetter ? ", current target" : ""}`);
+          const has = foundSet().has(l);
+          chip.textContent = inCase(l);
+          chip.classList.toggle("found", has);
+          chip.classList.toggle("target", l === base);
+          chip.setAttribute("aria-label", `${inCase(l)}${has ? " discovered" : " not discovered yet"}${l === base ? ", current target" : ""}`);
         });
       }
 
@@ -1893,33 +2446,114 @@ const createTouchArbiter = (opts = {}) => {
       function resetAnimalStageForTracing() {
         if ("speechSynthesis" in window) window.speechSynthesis.cancel();
         animalCard.classList.remove("pop");
-        animalEmoji.textContent = "✏️";
+        setPicture({ emoji: "✏️" });
         recognized.textContent = "";
         animalName.textContent = "Trace the letter";
         message.textContent = "Start at the green dot and follow the dots!";
       }
 
+      // letter: any case; it is shown in the current case (ABC / abc).
       function setTarget(letter) {
-        targetLetter = letter;
-        targetIndex = targetLetters.indexOf(letter);
-        targetLetterEl.textContent = letter;
-        promptTitle.textContent = `Can you trace ${letter}?`;
+        targetLetter = inCase(letter);
+        targetIndex = targetLetters.indexOf(letter.toUpperCase());
+        pos[world] = targetIndex;
+        targetLetterEl.innerHTML = letterSVG(targetLetter);
+        targetLetterEl.setAttribute("aria-label", `Target letter ${targetLetter}`);
+        promptTitle.textContent = `Can you trace ${targetLetter}?`;
         promptSubtitle.textContent = "Start at the green dot. Follow the dots!";
+        canvasWrap.classList.toggle("ruled", isLowerCase());
         leniency = 0;
         glowDots = null;
-        guide = LetterEngine.buildGuide(letter, width, height);
+        guide = LetterEngine.buildGuide(targetLetter, width, height);
       }
 
-      function nextTarget() {
+      function stopEverything() {
+        clearTimers();
         clearTimeout(nextTimer); nextTimer = null;
         clearTimeout(celebrateTimer); celebrateTimer = null;
         cancelTeachingAnimation();
-        setTarget(targetLetters[(targetIndex + 1) % targetLetters.length]);
+        drawing = false;
+        currentStroke = [];
+        arbiter.reset();
+      }
+
+      // Start (or restart) tracing `letter` with a clean page.
+      function startLetter(letter, speak = true) {
+        stopEverything();
+        setTarget(letter);
         resetAnimalStageForTracing();
         markLetter();
         clearDrawing(true);
         phase = "play";
-        say(`Can you trace ${targetLetter}?`, 350);
+        saveProgress();
+        if (speak) say(`Can you trace ${spoken(targetLetter)}?`, 350);
+      }
+
+      function nextTarget() {
+        startLetter(targetLetters[(targetIndex + 1) % targetLetters.length]);
+      }
+
+      // ---------- ABC ⇄ abc ----------
+      function updateCaseButton() {
+        caseButton.classList.toggle("lower", isLowerCase());
+        caseButton.setAttribute("aria-pressed", String(isLowerCase()));
+        caseButton.setAttribute("aria-label", isLowerCase() ? "Small letters. Tap for big letters" : "Big letters. Tap for small letters");
+      }
+
+      function toggleCase() {
+        letterCase = isLowerCase() ? "upper" : "lower";
+        updateCaseButton();
+        // Same letter, other case: A -> a -> A. Found items are shared between cases.
+        startLetter(targetLetter.toUpperCase(), false);
+        say(isLowerCase() ? `Small letters! Can you trace ${spoken(targetLetter)}?` : `Big letters! Can you trace ${spoken(targetLetter)}?`, 200);
+        showToast(isLowerCase() ? "abc  small letters" : "ABC  big letters");
+      }
+
+      // ---------- worlds + home screen ----------
+      function applyWorld() {
+        const W = WORLDS[world];
+        document.body.classList.toggle("world-garden", world === "garden");
+        document.body.classList.toggle("world-zoo", world === "zoo");
+        appTitle.textContent = W.title;
+        appSubtitle.textContent = W.subtitle;
+        foundLabelEl.textContent = W.foundLabel;
+        foundIconEl.textContent = W.icon;
+        updateScore();
+      }
+
+      function updateHomeProgress() {
+        const n = targetLetters.length;
+        $("progressZoo").textContent = `⭐ ${foundBy.zoo.size} / ${n}`;
+        $("progressGarden").textContent = `⭐ ${foundBy.garden.size} / ${n}`;
+        worldZooButton.classList.toggle("last", world === "zoo");
+        worldGardenButton.classList.toggle("last", world === "garden");
+      }
+
+      function showHome(speak) {
+        stopEverything();
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        phase = "home";
+        updateHomeProgress();
+        homeEl.classList.remove("hidden");
+        homeEl.setAttribute("aria-hidden", "false");
+        if (speak) say("Where shall we play?", 120);
+      }
+
+      function chooseWorld(key) {
+        ensureAudio(); unlockSpeech();
+        world = WORLDS[key] ? key : "zoo";
+        homeEl.classList.add("hidden");
+        homeEl.setAttribute("aria-hidden", "true");
+        applyWorld();
+        startLetter(targetLetters[pos[world]] || "A", false);
+        const W = WORLDS[world];
+        if (W.hello) setPicture({ emoji: W.hello });
+        else setPicture(W.items("A")[0]);
+        recognized.textContent = "Hello, little writer!";
+        animalName.textContent = W.welcome;
+        message.textContent = W.intro;
+        say(`${W.welcome}! Can you trace ${spoken(targetLetter)}?`, 200);
+        boop();
       }
 
       // ---------- effects ----------
@@ -1993,7 +2627,7 @@ const createTouchArbiter = (opts = {}) => {
 
       function cheer(letter, big) {
         if (!audioEnabled) return;
-        const base = 240 + (letter.charCodeAt(0) - 65) * 9;
+        const base = 240 + (letter.toUpperCase().charCodeAt(0) - 65) * 9;
         tone(base, 0.14, "triangle", 0, 0.055);
         tone(base * 1.25, 0.14, "triangle", 0.13, 0.065);
         tone(base * 1.5, 0.18, "triangle", 0.26, 0.075);
@@ -2052,14 +2686,17 @@ const createTouchArbiter = (opts = {}) => {
         } else speak();
       }
 
-      function speakAnimal(letter, animal) {
+      function speakItem(letter, item) {
         speechUnlocked = speechUnlocked || audioEnabled;
-        say(`${letter} is for ${animal.name}`);
+        say(`${letter} is for ${item.name}`);
       }
+
+      function updateSoundButton() { soundButton.textContent = audioEnabled ? "🔊 Sound On" : "🔇 Sound Off"; }
 
       function toggleSound() {
         audioEnabled = !audioEnabled;
-        soundButton.textContent = audioEnabled ? "🔊 Sound On" : "🔇 Sound Off";
+        updateSoundButton();
+        saveProgress();
         if (audioEnabled) { ensureAudio(); boop(); showToast("Sound on!"); }
         else { if ("speechSynthesis" in window) window.speechSynthesis.cancel(); showToast("Sound off"); }
       }
@@ -2111,6 +2748,10 @@ const createTouchArbiter = (opts = {}) => {
           ensureAudio(); unlockSpeech();
           if (phase === "play") finalCheck(true);
         });
+        caseButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); toggleCase(); boop(); });
+        homeButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); showHome(true); boop(); });
+        worldZooButton.addEventListener("click", () => chooseWorld("zoo"));
+        worldGardenButton.addEventListener("click", () => chooseWorld("garden"));
         clearButton.addEventListener("click", () => {
           ensureAudio(); unlockSpeech();
           if (phase !== "play") return;
@@ -2120,6 +2761,7 @@ const createTouchArbiter = (opts = {}) => {
         });
         newLetterButton.addEventListener("click", () => {
           ensureAudio(); unlockSpeech();
+          if (phase === "home") return;
           nextTarget();
           boop();
         });
@@ -2132,14 +2774,16 @@ const createTouchArbiter = (opts = {}) => {
       }
 
       function welcome() {
-        setTarget("A");
-        promptSubtitle.textContent = "Start at the green dot. Follow the dots!";
-        animalEmoji.textContent = "🦁";
-        recognized.textContent = "Hello, little writer!";
-        animalName.textContent = "Welcome to the Zoo";
-        message.textContent = "Follow the dots to make the letter. An animal friend will come!";
-        updateScore();
+        loadProgress();
+        updateSoundButton();
+        updateCaseButton();
+        applyWorld();
+        setTarget(targetLetters[pos[world]] || "A");
         markLetter();
+        // The Garden picture on the home screen is the apple SVG.
+        const apple = WORLDS.garden.items("A")[0];
+        if (apple && apple.svg) $("gardenPic").innerHTML = apple.svg;
+        showHome(false);
       }
 
       setupAlphabet();
@@ -2147,7 +2791,6 @@ const createTouchArbiter = (opts = {}) => {
       initEvents();
       welcome();
       requestAnimationFrame(resizeCanvases);
-
     })();
   </script>
 </body>

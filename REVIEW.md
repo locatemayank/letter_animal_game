@@ -5,6 +5,16 @@ Audience: children aged 3 to 4 tracing uppercase letters on a phone or tablet.
 
 The game is charming. It has a clear loop (trace, then meet an animal), good audio and confetti feedback, it installs as a PWA, and it cycles A to Z so every letter comes up. Most of the problems are in the parts a parent can't see: the letter check accepts almost anything, and the touch handling ignores real drawing or draws when it shouldn't. Both are fixed in the new `index.html`. Ideas for further work are at the end.
 
+## Update 5: more pictures, ◀ ▶ letter buttons, no Done button (November 2026)
+
+**More pictures per letter.** Every world now has about four pictures per letter, and each time a letter comes up one is picked at random (never the same one twice in a row). The Zoo has 4 emoji animals per letter, for example A Alligator / Ant / Angelfish / Ape and P Penguin / Panda / Pig / Peacock. Garden has 104 fruit and veg (exactly 4 per letter) (new ones include Apricot, Beetroot, Kale, Starfruit and Yuzu). Sports has 103 (Bicycle, Frisbee, Surfboard, Trampoline …) and House has 103 (Bath, Teapot, Piano, Xmas tree …). Countries has 90 flags (Belgium, Ireland, Korea, New Zealand, Spain, Wales …, plus the sailors' signal flags for O, X, Y and Z). A few hard letters have 2–3: X in Sports and House, and F, H, J, O, Q, R, V, W, X, Y in Countries (there are only so many countries and flags for those letters). All new pictures are hand-drawn SVG in the existing style.
+
+**◀ and ▶ beside the letter.** Two round orange arrow buttons sit either side of the big letter tile at the top. ▶ goes to the next letter and ◀ to the previous one (◀ on A wraps to Z). They also skip the celebration if a child wants to move on straight away.
+
+**Done and New Letter are gone.** The game already checked the letter on its own: it passes as soon as the letter is complete, and otherwise it looks at the drawing 2.8 s after the last stroke. So the ✅ Done button was not needed, and 🎲 New Letter is replaced by ▶. The bottom row is now ⬅️ Categories, 🧽 Wipe, Install and Sound.
+
+**Code.** Extra pictures live in their own files (`tests/<pack>_more_*.py`), which the pack scripts pick up automatically. The service worker cache is now v21.
+
 ## Update 4: Countries world and a Back button (November 2026)
 
 **Countries.** A fifth world, 🌍 Countries, shows a flag on a little flagpole for each letter: A Australia / Argentina, B Brazil, C Canada / China, D Denmark, E Egypt, F France, G Germany / Greece, H Hungary, I India / Italy, J Japan / Jamaica, K Kenya, L Lebanon, M Mexico, N Nepal / the Netherlands, O Oman, P the Philippines / Peru, Q Qatar, R Rwanda, S South Africa / Sweden, T Thailand / Tanzania, U the United States / the United Kingdom, V Vietnam, W World (a smiling globe), X "X marks the spot" (a treasure map, because no country starts with X), Y Yemen, Z Zambia. Letters with two countries pick one at random. All 36 flags are drawn as SVG from the official proportions and simplified just enough for a small screen (for example Mexico's and Egypt's emblems). Each comes with a friendly hello and one fact, such as "Konnichiwa! A big red sun!" or "Hola! Llamas live here!".

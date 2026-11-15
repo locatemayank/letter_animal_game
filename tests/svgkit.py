@@ -5,6 +5,7 @@ highlight and a small smiling face. Every picture is an SVG with viewBox 0 0 100
 and no ids (several pictures can be on the page at once).
 """
 import json
+import os
 import math
 
 O = "#3b2a1e"
@@ -139,3 +140,22 @@ class Pack:
         with open(path, "w", encoding="utf-8", newline="\n") as f:
             f.write("\n".join(out) + "\n")
         print("wrote", path, sum(len(v) for v in self.items.values()), "pictures")
+
+
+def add_extensions(pack, prefix):
+    """Append the pictures from every <prefix>_more_*.py next to this file (sorted by file name).
+
+    Each extension module defines add_more(K) and calls K.add(letter, name, line, svg) for each
+    extra picture.  Extra pictures come after the original ones for the same letter.
+    """
+    import glob
+    import importlib
+    import sys
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    for path in sorted(glob.glob(os.path.join(here, f"{prefix}_more_*.py"))):
+        mod = importlib.import_module(os.path.splitext(os.path.basename(path))[0])
+        before = sum(len(v) for v in pack.items.values())
+        mod.add_more(pack)
+        print(f"  + {os.path.basename(path)}: {sum(len(v) for v in pack.items.values()) - before} pictures")

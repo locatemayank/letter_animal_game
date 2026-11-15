@@ -27,18 +27,34 @@
         Z: { name: "Zebra", emoji: "🦓", sound: "neigh!" }
       };
 
+      // Four zoo friends per letter; one is picked at random each time a letter comes up.
       const animalVariants = {
-        A: [{ name: "Alligator", emoji: "🐊", sound: "snap snap!" }, { name: "Ant", emoji: "🐜", sound: "tiny steps!" }],
-        B: [{ name: "Bear", emoji: "🐻", sound: "grrr!" }, { name: "Bird", emoji: "🐦", sound: "tweet tweet!" }, { name: "Butterfly", emoji: "🦋", sound: "flutter flutter!" }],
-        C: [{ name: "Cat", emoji: "🐱", sound: "meow!" }, { name: "Cow", emoji: "🐮", sound: "moo!" }],
-        D: [{ name: "Dog", emoji: "🐶", sound: "woof!" }, { name: "Duck", emoji: "🦆", sound: "quack!" }],
-        E: [{ name: "Elephant", emoji: "🐘", sound: "toot toot!" }, { name: "Eagle", emoji: "🦅", sound: "screech!" }],
-        F: [{ name: "Fox", emoji: "🦊", sound: "ring-ding!" }, { name: "Frog", emoji: "🐸", sound: "ribbit!" }, { name: "Fish", emoji: "🐟", sound: "bubble bubble!" }],
-        M: [{ name: "Monkey", emoji: "🐵", sound: "ooh ooh!" }, { name: "Mouse", emoji: "🐭", sound: "squeak!" }],
-        P: [{ name: "Penguin", emoji: "🐧", sound: "waddle waddle!" }, { name: "Panda", emoji: "🐼", sound: "munch munch!" }],
-        R: [{ name: "Rabbit", emoji: "🐰", sound: "hop hop!" }, { name: "Rooster", emoji: "🐓", sound: "cock-a-doodle-doo!" }],
-        T: [{ name: "Tiger", emoji: "🐯", sound: "rawr!" }, { name: "Turtle", emoji: "🐢", sound: "slow steps!" }],
-        W: [{ name: "Whale", emoji: "🐳", sound: "whoooo!" }, { name: "Wolf", emoji: "🐺", sound: "awooo!" }]
+        A: [{ name: "Alligator", emoji: "🐊", sound: "snap snap!" }, { name: "Ant", emoji: "🐜", sound: "tiny steps!" }, { name: "Angelfish", emoji: "🐠", sound: "blub blub!" }, { name: "Ape", emoji: "🦍", sound: "ooh ooh ah ah!" }],
+        B: [{ name: "Bear", emoji: "🐻", sound: "grrr!" }, { name: "Bee", emoji: "🐝", sound: "buzz buzz!" }, { name: "Butterfly", emoji: "🦋", sound: "flutter flutter!" }, { name: "Beaver", emoji: "🦫", sound: "chomp chomp!" }],
+        C: [{ name: "Cat", emoji: "🐱", sound: "meow!" }, { name: "Cow", emoji: "🐮", sound: "moo!" }, { name: "Chick", emoji: "🐤", sound: "cheep cheep!" }, { name: "Crab", emoji: "🦀", sound: "snip snip!" }],
+        D: [{ name: "Dog", emoji: "🐶", sound: "woof!" }, { name: "Duck", emoji: "🦆", sound: "quack!" }, { name: "Dolphin", emoji: "🐬", sound: "click click!" }, { name: "Dinosaur", emoji: "🦕", sound: "stomp stomp!" }],
+        E: [{ name: "Elephant", emoji: "🐘", sound: "toot toot!" }, { name: "Eagle", emoji: "🦅", sound: "screech!" }, { name: "Ewe", emoji: "🐑", sound: "baa baa!" }, { name: "Earthworm", emoji: "🪱", sound: "wiggle wiggle!" }],
+        F: [{ name: "Fox", emoji: "🦊", sound: "ring-ding!" }, { name: "Frog", emoji: "🐸", sound: "ribbit!" }, { name: "Fish", emoji: "🐟", sound: "bubble bubble!" }, { name: "Flamingo", emoji: "🦩", sound: "honk honk!" }],
+        G: [{ name: "Giraffe", emoji: "🦒", sound: "munch munch!" }, { name: "Goat", emoji: "🐐", sound: "maa maa!" }, { name: "Grasshopper", emoji: "🦗", sound: "chirp chirp!" }, { name: "Guinea pig", emoji: "🐹", sound: "squeak squeak!" }],
+        H: [{ name: "Hippo", emoji: "🦛", sound: "splash!" }, { name: "Horse", emoji: "🐴", sound: "neigh!" }, { name: "Hedgehog", emoji: "🦔", sound: "sniff sniff!" }, { name: "Hen", emoji: "🐔", sound: "cluck cluck!" }],
+        I: [{ name: "Iguana", emoji: "🦎", sound: "scurry!" }, { name: "Inchworm", emoji: "🐛", sound: "inch, inch!" }, { name: "Impala", emoji: "🦌", sound: "boing boing!" }, { name: "Ice bear", emoji: "🐻‍❄️", sound: "brrr!" }],
+        J: [{ name: "Jaguar", emoji: "🐆", sound: "roar!" }, { name: "Jackrabbit", emoji: "🐇", sound: "hop hop!" }, { name: "June bug", emoji: "🪲", sound: "buzz!" }, { name: "Jersey cow", emoji: "🐄", sound: "moo moo!" }],
+        K: [{ name: "Koala", emoji: "🐨", sound: "sleepy munch!" }, { name: "Kangaroo", emoji: "🦘", sound: "boing boing!" }, { name: "Kitten", emoji: "🐈", sound: "mew mew!" }, { name: "Komodo dragon", emoji: "🐉", sound: "hiss!" }],
+        L: [{ name: "Lion", emoji: "🦁", sound: "roar!" }, { name: "Ladybug", emoji: "🐞", sound: "fly away!" }, { name: "Lobster", emoji: "🦞", sound: "click click!" }, { name: "Llama", emoji: "🦙", sound: "hum hum!" }],
+        M: [{ name: "Monkey", emoji: "🐵", sound: "ooh ooh!" }, { name: "Mouse", emoji: "🐭", sound: "squeak!" }, { name: "Mammoth", emoji: "🦣", sound: "trumpet!" }, { name: "Macaw", emoji: "🦜", sound: "squawk!" }],
+        N: [{ name: "Narwhal", emoji: "🐋", sound: "splash sparkle!" }, { name: "Nurse shark", emoji: "🦈", sound: "swish swish!" }, { name: "Nautilus", emoji: "🐚", sound: "bloop!" }, { name: "Newt", emoji: "🦎", sound: "splish!" }],
+        O: [{ name: "Owl", emoji: "🦉", sound: "hoot hoot!" }, { name: "Octopus", emoji: "🐙", sound: "wiggle wiggle!" }, { name: "Otter", emoji: "🦦", sound: "splish splash!" }, { name: "Orangutan", emoji: "🦧", sound: "ooh ooh!" }],
+        P: [{ name: "Penguin", emoji: "🐧", sound: "waddle waddle!" }, { name: "Panda", emoji: "🐼", sound: "munch munch!" }, { name: "Pig", emoji: "🐷", sound: "oink oink!" }, { name: "Peacock", emoji: "🦚", sound: "ta-da!" }],
+        Q: [{ name: "Quail", emoji: "🐦", sound: "tweet!" }, { name: "Queen bee", emoji: "🐝", sound: "buzz buzz!" }, { name: "Quarter horse", emoji: "🐎", sound: "gallop gallop!" }, { name: "Quetzal", emoji: "🦜", sound: "whistle!" }],
+        R: [{ name: "Rabbit", emoji: "🐰", sound: "hop hop!" }, { name: "Rooster", emoji: "🐓", sound: "cock-a-doodle-doo!" }, { name: "Raccoon", emoji: "🦝", sound: "sniff sniff!" }, { name: "Rhino", emoji: "🦏", sound: "stomp stomp!" }],
+        S: [{ name: "Snake", emoji: "🐍", sound: "ssss!" }, { name: "Squirrel", emoji: "🐿️", sound: "nibble nibble!" }, { name: "Snail", emoji: "🐌", sound: "slowly, slowly!" }, { name: "Swan", emoji: "🦢", sound: "honk!" }],
+        T: [{ name: "Tiger", emoji: "🐯", sound: "rawr!" }, { name: "Turtle", emoji: "🐢", sound: "slow steps!" }, { name: "Turkey", emoji: "🦃", sound: "gobble gobble!" }, { name: "T-rex", emoji: "🦖", sound: "roar!" }],
+        U: [{ name: "Unicorn", emoji: "🦄", sound: "sparkle!" }, { name: "Uakari monkey", emoji: "🐒", sound: "ooh ooh!" }, { name: "Upside-down sloth", emoji: "🦥", sound: "sleepy yawn!" }, { name: "Urchin", emoji: "🦔", sound: "snuffle snuffle!" }],
+        V: [{ name: "Vulture", emoji: "🦅", sound: "whoosh!" }, { name: "Vampire bat", emoji: "🦇", sound: "flap flap!" }, { name: "Vicuna", emoji: "🦙", sound: "hum hum!" }, { name: "Viper", emoji: "🐍", sound: "hiss hiss!" }],
+        W: [{ name: "Whale", emoji: "🐳", sound: "whoooo!" }, { name: "Wolf", emoji: "🐺", sound: "awooo!" }, { name: "Walrus", emoji: "🦭", sound: "arf arf!" }, { name: "Wild boar", emoji: "🐗", sound: "oink oink!" }],
+        X: [{ name: "X-ray Fish", emoji: "🐟", sound: "bubble bubble!" }, { name: "Xerus", emoji: "🐿️", sound: "chitter chitter!" }, { name: "Xolo dog", emoji: "🐕", sound: "woof woof!" }, { name: "Xenops", emoji: "🐦", sound: "tweet tweet!" }],
+        Y: [{ name: "Yak", emoji: "🐂", sound: "moo!" }, { name: "Yellow chick", emoji: "🐥", sound: "peep peep!" }, { name: "Yeti crab", emoji: "🦀", sound: "snip snip!" }, { name: "Yellowfin tuna", emoji: "🐟", sound: "zoom zoom!" }],
+        Z: [{ name: "Zebra", emoji: "🦓", sound: "neigh!" }, { name: "Zebu", emoji: "🐃", sound: "moo moo!" }, { name: "Zebrafish", emoji: "🐠", sound: "swish swish!" }, { name: "Zebra finch", emoji: "🐦", sound: "cheep cheep!" }]
       };
 
       // ---------- worlds (content packs) ----------
@@ -102,7 +118,7 @@
       const hint = $("hint"), targetLetterEl = $("targetLetter"), promptTitle = $("promptTitle"), promptSubtitle = $("promptSubtitle");
       const animalCard = $("animalCard"), animalEmoji = $("animalEmoji"), recognized = $("recognized"), animalName = $("animalName");
       const message = $("message"), starsEl = $("stars"), foundCountEl = $("foundCount"), alphabetEl = $("alphabet"), toast = $("toast");
-      const tryButton = $("tryButton"), clearButton = $("clearButton"), newLetterButton = $("newLetterButton");
+      const clearButton = $("clearButton"), prevLetterButton = $("prevLetterButton"), nextLetterButton = $("nextLetterButton");
       const installButton = $("installButton"), soundButton = $("soundButton");
       const homeEl = $("home"), homeButton = $("homeButton"), caseButton = $("caseButton");
       const worldButtons = Array.from(document.querySelectorAll(".world-btn[data-world]"));
@@ -131,7 +147,7 @@
       // Found items per world, keyed by UPPERCASE letter (shared by A and a).
       const foundBy = perWorld(() => new Set());
       const foundSet = () => foundBy[world];
-      const cycleState = perWorld(() => ({}));
+      const lastPick = perWorld(() => ({}));   // index of the picture shown last time, per letter
       const alphabetChips = new Map();
       const arbiter = createTouchArbiter();
 
@@ -168,9 +184,11 @@
       function getItemForLetter(letter) {
         const L = letter.toUpperCase();
         const variants = WORLDS[world].items(L);
-        const state = cycleState[world];
-        const index = (state[L] || 0) % variants.length;
-        state[L] = (index + 1) % variants.length;
+        // Random pick each time, but never the same picture twice in a row for a letter.
+        const last = lastPick[world][L];
+        let index = Math.floor(Math.random() * variants.length);
+        if (variants.length > 1 && index === last) index = (index + 1 + Math.floor(Math.random() * (variants.length - 1))) % variants.length;
+        lastPick[world][L] = index;
         return variants[index];
       }
 
@@ -649,10 +667,11 @@
           return;
         }
         clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => finalCheck(false), IDLE_CHECK_MS);
+        idleTimer = setTimeout(finalCheck, IDLE_CHECK_MS);
       }
 
-      function finalCheck(manual) {
+      // Runs by itself once the child pauses (there is no Done button).
+      function finalCheck() {
         clearTimeout(idleTimer); idleTimer = null;
         if (phase !== "play" || drawing) return;
         let res = LetterEngine.evaluate(guide, strokes, targetLetter, { final: true, leniency });
@@ -695,8 +714,7 @@
             animateLetter(targetLetter);
             break;
           default: // empty
-            if (manual) { showToast("Start at the green dot! 🟢"); say("Start at the green dot."); }
-            else if (strokes.length) clearDrawing(true);
+            if (strokes.length) clearDrawing(true);
         }
       }
 
@@ -826,6 +844,11 @@
         startLetter(targetLetters[(targetIndex + 1) % targetLetters.length]);
       }
 
+      function prevTarget() {
+        const n = targetLetters.length;
+        startLetter(targetLetters[(targetIndex - 1 + n) % n]);
+      }
+
       // ---------- ABC ⇄ abc ----------
       function updateCaseButton() {
         caseButton.classList.toggle("lower", isLowerCase());
@@ -882,7 +905,7 @@
         startLetter(targetLetters[pos[world]] || "A", false);
         const W = WORLDS[world];
         if (W.hello) setPicture({ emoji: W.hello });
-        else setPicture(W.items("A")[0]);
+        else { const pics = W.items("A"); setPicture(pics[Math.floor(Math.random() * pics.length)]); }
         recognized.textContent = "Hello, little writer!";
         animalName.textContent = W.welcome;
         message.textContent = W.intro;
@@ -1078,10 +1101,6 @@
         document.addEventListener("gesturestart", e => e.preventDefault());
         document.addEventListener("dblclick", e => e.preventDefault());
 
-        tryButton.addEventListener("click", () => {
-          ensureAudio(); unlockSpeech();
-          if (phase === "play") finalCheck(true);
-        });
         caseButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); toggleCase(); boop(); });
         // Every "back to the categories" button (the labelled pill by the prompt and the one in the controls row).
         document.querySelectorAll("[data-go-home]").forEach(b => b.addEventListener("click", () => {
@@ -1095,7 +1114,14 @@
           clearDrawing();
           boop();
         });
-        newLetterButton.addEventListener("click", () => {
+        // ◀ / ▶ beside the big letter: step through the alphabet (also skips a celebration).
+        prevLetterButton.addEventListener("click", () => {
+          ensureAudio(); unlockSpeech();
+          if (phase === "home") return;
+          prevTarget();
+          boop();
+        });
+        nextLetterButton.addEventListener("click", () => {
           ensureAudio(); unlockSpeech();
           if (phase === "home") return;
           nextTarget();

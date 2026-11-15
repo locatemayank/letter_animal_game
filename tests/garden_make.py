@@ -327,6 +327,14 @@ add("Z","Zucchini","Long and green!", svg(
     dot(30,66,1.2,"#c8e6c9"),dot(54,48,1.2,"#c8e6c9"),dot(62,34,1.2,"#c8e6c9"),
     HL(26,70,2.5,6,45), face(48,52,0.9,"#13331a")))
 
+# Extra pictures from garden_more_*.py (each defines add_more(K) and calls K.add(...)).
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from svgkit import add_extensions
+class _Shim:
+    items = items
+    add = staticmethod(add)
+add_extensions(_Shim, "garden")
 order=[chr(c) for c in range(65,91)]
 out=["// ==GARDEN START==","// Garden world: fruit & vegetables A–Z, all hand-made SVG (viewBox 0 0 100 100).","const GARDEN_ITEMS = {"]
 for i,k in enumerate(order):
@@ -338,5 +346,5 @@ for i,k in enumerate(order):
         out.append(f'    {{ name: {json.dumps(it["name"])}, line: {json.dumps(it["line"])}, svg: `{s}` }}{comma}')
     out.append("  ]" + ("," if i<len(order)-1 else ""))
 out.append("};"); out.append("// ==GARDEN END=="); out.append('if (typeof module !== "undefined") module.exports = GARDEN_ITEMS;')
-open("/sessions/keen-intelligent-gates/mnt/outputs/tests/garden.js","w",encoding="utf-8").write("\n".join(out)+"\n")
+open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "garden.js"),"w",encoding="utf-8",newline="\n").write("\n".join(out)+"\n")
 print("ok", sum(len(v) for v in items.values()))

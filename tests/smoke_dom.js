@@ -79,8 +79,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   fire("drawCanvas:pointerdown", { pointerId: id, clientX: pts[0].x, clientY: pts[0].y });
   pts.slice(1).forEach(p => fire("drawCanvas:pointermove", { pointerId: id, clientX: p.x, clientY: p.y }));
   fire("win:pointerup", { pointerId: id });
-  (listeners["tryButton:click"] || []).forEach(f => f());
-  console.log("half B + Done:", g("message"));
+  await sleep(3000); flushRaf();   // no Done button: the pause triggers the check
+  console.log("half B + pause:", g("message"));
   // finish B
   trace("B"); await sleep(400);
   console.log("after full B:", g("recognized"), "stars", g("stars"), "found", g("foundCount"));
@@ -92,16 +92,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   (listeners["win:resize"] || []).forEach(f => f()); flushRaf();
   await sleep(4800); flushRaf();
   console.log("target now:", g("promptTitle"));
-  // zigzag scribble then Done
+  // zigzag scribble then pause
   let id2 = pid++; fire("drawCanvas:pointerdown", { pointerId: id2, clientX: 150, clientY: 100 });
   for (let i = 0; i < 16; i++) fire("drawCanvas:pointermove", { pointerId: id2, clientX: i % 2 ? 480 : 150, clientY: 100 + i * 20 });
   fire("win:pointerup", { pointerId: id2 });
-  (listeners["tryButton:click"] || []).forEach(f => f());
-  console.log("scribble + Done:", g("message"));
+  await sleep(3000); flushRaf();
+  console.log("scribble + pause:", g("message"));
   await sleep(3500); flushRaf();
   // draw an L freehand small in the corner while target is C
   trace("L"); // L traced on the full layout while target is C
-  (listeners["tryButton:click"] || []).forEach(f => f());
+  await sleep(3000); flushRaf();
   console.log("L while target C:", g("recognized"), "|", g("message"));
   // palm: big contact ignored
   const st = g("stars");
@@ -122,11 +122,32 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(4800); flushRaf();
   console.log("next lowercase target:", g("promptTitle"));
   // i: stem + a tap on the dot
-  click("newLetterButton"); flushRaf();
-  while (!/trace i\?/.test(g("promptTitle"))) { click("newLetterButton"); flushRaf(); }
+  click("nextLetterButton"); flushRaf();
+  while (!/trace i\?/.test(g("promptTitle"))) { click("nextLetterButton"); flushRaf(); }
   trace("i"); await sleep(400); flushRaf();
   console.log("i (stem + dot tap):", g("recognized"), "|", g("animalName"));
   await sleep(4800); flushRaf();
+
+  // ---- ◀ / ▶ buttons and random pictures ----
+  console.log("buttons gone:", !("tryButton:click" in listeners), !("newLetterButton:click" in listeners));
+  const t0 = g("promptTitle");
+  click("prevLetterButton"); flushRaf(); const tPrev = g("promptTitle");
+  click("nextLetterButton"); flushRaf();
+  console.log("prev/next:", t0, "->", tPrev, "->", g("promptTitle"));
+  click("caseButton"); flushRaf();                        // back to capitals
+  while (!/trace A\?/.test(g("promptTitle"))) { click("prevLetterButton"); flushRaf(); }
+  click("prevLetterButton"); flushRaf(); console.log("◀ from A wraps to:", g("promptTitle"));
+  click("nextLetterButton"); flushRaf();
+  const names = [];
+  for (let k = 0; k < 10; k++) {
+    trace("A"); await sleep(400); flushRaf();
+    names.push(g("animalName"));
+    click("nextLetterButton"); flushRaf(); click("prevLetterButton"); flushRaf();   // ▶ during the party skips it
+  }
+  const repeats = names.filter((n, i) => i && n === names[i - 1]).length;
+  console.log("A x10:", names.join(", "), "| distinct", new Set(names).size, "| back-to-back repeats", repeats);
+  await sleep(4800); flushRaf();
+  console.log("no auto-advance after ◀/▶ skip:", g("promptTitle"));
 
   // ---- Garden world ----
   click("homeButton"); flushRaf();

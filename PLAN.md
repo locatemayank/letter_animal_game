@@ -14,7 +14,9 @@ These choices are already decided:
 - the Garden world (all custom SVG);
 - lowercase a–z on school lines, with an ABC ⇄ abc button;
 - three extra picture worlds that were not in the original plan, ⚽ Sports, 🛋️ House and 🌍 Countries (custom SVG; Countries shows flags);
-- a labelled "⬅️ Categories" button to go back to the home screen.
+- a labelled "⬅️ Categories" button to go back to the home screen;
+- about 4 pictures per letter in every world, picked at random each time;
+- ◀ / ▶ letter buttons beside the letter tile (the Done and New Letter buttons are gone).
 
 That covers most of phase 1, all of phase 3 and the lowercase part of phase 5. Next up: Numbers 0–9.
 

@@ -8,12 +8,13 @@ These choices are already decided:
 - **Numbers reward:** tracing a number makes that many objects pop in, and they are counted aloud.
 - **Age range:** the game starts at 3–4 years and grows to 3–6 years, adding lowercase, bigger numbers and short words.
 
-**Status (14 Nov 2026):** the following are built:
+**Status (15 Nov 2026):** the following are built:
 
 - the home screen with world buttons and saved progress;
 - the Garden world (all custom SVG);
 - lowercase a–z on school lines, with an ABC ⇄ abc button;
-- two extra picture worlds that were not in the original plan, ⚽ Sports and 🛋️ House (custom SVG).
+- three extra picture worlds that were not in the original plan, ⚽ Sports, 🛋️ House and 🌍 Countries (custom SVG; Countries shows flags);
+- a labelled "⬅️ Categories" button to go back to the home screen.
 
 That covers most of phase 1, all of phase 3 and the lowercase part of phase 5. Next up: Numbers 0–9.
 

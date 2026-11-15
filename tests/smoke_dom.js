@@ -21,7 +21,8 @@ global.document = {
   createElement: () => mkEl("anon" + Math.random()),
   body: { appendChild() {}, classList: { _c: new Set(), toggle(c, on) { on ? this._c.add(c) : this._c.delete(c); }, add(c) { this._c.add(c); }, remove(c) { this._c.delete(c); }, contains(c) { return this._c.has(c); } } },
   addEventListener(t, f) { (listeners["doc:" + t] ||= []).push(f); },
-  querySelectorAll: sel => !/world-btn/.test(sel) ? [] : ["Zoo", "Garden", "Sports", "House"].map(W => {
+  querySelectorAll: sel => /data-go-home/.test(sel) ? ["homeButton", "backButton"].map(id => els[id] || mkEl(id))
+    : !/world-btn/.test(sel) ? [] : ["Zoo", "Garden", "Sports", "House", "Countries"].map(W => {
     const b = els["world" + W] || mkEl("world" + W);
     b.dataset = { world: W.toLowerCase() };
     const prog = els["progress" + W] || mkEl("progress" + W), pic = els["pic" + W] || mkEl("pic" + W);
@@ -139,8 +140,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(4800); flushRaf();
 
   // ---- Sports and House worlds ----
-  for (const [W, key] of [["Sports", "sports"], ["House", "house"]]) {
-    click("homeButton"); flushRaf();
+  for (const [W, key] of [["Sports", "sports"], ["House", "house"], ["Countries", "countries"]]) {
+    click(key === "countries" ? "backButton" : "homeButton"); flushRaf();
+    if (key === "countries") console.log("labelled back button returns home:", !els.home.classList.contains("hidden"));
     console.log(`home pic ${W} is svg:`, /<svg/.test(els["pic" + W].innerHTML));
     click("world" + W); flushRaf();
     const t = g("promptTitle").match(/trace (\w)\?/)[1];
@@ -150,7 +152,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await sleep(4800); flushRaf();
   }
   click("homeButton"); flushRaf();
-  console.log("progress:", ["Zoo", "Garden", "Sports", "House"].map(W => W + " " + g("progress" + W)).join(", "));
+  console.log("progress:", ["Zoo", "Garden", "Sports", "House", "Countries"].map(W => W + " " + g("progress" + W)).join(", "));
   const saved = JSON.parse(store["magicLetterZoo.progress.v1"] || "{}");
   console.log("saved found:", JSON.stringify(saved.found), "| world:", saved.world);
   process.exit(0);

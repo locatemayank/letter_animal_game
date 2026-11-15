@@ -76,6 +76,15 @@
           praise: ["Wonderful!", "Wow!", "Super writing!", "You did it!", "Fantastic!", "Hooray!"],
           items: L => (typeof HOUSE_ITEMS !== "undefined" && HOUSE_ITEMS[L]) || [{ name: "Sofa", emoji: "🛋️", line: "Sit down!" }],
           cheer: item => item.line || "Hooray!", homePic: "S"
+        },
+        countries: {
+          icon: "🌍", title: "Magic Letter Countries", subtitle: "✏️ Trace a letter. Find a flag! 🚩",
+          foundLabel: "Flags", welcome: "Welcome to Countries", hello: null,
+          intro: "Follow the dots to make the letter. A flag will wave!",
+          praise: ["Wonderful!", "Wow!", "World champion!", "Super writing!", "You did it!", "Fantastic!"],
+          items: L => (typeof COUNTRY_ITEMS !== "undefined" && COUNTRY_ITEMS[L]) || [{ name: "World", emoji: "🌍", line: "Our big world!" }],
+          cheer: item => item.line || "Hooray!",
+          homeSvg: () => (typeof COUNTRY_HOME_SVG !== "undefined" ? COUNTRY_HOME_SVG : null)
         }
       };
       const WORLD_KEYS = Object.keys(WORLDS);
@@ -1074,7 +1083,10 @@
           if (phase === "play") finalCheck(true);
         });
         caseButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); toggleCase(); boop(); });
-        homeButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); showHome(true); boop(); });
+        // Every "back to the categories" button (the labelled pill by the prompt and the one in the controls row).
+        document.querySelectorAll("[data-go-home]").forEach(b => b.addEventListener("click", () => {
+          ensureAudio(); unlockSpeech(); showHome(true); boop();
+        }));
         worldButtons.forEach(btn => btn.addEventListener("click", () => chooseWorld(btn.dataset.world)));
         clearButton.addEventListener("click", () => {
           ensureAudio(); unlockSpeech();
@@ -1107,8 +1119,10 @@
         // Picture-pack worlds show one of their own SVG pictures on the home screen.
         worldButtons.forEach(btn => {
           const W = WORLDS[btn.dataset.world], pic = btn.querySelector(".world-pic");
+          const custom = W && W.homeSvg ? W.homeSvg() : null;
           const item = W && W.homePic ? W.items(W.homePic)[0] : null;
-          if (pic && item && item.svg) pic.innerHTML = item.svg;
+          if (pic && custom) pic.innerHTML = custom;
+          else if (pic && item && item.svg) pic.innerHTML = item.svg;
         });
         showHome(false);
       }

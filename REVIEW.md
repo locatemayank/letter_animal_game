@@ -5,6 +5,14 @@ Audience: children aged 3 to 4 tracing uppercase letters on a phone or tablet.
 
 The game is charming. It has a clear loop (trace, then meet an animal), good audio and confetti feedback, it installs as a PWA, and it cycles A to Z so every letter comes up. Most of the problems are in the parts a parent can't see: the letter check accepts almost anything, and the touch handling ignores real drawing or draws when it shouldn't. Both are fixed in the new `index.html`. Ideas for further work are at the end.
 
+## Update 4: Countries world and a Back button (November 2026)
+
+**Countries.** A fifth world, 🌍 Countries, shows a flag on a little flagpole for each letter: A Australia / Argentina, B Brazil, C Canada / China, D Denmark, E Egypt, F France, G Germany / Greece, H Hungary, I India / Italy, J Japan / Jamaica, K Kenya, L Lebanon, M Mexico, N Nepal / the Netherlands, O Oman, P the Philippines / Peru, Q Qatar, R Rwanda, S South Africa / Sweden, T Thailand / Tanzania, U the United States / the United Kingdom, V Vietnam, W World (a smiling globe), X "X marks the spot" (a treasure map, because no country starts with X), Y Yemen, Z Zambia. Letters with two countries pick one at random. All 36 flags are drawn as SVG from the official proportions and simplified just enough for a small screen (for example Mexico's and Egypt's emblems). Each comes with a friendly hello and one fact, such as "Konnichiwa! A big red sun!" or "Hola! Llamas live here!".
+
+**Back to the categories.** A green "⬅️ Categories" button is now the first button under the drawing area, so a parent can always find the way back. The small 🏠 button by the prompt still works too. Both go back to the "Where shall we play?" screen.
+
+**Home screen.** Five buttons now sit in rows of 3 + 2 on tablets, 2 + 2 + 1 on phones held upright and one row of five when the screen is sideways. The service worker cache is now v20.
+
 ## Update 3: Sports and House worlds (November 2026)
 
 **Two new worlds.** The home screen now has four picture buttons: 🦁 Zoo, 🍎 Garden, ⚽ Sports and 🛋️ House. They sit in a 2 × 2 grid when the screen is upright and in one row of four when it is sideways.
@@ -202,7 +210,7 @@ These are ordered by how much they help a 3 to 4-year-old learn, and by effort.
 ## 5. Files
 
 - `index.html` is the new game, as a single file.
-- `sw.js` is the service worker, v19.
+- `sw.js` is the service worker, v20.
 - `index_original.html` is the version reviewed, for diffing.
 - `tests/` holds the standalone engine (`engine.js`), the touch arbiter (`arbiter.js`) and the game controller source (`game.js`), plus:
   - `build.py`, which builds `index.html` from these files;

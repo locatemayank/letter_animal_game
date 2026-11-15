@@ -196,6 +196,19 @@
       function setPicture(item) {
         if (item && item.svg) { animalEmoji.innerHTML = item.svg; animalEmoji.classList.add("is-svg"); }
         else { animalEmoji.textContent = (item && item.emoji) || "✏️"; animalEmoji.classList.remove("is-svg"); }
+        fitPicture();
+      }
+
+      // Shrink the picture so it always fits the space above the words (short or old screens).
+      const picArea = $("picArea");
+      function fitPicture() {
+        if (!picArea || typeof getComputedStyle !== "function") return;
+        animalEmoji.style.fontSize = "";
+        const h = picArea.clientHeight, w = picArea.clientWidth;
+        if (!h || !w) return;
+        const cssSize = parseFloat(getComputedStyle(animalEmoji).fontSize) || 0;
+        const fit = Math.max(40, Math.floor(Math.min((h - 10) / 1.06, (w - 10) / 1.1)));
+        if (cssSize && fit < cssSize) animalEmoji.style.fontSize = fit + "px";
       }
 
       // The big target tile draws the letter from the same strokes the child traces,
@@ -1130,9 +1143,18 @@
         installButton.addEventListener("click", installWebApp);
         soundButton.addEventListener("click", () => { unlockSpeech(); toggleSound(); });
 
-        if ("ResizeObserver" in window) new ResizeObserver(() => resizeCanvases()).observe(canvasWrap);
-        window.addEventListener("resize", resizeCanvases);
-        window.addEventListener("orientationchange", () => setTimeout(resizeCanvases, 180));
+        if ("ResizeObserver" in window) {
+          new ResizeObserver(() => resizeCanvases()).observe(canvasWrap);
+          if (picArea) new ResizeObserver(() => fitPicture()).observe(picArea);
+        }
+        window.addEventListener("resize", () => { resizeCanvases(); fitPicture(); });
+        window.addEventListener("orientationchange", () => setTimeout(() => { resizeCanvases(); fitPicture(); }, 180));
+        // Upright phone: "turn me sideways" tip, with a grown-up button to keep playing upright.
+        const uprightButton = $("uprightButton");
+        if (uprightButton) uprightButton.addEventListener("click", () => {
+          document.documentElement.classList.add("upright-ok");
+          setTimeout(() => { resizeCanvases(); fitPicture(); }, 50);
+        });
       }
 
       function welcome() {
@@ -1157,4 +1179,4 @@
       setupWebAppInstall();
       initEvents();
       welcome();
-      requestAnimationFrame(resizeCanvases);
+      requestAnimationFrame(() => { resizeCanvases(); fitPicture(); });

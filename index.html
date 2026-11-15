@@ -3,6 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <script>
+    // Phones get the side-by-side "desktop" layout: held sideways, the page is laid out 940px wide and the
+    // browser shrinks it to fit the screen. Held upright, a "turn me sideways" tip covers the game.
+    (function () {
+      var meta = document.querySelector('meta[name="viewport"]');
+      var UPRIGHT = meta.getAttribute("content"), SIDEWAYS = "width=940, user-scalable=no, viewport-fit=cover";
+      function isPhone() {
+        var s = Math.min(screen.width || 0, screen.height || 0);
+        var touch = (navigator.maxTouchPoints || 0) > 0 || "ontouchstart" in window;
+        return touch && s > 0 && s < 600;
+      }
+      function isSideways() {
+        var o = screen.orientation && screen.orientation.type;
+        if (o) return o.indexOf("landscape") === 0;
+        if (typeof window.orientation === "number") return Math.abs(window.orientation) === 90;
+        return window.innerWidth > window.innerHeight;
+      }
+      function apply() {
+        var phone = isPhone(), sideways = phone && isSideways(), want = sideways ? SIDEWAYS : UPRIGHT;
+        if (meta.getAttribute("content") !== want) meta.setAttribute("content", want);
+        var c = document.documentElement.classList;
+        c.toggle("phone", phone);
+        c.toggle("phone-upright", phone && !sideways);
+      }
+      apply();
+      window.addEventListener("orientationchange", function () { setTimeout(apply, 60); });
+      window.addEventListener("resize", apply);
+      if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener("change", apply);
+    })();
+  </script>
   <meta name="theme-color" content="#76d7ff" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -106,7 +136,7 @@
 
     .game {
       display: grid;
-      grid-template-columns: minmax(520px, 1.35fr) minmax(360px, 0.85fr);
+      grid-template-columns: minmax(480px, 1.2fr) minmax(380px, 0.95fr);
       gap: clamp(0.8rem, 1.8vw, 1.4rem);
       align-items: stretch;
     }
@@ -313,9 +343,12 @@
     }
 
     .animal-stage {
-      display: grid;
-      place-items: center;
-      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1 1 auto;
+      min-height: 0;
       padding: 1rem;
       text-align: center;
     }
@@ -330,9 +363,29 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
       border: 4px dashed rgba(124, 92, 255, 0.25);
       transition: transform 0.18s ease;
+    }
+
+    /* The picture takes whatever room is left; the words always sit at the bottom of the card. */
+    .pic-area {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .card-text {
+      flex: 0 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.15rem 0.4rem 0.35rem;
     }
 
     .animal-card.pop {
@@ -491,13 +544,15 @@
       html,
       body {
         height: 100vh;
-        min-height: 100vh;
+        height: 100dvh;
+        min-height: 0;
         overflow: hidden;
       }
 
       .app {
         height: 100vh;
-        min-height: 100vh;
+        height: 100dvh;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         padding: clamp(0.35rem, 0.8vw, 0.65rem);
@@ -531,7 +586,7 @@
       .game {
         flex: 1;
         min-height: 0;
-        grid-template-columns: minmax(560px, 1.48fr) minmax(330px, 0.72fr);
+        grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
         gap: clamp(0.45rem, 1vw, 0.8rem);
       }
 
@@ -621,15 +676,15 @@
       }
 
       .animal-card {
-        width: min(100%, 500px);
+        width: min(100%, 640px);
+        flex: 1 1 auto;
         min-height: 0;
-        height: 100%;
         padding: 0.2rem;
         border-radius: 24px;
       }
 
       .animal-emoji {
-        font-size: clamp(8.2rem, 19vw, 15rem);
+        font-size: clamp(8.2rem, 23vw, 19rem);
         line-height: 0.84;
       }
 
@@ -845,6 +900,62 @@
       button.world-btn { width: 17.5vw; padding: 0.5rem 0.3rem 0.7rem; border-width: 4px; border-radius: 26px; }
       .world-name { font-size: clamp(1rem, 2.3vw, 1.5rem); }
       .world-progress { font-size: 0.85rem; padding: 0.15rem 0.5rem; }
+    }
+
+    /* ---------- upright phone: "turn me sideways" tip (sits under the home screen) ---------- */
+    .turn-tip {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.4rem;
+      padding: 1.5rem;
+      text-align: center;
+      background:
+        radial-gradient(circle at 12% 12%, #fff8b5 0 7rem, transparent 7.1rem),
+        linear-gradient(#8be3ff 0%, #d8f8ff 56%, #baf6c3 56%, #64db77 100%);
+    }
+    html.phone-upright:not(.upright-ok) .turn-tip {
+      display: flex;
+    }
+    .turn-phone {
+      font-size: 9rem;
+      line-height: 1;
+      animation: turnPhone 2.4s ease-in-out infinite;
+    }
+    .turn-text {
+      font-size: 2.3rem;
+      font-weight: 1000;
+      color: #fff;
+      text-shadow: 0 4px 0 #2faee5, 0 7px 0 #228cc3, 0 10px 18px rgba(0, 0, 0, 0.16);
+    }
+    button.turn-ok {
+      min-height: 0;
+      padding: 0.6rem 1.1rem;
+      font-size: 1rem;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 5px 0 rgba(36, 59, 107, 0.18);
+    }
+    @keyframes turnPhone {
+      0%, 25% { transform: rotate(0deg); }
+      55%, 85% { transform: rotate(-90deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    /* Phone held sideways: the page is 940px wide but short, so trim the title. */
+    @media (min-width: 900px) and (orientation: landscape) and (max-height: 560px) {
+      header { margin-bottom: 0.25rem; }
+      h1 { font-size: 1.9rem; }
+      .subtitle { display: none; }
+      .score-row { padding-top: 0.3rem; }
+      .pill { padding: 0.2rem 0.4rem; font-size: 0.78rem; }
+      .animal-stage { padding: 0.3rem 0.45rem; }
+      .alphabet { gap: 0.18rem; padding: 0 0.4rem 0.4rem; }
+      .letter-chip { width: 1.4rem; height: 1.4rem; font-size: 0.72rem; }
     }
 
     /* ---------- prompt bar: home button, ABC ⇄ abc, target tile ---------- */
@@ -1074,10 +1185,14 @@
 
         <div class="animal-stage">
           <div class="animal-card" id="animalCard">
-            <div class="animal-emoji" id="animalEmoji" aria-hidden="true">🦄</div>
-            <div class="recognized" id="recognized">Ready?</div>
-            <div class="animal-name" id="animalName">Magic Zoo</div>
-            <div class="message" id="message">Follow the dots to make the letter. An animal friend will come!</div>
+            <div class="pic-area" id="picArea">
+              <div class="animal-emoji" id="animalEmoji" aria-hidden="true">🦄</div>
+            </div>
+            <div class="card-text">
+              <div class="recognized" id="recognized">Ready?</div>
+              <div class="animal-name" id="animalName">Magic Zoo</div>
+              <div class="message" id="message">Follow the dots to make the letter. An animal friend will come!</div>
+            </div>
           </div>
         </div>
 
@@ -1085,6 +1200,12 @@
       </div>
     </section>
   </main>
+
+  <div class="turn-tip" id="turnTip" role="dialog" aria-label="Turn your phone sideways">
+    <div class="turn-phone" aria-hidden="true">📱</div>
+    <div class="turn-text">Turn me sideways!</div>
+    <button class="turn-ok" id="uprightButton" type="button">Keep it upright</button>
+  </div>
 
   <div class="home" id="home" role="dialog" aria-modal="true" aria-labelledby="homeTitle">
     <h2 class="home-title" id="homeTitle">Where shall we play?</h2>
@@ -2545,6 +2666,19 @@ const COUNTRY_HOME_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/20
       function setPicture(item) {
         if (item && item.svg) { animalEmoji.innerHTML = item.svg; animalEmoji.classList.add("is-svg"); }
         else { animalEmoji.textContent = (item && item.emoji) || "✏️"; animalEmoji.classList.remove("is-svg"); }
+        fitPicture();
+      }
+
+      // Shrink the picture so it always fits the space above the words (short or old screens).
+      const picArea = $("picArea");
+      function fitPicture() {
+        if (!picArea || typeof getComputedStyle !== "function") return;
+        animalEmoji.style.fontSize = "";
+        const h = picArea.clientHeight, w = picArea.clientWidth;
+        if (!h || !w) return;
+        const cssSize = parseFloat(getComputedStyle(animalEmoji).fontSize) || 0;
+        const fit = Math.max(40, Math.floor(Math.min((h - 10) / 1.06, (w - 10) / 1.1)));
+        if (cssSize && fit < cssSize) animalEmoji.style.fontSize = fit + "px";
       }
 
       // The big target tile draws the letter from the same strokes the child traces,
@@ -3479,9 +3613,18 @@ const COUNTRY_HOME_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/20
         installButton.addEventListener("click", installWebApp);
         soundButton.addEventListener("click", () => { unlockSpeech(); toggleSound(); });
 
-        if ("ResizeObserver" in window) new ResizeObserver(() => resizeCanvases()).observe(canvasWrap);
-        window.addEventListener("resize", resizeCanvases);
-        window.addEventListener("orientationchange", () => setTimeout(resizeCanvases, 180));
+        if ("ResizeObserver" in window) {
+          new ResizeObserver(() => resizeCanvases()).observe(canvasWrap);
+          if (picArea) new ResizeObserver(() => fitPicture()).observe(picArea);
+        }
+        window.addEventListener("resize", () => { resizeCanvases(); fitPicture(); });
+        window.addEventListener("orientationchange", () => setTimeout(() => { resizeCanvases(); fitPicture(); }, 180));
+        // Upright phone: "turn me sideways" tip, with a grown-up button to keep playing upright.
+        const uprightButton = $("uprightButton");
+        if (uprightButton) uprightButton.addEventListener("click", () => {
+          document.documentElement.classList.add("upright-ok");
+          setTimeout(() => { resizeCanvases(); fitPicture(); }, 50);
+        });
       }
 
       function welcome() {
@@ -3506,7 +3649,7 @@ const COUNTRY_HOME_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/20
       setupWebAppInstall();
       initEvents();
       welcome();
-      requestAnimationFrame(resizeCanvases);
+      requestAnimationFrame(() => { resizeCanvases(); fitPicture(); });
     })();
   </script>
 </body>

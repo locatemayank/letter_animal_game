@@ -15,7 +15,7 @@ The script inside it is assembled from the files here:
 | `more_sheet.py` | Safety checks + contact sheet for one extras file: `python tests/more_sheet.py house_more_nz sheet.png [tile] [LETTERS]` |
 | `svgkit.py` | Drawing helpers shared by the pack scripts (outline, highlight, face, thick lines) and `add_extensions` |
 | `pack_sheet.py` | Contact sheet of any picture pack: `python tests/pack_sheet.py tests/sports.js sheet.png` |
-| `game.js` | Game controller: worlds (Zoo / Garden / Sports / House / Countries; Zoo has 4 emoji animals per letter), random picture per letter (never the same twice in a row), ◀ / ▶ letter buttons, home screen and back button, ABC ⇄ abc, school lines, canvas rendering, pointer wiring, guide dots, voice, celebration flow, saved progress |
+| `game.js` | Game controller: worlds (Zoo / Garden / Sports / House / Countries; Zoo has 4 emoji animals per letter), random picture per letter (never the same twice in a row), ◀ / ▶ letter buttons, home screen and back button, picture fitted above the words (fitPicture), "Keep it upright" button, ABC ⇄ abc, school lines, canvas rendering, pointer wiring, guide dots, voice, celebration flow, saved progress |
 | `build.py` | Rebuilds the `<script>` block in `../index.html` from the files above and syntax-checks it |
 
 ## Workflow

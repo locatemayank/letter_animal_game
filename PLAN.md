@@ -17,6 +17,7 @@ These choices are already decided:
 - a labelled "⬅️ Categories" button to go back to the home screen;
 - about 4 pictures per letter in every world, picked at random each time;
 - ◀ / ▶ letter buttons beside the letter tile (the Done and New Letter buttons are gone).
+- Bigger picture panel with the words pinned under it; phones use the side-by-side layout when sideways and show a "Turn me sideways!" tip when upright.
 
 That covers most of phase 1, all of phase 3 and the lowercase part of phase 5. Next up: Numbers 0–9.
 

@@ -5,6 +5,16 @@ Audience: children aged 3 to 4 tracing uppercase letters on a phone or tablet.
 
 The game is charming. It has a clear loop (trace, then meet an animal), good audio and confetti feedback, it installs as a PWA, and it cycles A to Z so every letter comes up. Most of the problems are in the parts a parent can't see: the letter check accepts almost anything, and the touch handling ignores real drawing or draws when it shouldn't. Both are fixed in the new `index.html`. Ideas for further work are at the end.
 
+## Update 6: bigger picture, words always visible, phones sideways (November 2026)
+
+**Wider picture.** The drawing area is a little narrower (about 59 % of the width instead of 67 % on a sideways screen) and the picture panel is wider, so the reward picture is bigger.
+
+**Words always visible.** The words under the picture ("I see M!", "M is for Mammoth!" and the little message) are now pinned to the bottom of the picture card. The picture gets whatever space is left above them and shrinks to fit, so on short or older screens it can no longer push the words out of view. The page also uses the real visible screen height (`100dvh`) where the browser supports it, so the browser's address bar no longer hides the bottom of the game.
+
+**Phones use the desktop layout.** On a phone held sideways the game now uses the side-by-side desktop layout (drawing on the left, picture on the right) instead of stacking them, by laying the page out 940 px wide and letting the phone shrink it to fit. On short screens the subtitle is hidden and the letter chips are smaller to save room. When the phone is held upright, a "Turn me sideways!" screen with a turning-phone picture covers the game (the category screen still works upright). A small "Keep it upright" button lets a grown-up dismiss it, for example if the phone's rotation lock is on; the game then uses the stacked layout as before. Tablets are unchanged.
+
+The service worker cache is now v22.
+
 ## Update 5: more pictures, ◀ ▶ letter buttons, no Done button (November 2026)
 
 **More pictures per letter.** Every world now has about four pictures per letter, and each time a letter comes up one is picked at random (never the same one twice in a row). The Zoo has 4 emoji animals per letter, for example A Alligator / Ant / Angelfish / Ape and P Penguin / Panda / Pig / Peacock. Garden has 104 fruit and veg (exactly 4 per letter) (new ones include Apricot, Beetroot, Kale, Starfruit and Yuzu). Sports has 103 (Bicycle, Frisbee, Surfboard, Trampoline …) and House has 103 (Bath, Teapot, Piano, Xmas tree …). Countries has 90 flags (Belgium, Ireland, Korea, New Zealand, Spain, Wales …, plus the sailors' signal flags for O, X, Y and Z). A few hard letters have 2–3: X in Sports and House, and F, H, J, O, Q, R, V, W, X, Y in Countries (there are only so many countries and flags for those letters). All new pictures are hand-drawn SVG in the existing style.

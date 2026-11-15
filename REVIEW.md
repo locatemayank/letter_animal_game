@@ -5,6 +5,18 @@ Audience: children aged 3 to 4 tracing uppercase letters on a phone or tablet.
 
 The game is charming. It has a clear loop (trace, then meet an animal), good audio and confetti feedback, it installs as a PWA, and it cycles A to Z so every letter comes up. Most of the problems are in the parts a parent can't see: the letter check accepts almost anything, and the touch handling ignores real drawing or draws when it shouldn't. Both are fixed in the new `index.html`. Ideas for further work are at the end.
 
+## Update 3: Sports and House worlds (November 2026)
+
+**Two new worlds.** The home screen now has four picture buttons: 🦁 Zoo, 🍎 Garden, ⚽ Sports and 🛋️ House. They sit in a 2 × 2 grid when the screen is upright and in one row of four when it is sideways.
+
+**Sports.** Each letter shows a sports thing a young child can name: A Archery, B Basketball, C Cricket, D Dumbbell, E Egg and spoon, F Football, G Golf, H Helmet, I Ice skate, J Jump rope, K Kite, L Life ring, M Medal, N Net, O Oar, P Paddle, Q Quoits, R Racket, S Skateboard, T Trophy, U Uniform, V Volleyball, W Whistle, X Xiangqi, Y Yo-yo, Z Zip line.
+
+**House.** Each letter shows a household thing: A Alarm clock, B Bed, C Cup, D Door, E Envelope, F Fridge, G Glasses, H Hammer, I Iron, J Jug, K Kettle, L Lamp, M Mirror, N Night light, O Oven, P Pillow, Q Quilt, R Rubber duck, S Sofa, T Toothbrush, U Umbrella, V Vase, W Washing machine, X Xylophone, Y Yarn, Z Zipper.
+
+All 52 pictures are hand-drawn SVG in the Garden style (dark outline, flat colours, a little smile). Each one comes with a short spoken line, such as "Roll and zoom!" or "Quack! Splash in the bath!". Each world has its own colours, praise words, found count and saved progress. Lowercase works in every world.
+
+**Code.** The worlds are now a table: adding a world needs one entry in `WORLDS` plus one button on the home screen. The service worker cache is now v19.
+
 ## Update 2: lowercase letters and the Garden (November 2026)
 
 **Home screen.** The game now opens on "Where shall we play?" with two big picture buttons, 🦁 Zoo and 🍎 Garden. Each shows how many of the 26 friends have been found. A 🏠 button (where the wiggling star was) goes back to it.
@@ -190,7 +202,7 @@ These are ordered by how much they help a 3 to 4-year-old learn, and by effort.
 ## 5. Files
 
 - `index.html` is the new game, as a single file.
-- `sw.js` is the service worker, v18.
+- `sw.js` is the service worker, v19.
 - `index_original.html` is the version reviewed, for diffing.
 - `tests/` holds the standalone engine (`engine.js`), the touch arbiter (`arbiter.js`) and the game controller source (`game.js`), plus:
   - `build.py`, which builds `index.html` from these files;

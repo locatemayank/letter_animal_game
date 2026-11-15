@@ -20,8 +20,17 @@ global.document = {
   getElementById: id => els[id] || mkEl(id),
   createElement: () => mkEl("anon" + Math.random()),
   body: { appendChild() {}, classList: { _c: new Set(), toggle(c, on) { on ? this._c.add(c) : this._c.delete(c); }, add(c) { this._c.add(c); }, remove(c) { this._c.delete(c); }, contains(c) { return this._c.has(c); } } },
-  addEventListener(t, f) { (listeners["doc:" + t] ||= []).push(f); }
+  addEventListener(t, f) { (listeners["doc:" + t] ||= []).push(f); },
+  querySelectorAll: sel => !/world-btn/.test(sel) ? [] : ["Zoo", "Garden", "Sports", "House"].map(W => {
+    const b = els["world" + W] || mkEl("world" + W);
+    b.dataset = { world: W.toLowerCase() };
+    const prog = els["progress" + W] || mkEl("progress" + W), pic = els["pic" + W] || mkEl("pic" + W);
+    b.querySelector = q => (q === ".world-progress" ? prog : q === ".world-pic" ? pic : null);
+    return b;
+  })
 };
+const store = {};
+global.localStorage = { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } };
 global.window = global;
 window.addEventListener = (t, f) => { (listeners["win:" + t] ||= []).push(f); };
 global.navigator = {};
@@ -127,5 +136,22 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const gt = g("promptTitle").match(/trace (\w)\?/)[1];
   trace(gt); await sleep(400); flushRaf();
   console.log(`garden ${gt}:`, g("animalName"), "| svg picture:", /<svg/.test(els.animalEmoji.innerHTML), "|", g("message"));
+  await sleep(4800); flushRaf();
+
+  // ---- Sports and House worlds ----
+  for (const [W, key] of [["Sports", "sports"], ["House", "house"]]) {
+    click("homeButton"); flushRaf();
+    console.log(`home pic ${W} is svg:`, /<svg/.test(els["pic" + W].innerHTML));
+    click("world" + W); flushRaf();
+    const t = g("promptTitle").match(/trace (\w)\?/)[1];
+    trace(t); await sleep(400); flushRaf();
+    console.log(`${key}:`, g("appTitle"), "|", g("foundLabel"), g("foundCount"), "| body.world-" + key + ":", document.body.classList.contains("world-" + key),
+      `| ${t}:`, g("animalName"), "| svg:", /<svg/.test(els.animalEmoji.innerHTML), "|", g("message"));
+    await sleep(4800); flushRaf();
+  }
+  click("homeButton"); flushRaf();
+  console.log("progress:", ["Zoo", "Garden", "Sports", "House"].map(W => W + " " + g("progress" + W)).join(", "));
+  const saved = JSON.parse(store["magicLetterZoo.progress.v1"] || "{}");
+  console.log("saved found:", JSON.stringify(saved.found), "| world:", saved.world);
   process.exit(0);
 })().catch(e => { console.error("ERR", e); process.exit(1); });

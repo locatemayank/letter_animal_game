@@ -748,19 +748,19 @@
       text-shadow: 0 5px 0 #2faee5, 0 9px 0 #228cc3, 0 14px 22px rgba(0, 0, 0, 0.18);
     }
     .worlds {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, auto);
       justify-content: center;
-      gap: clamp(1rem, 4vw, 3rem);
+      gap: clamp(0.8rem, 3vw, 2.2rem);
     }
     button.world-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.3rem;
-      width: clamp(13rem, 34vw, 22rem);
+      width: clamp(9rem, 40vw, 20rem);
       min-height: 0;
-      padding: 1.1rem 1rem 1.2rem;
+      padding: 0.9rem 0.8rem 1rem;
       border: 7px solid #fff;
       border-radius: 40px;
       color: var(--ink);
@@ -778,6 +778,26 @@
     button.world-btn.garden:active {
       box-shadow: 0 3px 0 #5fb85a, 0 6px 14px rgba(36, 59, 107, 0.16);
     }
+    button.world-btn.sports {
+      background: linear-gradient(180deg, #f2f9ff, #cfe6ff);
+      box-shadow: 0 12px 0 #5b9be0, 0 20px 36px rgba(36, 59, 107, 0.2);
+    }
+    button.world-btn.sports:active {
+      box-shadow: 0 3px 0 #5b9be0, 0 6px 14px rgba(36, 59, 107, 0.16);
+    }
+    button.world-btn.house {
+      background: linear-gradient(180deg, #fff4f8, #ffd9e6);
+      box-shadow: 0 12px 0 #e683a8, 0 20px 36px rgba(36, 59, 107, 0.2);
+    }
+    button.world-btn.house:active {
+      box-shadow: 0 3px 0 #e683a8, 0 6px 14px rgba(36, 59, 107, 0.16);
+    }
+    @media (orientation: landscape) and (min-aspect-ratio: 13/10) {
+      .worlds { grid-template-columns: repeat(4, auto); }
+      button.world-btn { width: clamp(9rem, 21vw, 18rem); }
+      .world-pic { height: clamp(5rem, 15vw, 11rem); font-size: clamp(4.5rem, 13vw, 9.5rem); }
+      .world-name { font-size: clamp(1.5rem, 3.2vw, 2.6rem); }
+    }
     button.world-btn.last {
       outline: 6px solid rgba(255, 216, 90, 0.95);
       outline-offset: 4px;
@@ -785,8 +805,8 @@
     .world-pic {
       display: grid;
       place-items: center;
-      height: clamp(7rem, 22vw, 13rem);
-      font-size: clamp(6rem, 19vw, 11rem);
+      height: clamp(5rem, 22vw, 12rem);
+      font-size: clamp(4.5rem, 19vw, 10.5rem);
       line-height: 1;
       animation: floaty 2.4s ease-in-out infinite;
     }
@@ -796,7 +816,7 @@
       display: block;
     }
     .world-name {
-      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-size: clamp(1.6rem, 5vw, 2.8rem);
       font-weight: 1000;
       line-height: 1;
     }
@@ -810,8 +830,8 @@
     @media (max-height: 520px) and (orientation: landscape) {
       .home { gap: 0.6rem; padding: 0.6rem; }
       .home-title { font-size: clamp(1.6rem, 5vh, 2.4rem); }
-      .world-pic { height: 34vh; font-size: 28vh; }
-      button.world-btn { padding: 0.6rem 0.8rem 0.8rem; }
+      .world-pic { height: 30vh; font-size: 26vh; }
+      button.world-btn { padding: 0.5rem 0.6rem 0.7rem; }
     }
 
     /* ---------- prompt bar: home button, ABC ⇄ abc, target tile ---------- */
@@ -898,8 +918,9 @@
         justify-self: center;
       }
       .home-title { font-size: 2rem; }
-      button.world-btn { width: min(80vw, 18rem); }
-      .world-pic { height: 7rem; font-size: 6.5rem; }
+      button.world-btn { width: 42vw; border-width: 5px; border-radius: 30px; }
+      .world-pic { height: 5.5rem; font-size: 5rem; }
+      .world-name { font-size: 1.6rem; }
     }
 
     /* ---------- Garden world tint ---------- */
@@ -924,6 +945,32 @@
       body.world-garden h1 {
         text-shadow: 0 3px 0 #4cae4f, 0 5px 0 #2f8a3a, 0 8px 14px rgba(0, 0, 0, 0.14);
       }
+    }
+
+    /* ---------- Sports world tint ---------- */
+    body.world-sports {
+      background:
+        radial-gradient(circle at 12% 12%, #fff8b5 0 7rem, transparent 7.1rem),
+        linear-gradient(#8fcbff 0%, #e3f2ff 56%, #a5e39a 56%, #43a85a 100%);
+    }
+    body.world-sports h1 { text-shadow: 0 5px 0 #3d8fe0, 0 9px 0 #1e6fbf, 0 14px 22px rgba(0, 0, 0, 0.18); }
+    body.world-sports .prompt { background: linear-gradient(90deg, #d4ebff, #fff1b8); }
+    body.world-sports .letter-chip.found { background: linear-gradient(180deg, #64b5f6, #1e88e5); }
+    body.world-sports .animal-name { background: linear-gradient(90deg, #1e88e5, #43a047); }
+
+    /* ---------- House world tint ---------- */
+    body.world-house {
+      background:
+        radial-gradient(circle at 12% 12%, #fff6c9 0 7rem, transparent 7.1rem),
+        linear-gradient(#ffd6e6 0%, #fff4f8 58%, #ecc9a4 58%, #c8956a 100%);
+    }
+    body.world-house h1 { text-shadow: 0 5px 0 #e2709d, 0 9px 0 #c2185b, 0 14px 22px rgba(0, 0, 0, 0.18); }
+    body.world-house .prompt { background: linear-gradient(90deg, #ffe0ec, #fff1c9); }
+    body.world-house .letter-chip.found { background: linear-gradient(180deg, #f48fb1, #d81b60); }
+    body.world-house .animal-name { background: linear-gradient(90deg, #ec407a, #ab47bc); }
+    @media (min-width: 900px) and (orientation: landscape) {
+      body.world-sports h1 { text-shadow: 0 3px 0 #3d8fe0, 0 5px 0 #1e6fbf, 0 8px 14px rgba(0, 0, 0, 0.14); }
+      body.world-house h1 { text-shadow: 0 3px 0 #e2709d, 0 5px 0 #c2185b, 0 8px 14px rgba(0, 0, 0, 0.14); }
     }
   </style>
 </head>
@@ -992,9 +1039,19 @@
         <span class="world-progress" id="progressZoo">⭐ 0 / 26</span>
       </button>
       <button class="world-btn garden" id="worldGarden" type="button" data-world="garden">
-        <span class="world-pic" id="gardenPic" aria-hidden="true">🍎</span>
+        <span class="world-pic" aria-hidden="true">🍎</span>
         <span class="world-name">Garden</span>
         <span class="world-progress" id="progressGarden">⭐ 0 / 26</span>
+      </button>
+      <button class="world-btn sports" id="worldSports" type="button" data-world="sports">
+        <span class="world-pic" aria-hidden="true">⚽</span>
+        <span class="world-name">Sports</span>
+        <span class="world-progress" id="progressSports">⭐ 0 / 26</span>
+      </button>
+      <button class="world-btn house" id="worldHouse" type="button" data-world="house">
+        <span class="world-pic" aria-hidden="true">🛋️</span>
+        <span class="world-name">House</span>
+        <span class="world-progress" id="progressHouse">⭐ 0 / 26</span>
       </button>
     </div>
   </div>
@@ -1692,6 +1749,174 @@ const GARDEN_ITEMS = {
 };
 // ==GARDEN END==
 
+// ==SPORTS START==
+// Sports world: sports things A-Z, hand-made SVG (viewBox 0 0 100 100). Generated by sports_make.py.
+const SPORTS_ITEMS = {
+  A: [
+    { name: "Archery", line: "Aim for the middle!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M30 80L20 96M62 80L72 96" fill="none" stroke="#a1887f" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="46" cy="50" r="36" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="46" cy="50" r="27" fill="#e53935" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="46" cy="50" r="18" fill="#fff" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="46" cy="50" r="10" fill="#ffc107" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M60 36L86 10" fill="none" stroke="#3b2a1e" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/><path d="M60 36L86 10" fill="none" stroke="#d7a86e" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M80 10L86 4L94 4L88 12Z M86 16L92 10L92 18L84 20Z" fill="#e53935" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="28" cy="34" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(40 28 34)"/><circle cx="41.5" cy="49" r="2" fill="#3b2a1e"/><circle cx="50.5" cy="49" r="2" fill="#3b2a1e"/><path d="M43 52.75Q46 55.75 49 52.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  B: [
+    { name: "Basketball", line: "Bounce, bounce, bounce!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="52" r="38" fill="#f57c20" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M12 52L88 52M50 14L50 90M22 26Q38 52 22 78M78 26Q62 52 78 78" fill="none" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="52" r="38" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="34" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(40 30 34)"/><circle cx="30.9" cy="40" r="2.125" fill="#3b2a1e"/><circle cx="41.1" cy="40" r="2.125" fill="#3b2a1e"/><path d="M32.6 44.25Q36 47.65 39.4 44.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  C: [
+    { name: "Cricket", line: "Hit it for six!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(32 46 48)"><rect x="42" y="2" width="8" height="30" rx="3" fill="#37474f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M42 10H50M42 18H50M42 26H50" fill="none" stroke="#90a4ae" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M33 32H59V82Q59 92 46 92Q33 92 33 82Z" fill="#f2d39b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M46 40V84" fill="none" stroke="#d9b97a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="38" cy="52" rx="2.5" ry="9" fill="#fff" opacity=".55" transform="rotate(0 38 52)"/><circle cx="40.9" cy="62" r="2.125" fill="#3b2a1e"/><circle cx="51.1" cy="62" r="2.125" fill="#3b2a1e"/><path d="M42.6 66.25Q46 69.65 49.4 66.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></g><circle cx="78" cy="78" r="13" fill="#d32f2f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M68 70Q78 78 88 86" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 67Q80 75 90 82" fill="none" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="73" cy="72" rx="2.5" ry="4" fill="#fff" opacity=".55" transform="rotate(40 73 72)"/></svg>` }
+  ],
+  D: [
+    { name: "Dumbbell", line: "Lift it up! So strong!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="44" width="40" height="20" rx="6" fill="#ffb300" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="8" y="26" width="14" height="56" rx="5" fill="#455a64" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="20" y="32" width="12" height="44" rx="4" fill="#607d8b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="78" y="26" width="14" height="56" rx="5" fill="#455a64" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="68" y="32" width="12" height="44" rx="4" fill="#607d8b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="12" cy="40" rx="2" ry="7" fill="#fff" opacity=".55" transform="rotate(0 12 40)"/><ellipse cx="82" cy="40" rx="2" ry="7" fill="#fff" opacity=".55" transform="rotate(0 82 40)"/><circle cx="45.5" cy="52" r="2" fill="#3b2a1e"/><circle cx="54.5" cy="52" r="2" fill="#3b2a1e"/><path d="M47 55.75Q50 58.75 53 55.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  E: [
+    { name: "Egg and spoon", line: "Walk slowly. Don't drop it!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M52 62L90 92" fill="none" stroke="#3b2a1e" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/><path d="M52 62L90 92" fill="none" stroke="#b0bec5" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="38" cy="60" rx="28" ry="13" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="38" cy="40" rx="18" ry="23" fill="#fffaf0" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="30" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(20 30 30)"/><circle cx="32.9" cy="42" r="2.125" fill="#3b2a1e"/><circle cx="43.1" cy="42" r="2.125" fill="#3b2a1e"/><path d="M34.6 46.25Q38 49.65 41.4 46.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/><circle cx="29" cy="49" r="2.5" fill="#ff8a80" opacity=".6"/><circle cx="47" cy="49" r="2.5" fill="#ff8a80" opacity=".6"/></svg>` }
+  ],
+  F: [
+    { name: "Football", line: "Kick it into the goal!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="52" r="38" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50.0 37.0L50.0 23.0" fill="none" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M50.0 31.0 46.2 28.2 42.4 25.5 43.8 21.0 45.3 16.5 50.0 16.5 54.7 16.5 56.2 21.0 57.6 25.5 53.8 28.2Z" fill="#263238" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M64.3 47.4L77.6 43.0" fill="none" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M70.0 45.5 71.4 41.0 72.9 36.6 77.6 36.6 82.3 36.6 83.7 41.0 85.2 45.5 81.4 48.3 77.6 51.0 73.8 48.3Z" fill="#263238" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M58.8 64.1L67.0 75.5" fill="none" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M62.3 69.0 67.0 69.0 71.7 69.0 73.2 73.5 74.7 77.9 70.8 80.7 67.0 83.5 63.2 80.7 59.4 77.9 60.9 73.5Z" fill="#263238" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M41.2 64.1L33.0 75.5" fill="none" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M37.7 69.0 39.1 73.5 40.6 77.9 36.8 80.7 33.0 83.5 29.2 80.7 25.3 77.9 26.8 73.5 28.3 69.0 33.0 69.0Z" fill="#263238" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M35.7 47.4L22.4 43.0" fill="none" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M30.0 45.5 26.2 48.3 22.4 51.0 18.6 48.3 14.8 45.5 16.3 41.0 17.7 36.6 22.4 36.6 27.1 36.6 28.6 41.0Z" fill="#263238" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M50.0 37.0 57.1 42.2 64.3 47.4 61.5 55.8 58.8 64.1 50.0 64.1 41.2 64.1 38.5 55.8 35.7 47.4 42.9 42.2Z" fill="#263238" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="32" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(40 30 32)"/><circle cx="45.5" cy="52" r="2" fill="#fff"/><circle cx="54.5" cy="52" r="2" fill="#fff"/><path d="M47 55.75Q50 58.75 53 55.75" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  G: [
+    { name: "Golf", line: "Putt it in the hole!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="52" cy="82" rx="44" ry="12" fill="#66bb6a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="70" cy="82" rx="9" ry="3.5" fill="#2e5d32" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 82V12" fill="none" stroke="#eceff1" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 82V12" fill="none" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 12L94 20L70 30Z" fill="#e53935" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="32" cy="62" r="16" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="24" cy="56" r="1.4" fill="#cfd8dc"/><circle cx="40" cy="56" r="1.4" fill="#cfd8dc"/><circle cx="26" cy="70" r="1.4" fill="#cfd8dc"/><circle cx="38" cy="70" r="1.4" fill="#cfd8dc"/><circle cx="32" cy="52" r="1.4" fill="#cfd8dc"/><ellipse cx="25" cy="54" rx="2.5" ry="5" fill="#fff" opacity=".55" transform="rotate(40 25 54)"/><circle cx="27.2" cy="62" r="2" fill="#3b2a1e"/><circle cx="36.8" cy="62" r="2" fill="#3b2a1e"/><path d="M28.8 66Q32 69.2 35.2 66" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  H: [
+    { name: "Helmet", line: "Keep your head safe!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M22 70Q30 92 50 92Q70 92 78 70" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="44" y="88" width="12" height="7" rx="2" fill="#37474f" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M12 66Q12 20 50 18Q88 20 88 66Z" fill="#42a5f5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M34 30L38 42M50 24V38M66 30L62 42" fill="none" stroke="#1565c0" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M8 66H92Q94 74 86 74H14Q6 74 8 66Z" fill="#1565c0" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="26" cy="40" rx="4" ry="9" fill="#fff" opacity=".55" transform="rotate(30 26 40)"/><circle cx="44.6" cy="52" r="2.25" fill="#3b2a1e"/><circle cx="55.4" cy="52" r="2.25" fill="#3b2a1e"/><path d="M46.4 56.5Q50 60.1 53.6 56.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  I: [
+    { name: "Ice skate", line: "Glide on the ice!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M30 76V84M78 76V84" fill="none" stroke="#3b2a1e" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M18 84H86Q94 84 92 90Q90 94 84 94H18Z" fill="#b0bec5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 12H58L58 50Q82 52 88 64V76H24Q22 46 28 12Z" fill="#f5f5f5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 12H58V18H28Z" fill="#ec407a" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 24L58 30M58 24L50 30M50 36L58 42M58 36L50 42" fill="none" stroke="#ec407a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 70H88V76H24Z" fill="#ec407a" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="32" cy="30" rx="2.5" ry="8" fill="#fff" opacity=".55" transform="rotate(0 32 30)"/><circle cx="34.9" cy="56" r="2.125" fill="#3b2a1e"/><circle cx="45.1" cy="56" r="2.125" fill="#3b2a1e"/><path d="M36.6 60.25Q40 63.65 43.4 60.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  J: [
+    { name: "Jump rope", line: "Jump, jump, jump!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M22 42Q14 98 50 94Q86 98 78 42" fill="none" stroke="#3b2a1e" stroke-width="8.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M22 42Q14 98 50 94Q86 98 78 42" fill="none" stroke="#e53935" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><g transform="rotate(-20 20 26)"><rect x="12" y="6" width="16" height="38" rx="8" fill="#ffca28" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="16" cy="16" rx="2" ry="5" fill="#fff" opacity=".55" transform="rotate(0 16 16)"/><circle cx="16.7" cy="22" r="2" fill="#3b2a1e"/><circle cx="23.3" cy="22" r="2" fill="#3b2a1e"/><path d="M17.8 24.75Q20 26.95 22.2 24.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></g><g transform="rotate(20 80 26)"><rect x="72" y="6" width="16" height="38" rx="8" fill="#29b6f6" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="76" cy="16" rx="2" ry="5" fill="#fff" opacity=".55" transform="rotate(0 76 16)"/><circle cx="76.7" cy="22" r="2" fill="#3b2a1e"/><circle cx="83.3" cy="22" r="2" fill="#3b2a1e"/><path d="M77.8 24.75Q80 26.95 82.2 24.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></g></svg>` }
+  ],
+  K: [
+    { name: "Kite", line: "Fly high in the sky!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 78Q36 86 46 92Q56 98 48 100" fill="none" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M38 84L44 90L36 92Z M50 92L56 98L48 99Z" fill="#ab47bc" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 6L82 40L50 78L18 40Z" fill="#ff7043" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 9L21 40L50 40Z" fill="#ffca28"/><path d="M50 40L79 40L50 75Z" fill="#ffca28"/><path d="M50 6L82 40L50 78L18 40Z" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="38" cy="28" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(40 38 28)"/><circle cx="44.6" cy="42" r="2.25" fill="#3b2a1e"/><circle cx="55.4" cy="42" r="2.25" fill="#3b2a1e"/><path d="M46.4 46.5Q50 50.1 53.6 46.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  L: [
+    { name: "Life ring", line: "It helps you float in the pool!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="38" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M85.1 64.5A38 38 0 0 1 64.5 85.1L57.7 68.5A20 20 0 0 0 68.5 57.7Z" fill="#e53935" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M35.5 85.1A38 38 0 0 1 14.9 64.5L31.5 57.7A20 20 0 0 0 42.3 68.5Z" fill="#e53935" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M14.9 35.5A38 38 0 0 1 35.5 14.9L42.3 31.5A20 20 0 0 0 31.5 42.3Z" fill="#e53935" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M64.5 14.9A38 38 0 0 1 85.1 35.5L68.5 42.3A20 20 0 0 0 57.7 31.5Z" fill="#e53935" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="50" r="20" fill="#bbdefb" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="50" r="38" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="24" cy="30" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(40 24 30)"/><circle cx="45.5" cy="79" r="2" fill="#3b2a1e"/><circle cx="54.5" cy="79" r="2" fill="#3b2a1e"/><path d="M47 82.75Q50 85.75 53 82.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  M: [
+    { name: "Medal", line: "You are a winner!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M28 4H44L58 46L46 50Z" fill="#1e88e5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M72 4H56L42 46L54 50Z" fill="#e53935" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="66" r="26" fill="#ffc107" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="66" r="19" fill="#ffd54f" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="36" cy="56" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(40 36 56)"/><circle cx="44.9" cy="66" r="2.125" fill="#3b2a1e"/><circle cx="55.1" cy="66" r="2.125" fill="#3b2a1e"/><path d="M46.6 70.25Q50 73.65 53.4 70.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  N: [
+    { name: "Net", line: "Swish! Into the net!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="6" width="68" height="44" rx="4" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="36" y="22" width="28" height="22" rx="1" fill="none" stroke="#e53935" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 54L36 88M38 56L42 88M50 56V88M62 56L58 88M72 54L64 88M30 64H70M33 76H67" fill="none" stroke="#90a4ae" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="54" rx="24" ry="6" fill="none" stroke="#3b2a1e" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="54" rx="24" ry="6" fill="#ff7043" stroke="#ff7043" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="54" rx="24" ry="6" fill="none" stroke="#ff7043" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="45.8" cy="31" r="2" fill="#3b2a1e"/><circle cx="54.2" cy="31" r="2" fill="#3b2a1e"/><path d="M47.2 34.5Q50 37.3 52.8 34.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  O: [
+    { name: "Oar", line: "Row, row, row your boat!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M4 88Q14 82 24 88T44 88T64 88T84 88T100 88" fill="none" stroke="#42a5f5" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M22 18L80 84" fill="none" stroke="#3b2a1e" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/><path d="M22 18L80 84" fill="none" stroke="#d7a86e" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 72Q84 70 92 86Q90 94 82 92Q72 84 70 72Z" fill="#ffb74d" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M6 54H94Q86 82 50 82Q14 82 6 54Z" fill="#ef5350" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M6 54H94L92 60H8Z" fill="#fff" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="18" cy="64" rx="2.5" ry="6" fill="#fff" opacity=".55" transform="rotate(60 18 64)"/><circle cx="44.6" cy="66" r="2.25" fill="#3b2a1e"/><circle cx="55.4" cy="66" r="2.25" fill="#3b2a1e"/><path d="M46.4 70.5Q50 74.1 53.6 70.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  P: [
+    { name: "Paddle", line: "Ping, pong, ping!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M62 62L86 90" fill="none" stroke="#3b2a1e" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/><path d="M62 62L86 90" fill="none" stroke="#d7a86e" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="42" cy="42" r="30" fill="#e53935" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="84" cy="20" r="9" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M74 34Q78 30 80 30" fill="none" stroke="#90a4ae" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="26" cy="28" rx="4" ry="8" fill="#fff" opacity=".55" transform="rotate(40 26 28)"/><circle cx="36" cy="42" r="2.5" fill="#3b2a1e"/><circle cx="48" cy="42" r="2.5" fill="#3b2a1e"/><path d="M38 47Q42 51 46 47" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  Q: [
+    { name: "Quoits", line: "Toss the ring on the peg!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="72" cy="22" rx="15" ry="7" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-20 72 22)"/><ellipse cx="72" cy="22" rx="15" ry="7" fill="none" stroke="#ab47bc" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-20 72 22)"/><path d="M40 86V26" fill="none" stroke="#3b2a1e" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/><path d="M40 86V26" fill="none" stroke="#d7a86e" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="40" cy="76" rx="20" ry="6" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="40" cy="76" rx="20" ry="6" fill="none" stroke="#29b6f6" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="40" cy="66" rx="20" ry="6" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="40" cy="66" rx="20" ry="6" fill="none" stroke="#66bb6a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><rect x="10" y="82" width="74" height="14" rx="5" fill="#8d6e63" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="44.4" cy="86" r="2" fill="#fff"/><circle cx="51.6" cy="86" r="2" fill="#fff"/><path d="M45.6 89Q48 91.4 50.4 89" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  R: [
+    { name: "Racket", line: "Hit the ball over the net!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-30 40 50)"><path d="M40 66V96" fill="none" stroke="#3b2a1e" stroke-width="15" stroke-linejoin="round" stroke-linecap="round"/><path d="M40 66V96" fill="none" stroke="#455a64" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="40" cy="38" rx="22" ry="28" fill="#e3f2fd" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 18.8V57.2M32 11.9V64.1M40 10.0V66.0M48 11.9V64.1M56 18.8V57.2M25.4 17H54.6M20.9 24H59.1M18.7 31H61.3M18.0 38H62.0M18.7 45H61.3M20.9 52H59.1M25.4 59H54.6" fill="none" stroke="#90a4ae" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="40" cy="38" rx="22" ry="28" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="40" cy="38" rx="22" ry="28" fill="none" stroke="#7e57c2" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></g><circle cx="76" cy="76" r="15" fill="#d4e157" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M63 70Q72 78 66 88M89 70Q80 76 86 86" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="70" cy="68" rx="2.5" ry="4" fill="#fff" opacity=".55" transform="rotate(40 70 68)"/><circle cx="71.5" cy="76" r="2" fill="#3b2a1e"/><circle cx="80.5" cy="76" r="2" fill="#3b2a1e"/><path d="M73 79.75Q76 82.75 79 79.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  S: [
+    { name: "Skateboard", line: "Roll and zoom!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M2 40H14M4 50H12M2 60H14" fill="none" stroke="#90a4ae" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><g transform="rotate(-8 50 56)"><path d="M30 64V72M70 64V72" fill="none" stroke="#3b2a1e" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="28" cy="76" r="8" fill="#ffca28" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="72" cy="76" r="8" fill="#ffca28" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="28" cy="76" r="2.5" fill="#3b2a1e"/><circle cx="72" cy="76" r="2.5" fill="#3b2a1e"/><path d="M14 44Q14 40 20 42L80 42Q86 40 88 44Q92 54 86 62Q84 64 80 64H20Q16 64 14 62Q8 54 14 44Z" fill="#7e57c2" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M22 46L32 46L28 58L18 58Z M78 46L68 46L72 58L82 58Z" fill="#ff7043" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="45.2" cy="51" r="2" fill="#3b2a1e"/><circle cx="54.8" cy="51" r="2" fill="#3b2a1e"/><path d="M46.8 55Q50 58.2 53.2 55" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></g></svg>` }
+  ],
+  T: [
+    { name: "Trophy", line: "You did it! Hooray!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M28 22Q10 22 12 36Q14 48 30 50M72 22Q90 22 88 36Q86 48 70 50" fill="none" stroke="#3b2a1e" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 22Q10 22 12 36Q14 48 30 50M72 22Q90 22 88 36Q86 48 70 50" fill="none" stroke="#ffc107" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M26 12H74V36Q74 64 50 66Q26 64 26 36Z" fill="#ffc107" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M44 66H56L58 78H42Z" fill="#ffb300" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="28" y="78" width="44" height="14" rx="3" fill="#8d6e63" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="40" y="82" width="20" height="6" rx="1" fill="#ffd54f" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="34" cy="26" rx="3" ry="9" fill="#fff" opacity=".55" transform="rotate(10 34 26)"/><circle cx="44" cy="38" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="38" r="2.5" fill="#3b2a1e"/><path d="M46 43Q50 47 54 43" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  U: [
+    { name: "Uniform", line: "Ready to play for the team!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M32 12L42 10Q50 20 58 10L68 12L90 30L78 44L70 38V90H30V38L22 44L10 30Z" fill="#43a047" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M16 36L26 26M84 36L74 26" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M42 10Q50 20 58 10" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50.0 61.0 52.4 66.7 58.6 67.2 53.9 71.3 55.3 77.3 50.0 74.0 44.7 77.3 46.1 71.3 41.4 67.2 47.6 66.7Z" fill="#fff" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="38" cy="30" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(10 38 30)"/><circle cx="44.6" cy="46" r="2.25" fill="#3b2a1e"/><circle cx="55.4" cy="46" r="2.25" fill="#3b2a1e"/><path d="M46.4 50.5Q50 54.1 53.6 50.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  V: [
+    { name: "Volleyball", line: "Bump it up high!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 52Q34.6 33.6 50.0 14.0A38 38 0 0 1 82.9 71.0Q73.6 47.8 50 52Z" fill="#ffca28" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M58.7 47.0Q59.6 25.7 79.2 29.2" fill="none" stroke="#3b2a1e" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 52Q73.6 47.8 82.9 71.0A38 38 0 0 1 17.1 71.0Q41.8 74.6 50 52Z" fill="#1e88e5" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50.0 62.0Q68.0 73.4 55.1 88.6" fill="none" stroke="#3b2a1e" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 52Q41.8 74.6 17.1 71.0A38 38 0 0 1 50.0 14.0Q34.6 33.6 50 52Z" fill="#fff" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M41.3 47.0Q22.4 56.9 15.7 38.1" fill="none" stroke="#3b2a1e" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="52" r="38" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="66" cy="26" rx="3" ry="6" fill="#fff" opacity=".55" transform="rotate(50 66 26)"/><circle cx="28.5" cy="46" r="2" fill="#3b2a1e"/><circle cx="37.5" cy="46" r="2" fill="#3b2a1e"/><path d="M30 49.75Q33 52.75 36 49.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  W: [
+    { name: "Whistle", line: "Tweet! Time to play!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M84 24Q92 18 96 24M86 34Q94 32 98 36M80 16Q84 8 90 10" fill="none" stroke="#90a4ae" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="14" cy="38" r="7" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M18 62A26 26 0 1 0 66 50V48H88V30H44Q18 32 18 62Z" fill="#e53935" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="58" cy="30" rx="6" ry="2" fill="#263238" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="50" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(40 30 50)"/><circle cx="36.9" cy="62" r="2.125" fill="#3b2a1e"/><circle cx="47.1" cy="62" r="2.125" fill="#3b2a1e"/><path d="M38.6 66.25Q42 69.65 45.4 66.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  X: [
+    { name: "Xiangqi", line: "A chess game from China!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="62" rx="36" ry="30" fill="#c69c62" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="54" rx="36" ry="30" fill="#f3d9a4" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="54" rx="28" ry="22" fill="none" stroke="#c62828" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M40 38H60M50 32V48M43 48H57" fill="none" stroke="#c62828" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="28" cy="44" rx="3" ry="6" fill="#fff" opacity=".55" transform="rotate(40 28 44)"/><circle cx="45.5" cy="61" r="2" fill="#3b2a1e"/><circle cx="54.5" cy="61" r="2" fill="#3b2a1e"/><path d="M47 64.75Q50 67.75 53 64.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  Y: [
+    { name: "Yo-yo", line: "Up and down, up and down!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 2V20" fill="none" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="6" r="4" fill="none" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="54" r="36" fill="#ab47bc" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="54" r="25" fill="#ce93d8" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M14 54H24M76 54H86" fill="none" stroke="#7b1fa2" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="38" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(40 30 38)"/><circle cx="44" cy="54" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="54" r="2.5" fill="#3b2a1e"/><path d="M46 59Q50 63 54 59" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  Z: [
+    { name: "Zip line", line: "Wheee! Zoom down the line!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M8 12V96" fill="none" stroke="#3b2a1e" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M8 12V96" fill="none" stroke="#d7a86e" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><path d="M92 52V96" fill="none" stroke="#3b2a1e" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M92 52V96" fill="none" stroke="#d7a86e" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><path d="M8 16L92 56" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="46" cy="34" r="6" fill="#90a4ae" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M46 34V68" fill="none" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="46" cy="74" rx="20" ry="8" fill="#ff7043" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M60 24L72 30M62 18L74 24" fill="none" stroke="#90a4ae" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="42.4" cy="72" r="2" fill="#3b2a1e"/><circle cx="49.6" cy="72" r="2" fill="#3b2a1e"/><path d="M43.6 75Q46 77.4 48.4 75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ]
+};
+// ==SPORTS END==
+
+// ==HOUSE START==
+// House world: household things A-Z, hand-made SVG (viewBox 0 0 100 100). Generated by house_make.py.
+const HOUSE_ITEMS = {
+  A: [
+    { name: "Alarm clock", line: "Ring, ring! Time to wake up!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M30 84L22 94M70 84L78 94" fill="none" stroke="#3b2a1e" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M14 30A14 14 0 0 1 36 14Z" fill="#ffca28" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M86 30A14 14 0 0 0 64 14Z" fill="#ffca28" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M44 10H56M50 10V18" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="54" r="34" fill="#ef5350" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="54" r="26" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 32V36M50 72V76M28 54H32M68 54H72" fill="none" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 48L50 38M50 48L58 44" fill="none" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="48" r="2" fill="#3b2a1e"/><path d="M8 44Q4 54 8 64M92 44Q96 54 92 64" fill="none" stroke="#90a4ae" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="38" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(40 30 38)"/><circle cx="45.5" cy="60" r="2" fill="#3b2a1e"/><circle cx="54.5" cy="60" r="2" fill="#3b2a1e"/><path d="M47 63.75Q50 66.75 53 63.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  B: [
+    { name: "Bed", line: "Night night! Time for sleep!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M14 80V92M86 80V92" fill="none" stroke="#3b2a1e" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M8 34Q8 22 20 22Q32 22 32 34V82H8Z" fill="#c58b5a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="8" y="58" width="84" height="22" rx="4" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M44 50H90V80H40Q36 64 44 50Z" fill="#5c6bc0" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M48 58H90" fill="none" stroke="#3949ab" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="36" cy="50" rx="13" ry="8" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M30.6 48Q32.4 49.8 34.2 48" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M37.8 48Q39.6 49.8 41.4 48" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M34.2 51.6Q36 53.4 37.8 51.6" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M64 14H72L64 22H72M78 6H84L78 12H84" fill="none" stroke="#5c6bc0" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>` }
+  ],
+  C: [
+    { name: "Cup", line: "A cup of warm milk!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="46" cy="90" rx="36" ry="6" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 44Q88 44 88 58Q88 72 70 72" fill="none" stroke="#3b2a1e" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 44Q88 44 88 58Q88 72 70 72" fill="none" stroke="#29b6f6" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><path d="M22 30H70V72Q70 88 54 88H38Q22 88 22 72Z" fill="#29b6f6" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="46" cy="30" rx="24" ry="5" fill="#fffaf0" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M36 22Q32 16 36 10M50 20Q46 14 50 6M62 22Q58 16 62 10" fill="none" stroke="#b0bec5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="48" rx="3" ry="9" fill="#fff" opacity=".55" transform="rotate(10 30 48)"/><circle cx="40" cy="58" r="2.5" fill="#3b2a1e"/><circle cx="52" cy="58" r="2.5" fill="#3b2a1e"/><path d="M42 63Q46 67 50 63" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  D: [
+    { name: "Door", line: "Knock, knock! Who's there?", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="90" width="72" height="6" rx="2" fill="#9e9e9e" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 90V20Q24 8 36 8H64Q76 8 76 20V90Z" fill="#a1887f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="32" y="18" width="36" height="26" rx="3" fill="none" stroke="#6d4c41" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><rect x="32" y="54" width="36" height="30" rx="3" fill="none" stroke="#6d4c41" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="68" cy="56" r="4" fill="#ffd54f" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="30" rx="2" ry="8" fill="#fff" opacity=".55" transform="rotate(0 30 30)"/><circle cx="45.2" cy="31" r="2" fill="#3b2a1e"/><circle cx="54.8" cy="31" r="2" fill="#3b2a1e"/><path d="M46.8 35Q50 38.2 53.2 35" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  E: [
+    { name: "Envelope", line: "A letter for you!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="24" width="80" height="56" rx="4" fill="#fff8e1" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M12 78L40 54M88 78L60 54" fill="none" stroke="#e0c9a6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M10 26L50 58L90 26Z" fill="#ffecb3" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 61.4C41 55.1 44.6 47.9 50 52.4C55.4 47.9 59 55.1 50 61.4Z" fill="#e53935" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="22" cy="40" rx="2.5" ry="6" fill="#fff" opacity=".55" transform="rotate(40 22 40)"/><circle cx="45.5" cy="70" r="2" fill="#3b2a1e"/><circle cx="54.5" cy="70" r="2" fill="#3b2a1e"/><path d="M47 73.75Q50 76.75 53 73.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  F: [
+    { name: "Fridge", line: "Keeps our food cold!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="24" y="6" width="52" height="88" rx="6" fill="#e3f2fd" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 36H76" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M66 16V28M66 46V62" fill="none" stroke="#90a4ae" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M36.0 15.0 37.3 18.2 40.8 18.5 38.1 20.7 38.9 24.0 36.0 22.2 33.1 24.0 33.9 20.7 31.2 18.5 34.7 18.2Z" fill="#ffca28" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M52 25.3C46.5 21.45 48.7 17.05 52 19.8C55.3 17.05 57.5 21.45 52 25.3Z" fill="#ec407a" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="36" cy="80" r="3.5" fill="#66bb6a" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="64" cy="82" r="3.5" fill="#ff7043" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M30 94V98M70 94V98" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="32" cy="50" rx="2" ry="8" fill="#fff" opacity=".55" transform="rotate(0 32 50)"/><circle cx="42.6" cy="62" r="2.25" fill="#3b2a1e"/><circle cx="53.4" cy="62" r="2.25" fill="#3b2a1e"/><path d="M44.4 66.5Q48 70.1 51.6 66.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  G: [
+    { name: "Glasses", line: "They help us see!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M14 46L4 36M86 46L96 36" fill="none" stroke="#3b2a1e" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M14 46L4 36M86 46L96 36" fill="none" stroke="#e53935" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="30" cy="52" r="17" fill="#e1f5fe" stroke="#3b2a1e" stroke-width="0" stroke-linejoin="round" stroke-linecap="round"/><circle cx="70" cy="52" r="17" fill="#e1f5fe" stroke="#3b2a1e" stroke-width="0" stroke-linejoin="round" stroke-linecap="round"/><circle cx="31" cy="54" r="4" fill="#3b2a1e"/><circle cx="69" cy="54" r="4" fill="#3b2a1e"/><circle cx="32.5" cy="52.5" r="1.3" fill="#fff"/><circle cx="70.5" cy="52.5" r="1.3" fill="#fff"/><circle cx="30" cy="52" r="17" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><circle cx="30" cy="52" r="17" fill="none" stroke="#e53935" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="70" cy="52" r="17" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><circle cx="70" cy="52" r="17" fill="none" stroke="#e53935" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M46 50Q50 44 54 50" fill="none" stroke="#3b2a1e" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="M46 50Q50 44 54 50" fill="none" stroke="#e53935" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="23" cy="45" rx="2.5" ry="5" fill="#fff" opacity=".55" transform="rotate(40 23 45)"/><ellipse cx="63" cy="45" rx="2.5" ry="5" fill="#fff" opacity=".55" transform="rotate(40 63 45)"/><path d="M44 80Q50 86 56 80" fill="none" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>` }
+  ],
+  H: [
+    { name: "Hammer", line: "Tap, tap, tap!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-24 50 50)"><path d="M50 40V94" fill="none" stroke="#3b2a1e" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 40V94" fill="none" stroke="#c58b5a" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M44 80H56M44 86H56" fill="none" stroke="#8d5a2b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M18 18H72Q80 18 80 26V32Q80 40 72 40H18Q12 40 12 34V24Q12 18 18 18Z" fill="#90a4ae" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M80 22Q92 14 94 26Q90 22 80 30Z" fill="#78909c" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="22" cy="24" rx="2" ry="5" fill="#fff" opacity=".55" transform="rotate(70 22 24)"/><circle cx="41.5" cy="28" r="2" fill="#3b2a1e"/><circle cx="50.5" cy="28" r="2" fill="#3b2a1e"/><path d="M43 31.75Q46 34.75 49 31.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></g></svg>` }
+  ],
+  I: [
+    { name: "Iron", line: "Makes clothes nice and smooth!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 90Q22 84 18 78M30 92Q34 86 30 80" fill="none" stroke="#b0bec5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M42 32Q44 12 62 12H80Q86 12 86 20V32" fill="none" stroke="#3b2a1e" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/><path d="M42 32Q44 12 62 12H80Q86 12 86 20V32" fill="none" stroke="#26a69a" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="M10 70Q14 34 56 30H80Q92 30 92 42V70Z" fill="#4dd0e1" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M8 70H94V78Q94 82 90 82H10Q6 82 8 70Z" fill="#b0bec5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="28" cy="50" rx="3" ry="8" fill="#fff" opacity=".55" transform="rotate(40 28 50)"/><circle cx="56.6" cy="52" r="2.25" fill="#3b2a1e"/><circle cx="67.4" cy="52" r="2.25" fill="#3b2a1e"/><path d="M58.4 56.5Q62 60.1 65.6 56.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  J: [
+    { name: "Jug", line: "Pour me a drink!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M70 34Q90 36 88 54Q86 70 70 72" fill="none" stroke="#3b2a1e" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 34Q90 36 88 54Q86 70 70 72" fill="none" stroke="#7e57c2" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><path d="M32 16H66L70 28Q76 50 72 80Q70 90 60 90H36Q26 90 24 80Q20 50 30 28L16 16Z" fill="#b3e5fc" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 52Q48 46 74 52Q76 66 72 80Q70 88 60 88H36Q26 88 25 80Q22 66 24 52Z" fill="#fff"/><path d="M32 16H66L70 28Q76 50 72 80Q70 90 60 90H36Q26 90 24 80Q20 50 30 28L16 16Z" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 52Q48 46 74 52" fill="none" stroke="#90caf9" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="34" cy="32" rx="2.5" ry="7" fill="#fff" opacity=".55" transform="rotate(10 34 32)"/><circle cx="42.6" cy="64" r="2.25" fill="#3b2a1e"/><circle cx="53.4" cy="64" r="2.25" fill="#3b2a1e"/><path d="M44.4 68.5Q48 72.1 51.6 68.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  K: [
+    { name: "Kettle", line: "Whistle! The water is hot!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M88 30Q84 24 88 18M94 34Q90 28 94 22" fill="none" stroke="#b0bec5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 44Q32 14 50 14Q68 14 72 44" fill="none" stroke="#3b2a1e" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 44Q32 14 50 14Q68 14 72 44" fill="none" stroke="#455a64" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M74 58L90 38L94 42L82 72Z" fill="#ef5350" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M20 88Q14 44 50 40Q86 44 80 88Z" fill="#ef5350" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="40" rx="16" ry="5" fill="#e57373" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="33" r="4" fill="#455a64" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M20 88H80" fill="none" stroke="#3b2a1e" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="56" rx="3" ry="9" fill="#fff" opacity=".55" transform="rotate(20 30 56)"/><circle cx="44" cy="64" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="64" r="2.5" fill="#3b2a1e"/><path d="M46 69Q50 73 54 69" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  L: [
+    { name: "Lamp", line: "Click! The light is on!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M22 50L10 80H90L78 50Z" fill="#fff59d" opacity=".55"/><path d="M50 50V86" fill="none" stroke="#3b2a1e" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 50V86" fill="none" stroke="#78909c" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="88" rx="22" ry="6" fill="#8d6e63" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M30 12H70L84 50H16Z" fill="#ffd54f" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 30H76" fill="none" stroke="#ffb300" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="32" cy="22" rx="2" ry="6" fill="#fff" opacity=".55" transform="rotate(20 32 22)"/><circle cx="44.9" cy="36" r="2.125" fill="#3b2a1e"/><circle cx="55.1" cy="36" r="2.125" fill="#3b2a1e"/><path d="M46.6 40.25Q50 43.65 53.4 40.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  M: [
+    { name: "Mirror", line: "Who can you see? It's you!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M36 82L28 96M64 82L72 96" fill="none" stroke="#8d6e63" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="46" rx="30" ry="38" fill="#ffca28" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="50" cy="46" rx="22" ry="30" fill="#e1f5fe" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M34 30L44 20M34 40L52 22" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="44" cy="52" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="52" r="2.5" fill="#3b2a1e"/><path d="M46 57Q50 61 54 57" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/><circle cx="39" cy="58" r="3" fill="#ff8a80" opacity=".6"/><circle cx="61" cy="58" r="3" fill="#ff8a80" opacity=".6"/></svg>` }
+  ],
+  N: [
+    { name: "Night light", line: "It glows all night long!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="48" cy="46" r="40" fill="#fff59d" opacity=".45" stroke="#3b2a1e" stroke-width="0" stroke-linejoin="round" stroke-linecap="round"/><path d="M84.0 11.0 85.3 14.2 88.8 14.5 86.1 16.7 86.9 20.0 84.0 18.2 81.1 20.0 81.9 16.7 79.2 14.5 82.7 14.2Z" fill="#ffd54f" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M16.0 18.0 17.1 20.5 19.8 20.8 17.7 22.6 18.4 25.2 16.0 23.8 13.6 25.2 14.3 22.6 12.2 20.8 14.9 20.5Z" fill="#ffd54f" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M82.0 62.5 82.9 64.7 85.3 64.9 83.5 66.5 84.1 68.8 82.0 67.6 79.9 68.8 80.5 66.5 78.7 64.9 81.1 64.7Z" fill="#ffd54f" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><rect x="30" y="82" width="40" height="12" rx="4" fill="#9575cd" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M58 10A36 36 0 1 0 82 70A28 28 0 1 1 58 10Z" fill="#ffe082" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="30" cy="36" rx="3" ry="8" fill="#fff" opacity=".55" transform="rotate(30 30 36)"/><circle cx="29.2" cy="56" r="2" fill="#3b2a1e"/><circle cx="38.8" cy="56" r="2" fill="#3b2a1e"/><path d="M30.8 60Q34 63.2 37.2 60" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  O: [
+    { name: "Oven", line: "Bake a yummy cake!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="10" width="72" height="84" rx="6" fill="#eceff1" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M14 28H86" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="28" cy="19" r="4" fill="#90a4ae" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="42" cy="19" r="4" fill="#90a4ae" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="58" y="15" width="20" height="8" rx="2" fill="#263238" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M30 36H70" fill="none" stroke="#3b2a1e" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><rect x="24" y="42" width="52" height="30" rx="4" fill="#455a64" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 70H72V64Q50 58 28 64Z" fill="#ff9800" opacity=".5"/><path d="M38 66Q38 54 50 54Q62 54 62 66Z" fill="#ffcc80" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="45.5" cy="81" r="2" fill="#3b2a1e"/><circle cx="54.5" cy="81" r="2" fill="#3b2a1e"/><path d="M47 84.75Q50 87.75 53 84.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  P: [
+    { name: "Pillow", line: "Soft and fluffy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M12 22Q50 12 88 22Q96 50 88 80Q50 90 12 80Q4 50 12 22Z" fill="#f8bbd0" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M22 30Q50 24 78 30M22 72Q50 78 78 72" fill="none" stroke="#f48fb1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="24" cy="40" rx="3" ry="8" fill="#fff" opacity=".55" transform="rotate(20 24 40)"/><circle cx="44" cy="50" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="50" r="2.5" fill="#3b2a1e"/><path d="M46 55Q50 59 54 55" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/><circle cx="37" cy="57" r="3" fill="#ff8a80" opacity=".6"/><circle cx="63" cy="57" r="3" fill="#ff8a80" opacity=".6"/></svg>` }
+  ],
+  Q: [
+    { name: "Quilt", line: "Warm and cozy!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="14" width="24" height="24" rx="0" fill="#ef9a9a" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="38" y="14" width="24" height="24" rx="0" fill="#fff59d" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="62" y="14" width="24" height="24" rx="0" fill="#90caf9" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="14" y="38" width="24" height="24" rx="0" fill="#a5d6a7" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="38" y="38" width="24" height="24" rx="0" fill="#ffcc80" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="62" y="38" width="24" height="24" rx="0" fill="#ce93d8" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="14" y="62" width="24" height="24" rx="0" fill="#80deea" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="38" y="62" width="24" height="24" rx="0" fill="#f48fb1" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="62" y="62" width="24" height="24" rx="0" fill="#c5e1a5" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M18 18H82V82H18Z" fill="none" stroke="#fff" stroke-width="1.2" stroke-linejoin="round" stroke-dasharray="3 3"/><rect x="14" y="14" width="72" height="72" rx="4" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="22" cy="22" rx="2" ry="4" fill="#fff" opacity=".55" transform="rotate(40 22 22)"/><circle cx="45.2" cy="50" r="2" fill="#3b2a1e"/><circle cx="54.8" cy="50" r="2" fill="#3b2a1e"/><path d="M46.8 54Q50 57.2 53.2 54" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  R: [
+    { name: "Rubber duck", line: "Quack! Splash in the bath!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M4 90Q14 84 24 90T44 90T64 90T84 90T100 90" fill="none" stroke="#4fc3f7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M12 62Q12 88 46 88Q80 88 86 64Q88 50 76 52Q66 54 60 50Q72 40 70 26Q66 10 50 10Q32 12 32 30Q32 40 40 48Q20 46 12 62Z" fill="#ffd600" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M70 28Q84 26 88 32Q84 38 70 36Z" fill="#ff9800" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M32 66Q46 76 62 64" fill="none" stroke="#f9a825" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="56" cy="26" r="3.5" fill="#3b2a1e"/><circle cx="57" cy="25" r="1.2" fill="#fff"/><circle cx="50" cy="36" r="3" fill="#ff8a80" opacity=".6"/><ellipse cx="40" cy="22" rx="3" ry="6" fill="#fff" opacity=".55" transform="rotate(30 40 22)"/></svg>` }
+  ],
+  S: [
+    { name: "Sofa", line: "Sit down and snuggle!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 82V92M82 82V92" fill="none" stroke="#3b2a1e" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><rect x="16" y="24" width="68" height="40" rx="10" fill="#26a69a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="4" y="44" width="20" height="40" rx="8" fill="#00897b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="76" y="44" width="20" height="40" rx="8" fill="#00897b" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="20" y="60" width="60" height="22" rx="6" fill="#4db6ac" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 62V80" fill="none" stroke="#00897b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="26" cy="34" rx="2.5" ry="6" fill="#fff" opacity=".55" transform="rotate(40 26 34)"/><circle cx="44" cy="42" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="42" r="2.5" fill="#3b2a1e"/><path d="M46 47Q50 51 54 47" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  T: [
+    { name: "Toothbrush", line: "Brush, brush, brush your teeth!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M8 56Q8 48 16 48H70L90 52V62L70 66H16Q8 66 8 56Z" fill="#42a5f5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="60" y="30" width="32" height="18" rx="2" fill="#fff" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M66 32V46M72 32V46M78 32V46M84 32V46" fill="none" stroke="#b0bec5" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M60 30Q58 18 70 20Q74 10 84 16Q96 14 92 30Z" fill="#80cbc4" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M66 24Q76 18 86 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="18" cy="52" rx="1.5" ry="4" fill="#fff" opacity=".55" transform="rotate(90 18 52)"/><circle cx="31.8" cy="56" r="2" fill="#3b2a1e"/><circle cx="40.2" cy="56" r="2" fill="#3b2a1e"/><path d="M33.2 59.5Q36 62.3 38.8 59.5" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  U: [
+    { name: "Umbrella", line: "It keeps us dry in the rain!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M14 70L12 76M86 66L84 72M24 84L22 90" fill="none" stroke="#4fc3f7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 50V82Q50 92 41 92Q34 92 34 85" fill="none" stroke="#3b2a1e" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 50V82Q50 92 41 92Q34 92 34 85" fill="none" stroke="#6d4c41" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M8 52Q10 14 50 12Q90 14 92 52Q82 44 71 52Q61 44 50 52Q39 44 29 52Q18 44 8 52Z" fill="#7e57c2" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 12Q38 30 29 52M50 12Q62 30 71 52" fill="none" stroke="#5e35b1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M50 6V12" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="24" cy="32" rx="3" ry="8" fill="#fff" opacity=".55" transform="rotate(40 24 32)"/><circle cx="44.9" cy="34" r="2.125" fill="#3b2a1e"/><circle cx="55.1" cy="34" r="2.125" fill="#3b2a1e"/><path d="M46.6 38.25Q50 41.65 53.4 38.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  V: [
+    { name: "Vase", line: "Pretty flowers!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M44 44Q38 30 28 20M50 44V14M56 44Q64 30 74 22" fill="none" stroke="#43a047" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="35.0" cy="20.0" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(0 35.0 20.0)"/><ellipse cx="31.5" cy="26.06217782649107" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(60 31.5 26.06217782649107)"/><ellipse cx="24.5" cy="26.062177826491073" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(120 24.5 26.062177826491073)"/><ellipse cx="21.0" cy="20.0" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(180 21.0 20.0)"/><ellipse cx="24.499999999999996" cy="13.93782217350893" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(240 24.499999999999996 13.93782217350893)"/><ellipse cx="31.5" cy="13.93782217350893" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(300 31.5 13.93782217350893)"/><circle cx="28" cy="20" r="4" fill="#ffca28" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="57.0" cy="14.0" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(0 57.0 14.0)"/><ellipse cx="53.5" cy="20.06217782649107" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(60 53.5 20.06217782649107)"/><ellipse cx="46.5" cy="20.062177826491073" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(120 46.5 20.062177826491073)"/><ellipse cx="43.0" cy="14.0" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(180 43.0 14.0)"/><ellipse cx="46.5" cy="7.937822173508931" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(240 46.5 7.937822173508931)"/><ellipse cx="53.5" cy="7.93782217350893" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(300 53.5 7.93782217350893)"/><circle cx="50" cy="14" r="4" fill="#ff7043" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="81.0" cy="22.0" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(0 81.0 22.0)"/><ellipse cx="77.5" cy="28.06217782649107" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(60 77.5 28.06217782649107)"/><ellipse cx="70.5" cy="28.062177826491073" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(120 70.5 28.062177826491073)"/><ellipse cx="67.0" cy="22.0" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(180 67.0 22.0)"/><ellipse cx="70.5" cy="15.93782217350893" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(240 70.5 15.93782217350893)"/><ellipse cx="77.5" cy="15.93782217350893" rx="4" ry="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" transform="rotate(300 77.5 15.93782217350893)"/><circle cx="74" cy="22" r="4" fill="#ffca28" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M38 40Q20 54 26 78Q30 92 50 92Q70 92 74 78Q80 54 62 40V34H38Z" fill="#4db6ac" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="32" cy="58" rx="3" ry="9" fill="#fff" opacity=".55" transform="rotate(15 32 58)"/><circle cx="44" cy="68" r="2.5" fill="#3b2a1e"/><circle cx="56" cy="68" r="2.5" fill="#3b2a1e"/><path d="M46 73Q50 77 54 73" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  W: [
+    { name: "Washing machine", line: "Round and round, wash the clothes!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="8" width="68" height="86" rx="6" fill="#f5f5f5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M16 24H84" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="28" cy="16" r="3.5" fill="#90a4ae" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><rect x="54" y="13" width="22" height="6" rx="2" fill="#263238" stroke="#3b2a1e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="58" r="25" fill="#b0bec5" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="58" r="18" fill="#4fc3f7" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M33 62Q50 54 67 62Q66 74 50 76Q34 74 33 62Z" fill="#0288d1" opacity=".45"/><circle cx="40" cy="48" r="2" fill="#fff" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><circle cx="60" cy="50" r="2.6" fill="#fff" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><circle cx="56" cy="44" r="1.6" fill="#fff" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><circle cx="45.5" cy="58" r="2" fill="#3b2a1e"/><circle cx="54.5" cy="58" r="2" fill="#3b2a1e"/><path d="M47 61.75Q50 64.75 53 61.75" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  X: [
+    { name: "Xylophone", line: "Ding, ding, dong!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M12 34L88 46M12 74L88 64" fill="none" stroke="#8d6e63" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><rect x="14.0" y="24.0" width="10" height="60" rx="3" fill="#ef5350" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="19.0" cy="30.0" r="1.6" fill="#3b2a1e"/><circle cx="19.0" cy="78.0" r="1.6" fill="#3b2a1e"/><rect x="26.5" y="27.5" width="10" height="53" rx="3" fill="#ff9800" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="31.5" cy="33.5" r="1.6" fill="#3b2a1e"/><circle cx="31.5" cy="74.5" r="1.6" fill="#3b2a1e"/><rect x="39.0" y="31.0" width="10" height="46" rx="3" fill="#ffd54f" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="44.0" cy="37.0" r="1.6" fill="#3b2a1e"/><circle cx="44.0" cy="71.0" r="1.6" fill="#3b2a1e"/><rect x="51.5" y="34.5" width="10" height="39" rx="3" fill="#66bb6a" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="56.5" cy="40.5" r="1.6" fill="#3b2a1e"/><circle cx="56.5" cy="67.5" r="1.6" fill="#3b2a1e"/><rect x="64.0" y="38.0" width="10" height="32" rx="3" fill="#42a5f5" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="69.0" cy="44.0" r="1.6" fill="#3b2a1e"/><circle cx="69.0" cy="64.0" r="1.6" fill="#3b2a1e"/><rect x="76.5" y="41.5" width="10" height="25" rx="3" fill="#ab47bc" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="81.5" cy="47.5" r="1.6" fill="#3b2a1e"/><circle cx="81.5" cy="60.5" r="1.6" fill="#3b2a1e"/><path d="M64 8L92 30" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><path d="M64 8L92 30" fill="none" stroke="#c58b5a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="62" cy="6" r="5" fill="#e53935" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M88 82V92M88 82L96 80V90" fill="none" stroke="#3b2a1e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="86" cy="92" r="3" fill="#3b2a1e"/><circle cx="94" cy="90" r="3" fill="#3b2a1e"/><circle cx="22.4" cy="54" r="2" fill="#3b2a1e"/><circle cx="29.6" cy="54" r="2" fill="#3b2a1e"/><path d="M23.6 57Q26 59.4 28.4 57" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  Y: [
+    { name: "Yarn", line: "Knit a cozy scarf!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 18L72 78" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><path d="M18 18L72 78" fill="none" stroke="#90a4ae" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M84 20L28 76" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><path d="M84 20L28 76" fill="none" stroke="#90a4ae" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="16" cy="16" r="4" fill="#ffca28"/><circle cx="86" cy="18" r="4" fill="#ffca28"/><path d="M76 76Q90 82 86 92Q82 98 92 98" fill="none" stroke="#ec407a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="54" r="30" fill="#ec407a" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 44Q44 34 62 28M22 58Q48 44 74 36M30 76Q54 58 78 52M42 82Q64 70 80 66" fill="none" stroke="#ad1457" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="54" r="30" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="36" cy="38" rx="3" ry="7" fill="#fff" opacity=".55" transform="rotate(40 36 38)"/><circle cx="44.9" cy="58" r="2.125" fill="#3b2a1e"/><circle cx="55.1" cy="58" r="2.125" fill="#3b2a1e"/><path d="M46.6 62.25Q50 65.65 53.4 62.25" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ],
+  Z: [
+    { name: "Zipper", line: "Zip it up! Zzzip!", svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 40Q10 30 20 30H80Q90 30 90 40V78Q90 88 80 88H20Q10 88 10 78Z" fill="#29b6f6" stroke="#3b2a1e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="18" y="40" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="23" y="36" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="28" y="40" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="33" y="36" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="38" y="40" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="43" y="36" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="48" y="40" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="53" y="36" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="58" y="40" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="63" y="36" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="68" y="40" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="73" y="36" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="78" y="40" width="4" height="4" rx="0.8" fill="#cfd8dc" stroke="#3b2a1e" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="76" y="33" width="10" height="12" rx="2" fill="#ffca28" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M81 45V58" fill="none" stroke="#3b2a1e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><path d="M81 45V58" fill="none" stroke="#ffca28" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="81" cy="61" r="4" fill="#ffca28" stroke="#3b2a1e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="20" cy="54" rx="2.5" ry="7" fill="#fff" opacity=".55" transform="rotate(15 20 54)"/><circle cx="42" cy="64" r="2.5" fill="#3b2a1e"/><circle cx="54" cy="64" r="2.5" fill="#3b2a1e"/><path d="M44 69Q48 73 52 69" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/></svg>` }
+  ]
+};
+// ==HOUSE END==
+
       const animals = {
         A: { name: "Alligator", emoji: "🐊", sound: "snap snap!" },
         B: { name: "Bear", emoji: "🐻", sound: "grrr!" },
@@ -1753,9 +1978,26 @@ const GARDEN_ITEMS = {
           intro: "Follow the dots to make the letter. Something yummy will grow!",
           praise: ["Yummy!", "Wow!", "Berry good!", "Super writing!", "You did it!", "Fantastic!"],
           items: L => (typeof GARDEN_ITEMS !== "undefined" && GARDEN_ITEMS[L]) || [{ name: "Apple", emoji: "🍎", line: "Crunchy and red!" }],
-          cheer: item => item.line || "Yum yum!"
+          cheer: item => item.line || "Yum yum!", homePic: "A"
+        },
+        sports: {
+          icon: "⚽", title: "Magic Letter Sports", subtitle: "✏️ Trace a letter. Get ready to play! 🏆",
+          foundLabel: "Sports things", welcome: "Welcome to Sports Day", hello: null,
+          intro: "Follow the dots to make the letter. Let's play!",
+          praise: ["Goal!", "Wow!", "Champion!", "Super writing!", "You did it!", "High five!"],
+          items: L => (typeof SPORTS_ITEMS !== "undefined" && SPORTS_ITEMS[L]) || [{ name: "Ball", emoji: "⚽", line: "Kick it!" }],
+          cheer: item => item.line || "Hooray!", homePic: "F"
+        },
+        house: {
+          icon: "🛋️", title: "Magic Letter House", subtitle: "✏️ Trace a letter. Find things at home! 🧸",
+          foundLabel: "House things", welcome: "Welcome to the House", hello: null,
+          intro: "Follow the dots to make the letter. Let's find something at home!",
+          praise: ["Wonderful!", "Wow!", "Super writing!", "You did it!", "Fantastic!", "Hooray!"],
+          items: L => (typeof HOUSE_ITEMS !== "undefined" && HOUSE_ITEMS[L]) || [{ name: "Sofa", emoji: "🛋️", line: "Sit down!" }],
+          cheer: item => item.line || "Hooray!", homePic: "S"
         }
       };
+      const WORLD_KEYS = Object.keys(WORLDS);
 
       const targetLetters = Object.keys(animals);
       const $ = id => document.getElementById(id);
@@ -1773,7 +2015,7 @@ const GARDEN_ITEMS = {
       const tryButton = $("tryButton"), clearButton = $("clearButton"), newLetterButton = $("newLetterButton");
       const installButton = $("installButton"), soundButton = $("soundButton");
       const homeEl = $("home"), homeButton = $("homeButton"), caseButton = $("caseButton");
-      const worldZooButton = $("worldZoo"), worldGardenButton = $("worldGarden");
+      const worldButtons = Array.from(document.querySelectorAll(".world-btn[data-world]"));
       const appTitle = $("appTitle"), appSubtitle = $("appSubtitle"), foundLabelEl = $("foundLabel"), foundIconEl = $("foundIcon");
 
       // ---------- state ----------
@@ -1787,7 +2029,8 @@ const GARDEN_ITEMS = {
       let phase = "home";         // "home" | "play" | "celebrate"
       let world = "zoo";          // key of WORLDS
       let letterCase = "upper";   // "upper" | "lower"
-      const pos = { zoo: 0, garden: 0 };   // next letter index per world
+      const perWorld = make => Object.fromEntries(WORLD_KEYS.map(k => [k, make()]));
+      const pos = perWorld(() => 0);      // next letter index per world
       let leniency = 0;           // 0..2, grows each time the child is told "almost"
       let idleTimer = null, wipeTimer = null, nextTimer = null, celebrateTimer = null;
       let renderQueued = false, guideQueued = false;
@@ -1796,9 +2039,9 @@ const GARDEN_ITEMS = {
       let teachingAnimationId = null, teachingAnimationToken = 0, teaching = false;
       let lastPling = 0, lastOneFingerNudge = 0;
       // Found items per world, keyed by UPPERCASE letter (shared by A and a).
-      const foundBy = { zoo: new Set(), garden: new Set() };
+      const foundBy = perWorld(() => new Set());
       const foundSet = () => foundBy[world];
-      const cycleState = { zoo: {}, garden: {} };
+      const cycleState = perWorld(() => ({}));
       const alphabetChips = new Map();
       const arbiter = createTouchArbiter();
 
@@ -1874,7 +2117,7 @@ const GARDEN_ITEMS = {
           if (WORLDS[d.world]) world = d.world;
           if (d.letterCase === "lower" || d.letterCase === "upper") letterCase = d.letterCase;
           if (Number.isFinite(d.stars) && d.stars >= 0) stars = Math.floor(d.stars);
-          Object.keys(WORLDS).forEach(w => {
+          WORLD_KEYS.forEach(w => {
             (d.found && Array.isArray(d.found[w]) ? d.found[w] : []).forEach(L => { if (targetLetters.includes(L)) foundBy[w].add(L); });
             const p = d.pos && d.pos[w];
             if (Number.isInteger(p) && p >= 0 && p < targetLetters.length) pos[w] = p;
@@ -1886,7 +2129,7 @@ const GARDEN_ITEMS = {
         try {
           window.localStorage.setItem(STORE_KEY, JSON.stringify({
             v: 1, world, letterCase, stars, pos, sound: audioEnabled,
-            found: { zoo: [...foundBy.zoo], garden: [...foundBy.garden] }
+            found: Object.fromEntries(WORLD_KEYS.map(k => [k, [...foundBy[k]]]))
           }));
         } catch (err) { /* storage is optional */ }
       }
@@ -2512,8 +2755,7 @@ const GARDEN_ITEMS = {
       // ---------- worlds + home screen ----------
       function applyWorld() {
         const W = WORLDS[world];
-        document.body.classList.toggle("world-garden", world === "garden");
-        document.body.classList.toggle("world-zoo", world === "zoo");
+        WORLD_KEYS.forEach(k => document.body.classList.toggle(`world-${k}`, k === world));
         appTitle.textContent = W.title;
         appSubtitle.textContent = W.subtitle;
         foundLabelEl.textContent = W.foundLabel;
@@ -2523,10 +2765,12 @@ const GARDEN_ITEMS = {
 
       function updateHomeProgress() {
         const n = targetLetters.length;
-        $("progressZoo").textContent = `⭐ ${foundBy.zoo.size} / ${n}`;
-        $("progressGarden").textContent = `⭐ ${foundBy.garden.size} / ${n}`;
-        worldZooButton.classList.toggle("last", world === "zoo");
-        worldGardenButton.classList.toggle("last", world === "garden");
+        worldButtons.forEach(btn => {
+          const k = btn.dataset.world;
+          const prog = btn.querySelector(".world-progress");
+          if (prog && foundBy[k]) prog.textContent = `⭐ ${foundBy[k].size} / ${n}`;
+          btn.classList.toggle("last", k === world);
+        });
       }
 
       function showHome(speak) {
@@ -2750,8 +2994,7 @@ const GARDEN_ITEMS = {
         });
         caseButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); toggleCase(); boop(); });
         homeButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); showHome(true); boop(); });
-        worldZooButton.addEventListener("click", () => chooseWorld("zoo"));
-        worldGardenButton.addEventListener("click", () => chooseWorld("garden"));
+        worldButtons.forEach(btn => btn.addEventListener("click", () => chooseWorld(btn.dataset.world)));
         clearButton.addEventListener("click", () => {
           ensureAudio(); unlockSpeech();
           if (phase !== "play") return;
@@ -2780,9 +3023,12 @@ const GARDEN_ITEMS = {
         applyWorld();
         setTarget(targetLetters[pos[world]] || "A");
         markLetter();
-        // The Garden picture on the home screen is the apple SVG.
-        const apple = WORLDS.garden.items("A")[0];
-        if (apple && apple.svg) $("gardenPic").innerHTML = apple.svg;
+        // Picture-pack worlds show one of their own SVG pictures on the home screen.
+        worldButtons.forEach(btn => {
+          const W = WORLDS[btn.dataset.world], pic = btn.querySelector(".world-pic");
+          const item = W && W.homePic ? W.items(W.homePic)[0] : null;
+          if (pic && item && item.svg) pic.innerHTML = item.svg;
+        });
         showHome(false);
       }
 

@@ -59,9 +59,26 @@
           intro: "Follow the dots to make the letter. Something yummy will grow!",
           praise: ["Yummy!", "Wow!", "Berry good!", "Super writing!", "You did it!", "Fantastic!"],
           items: L => (typeof GARDEN_ITEMS !== "undefined" && GARDEN_ITEMS[L]) || [{ name: "Apple", emoji: "🍎", line: "Crunchy and red!" }],
-          cheer: item => item.line || "Yum yum!"
+          cheer: item => item.line || "Yum yum!", homePic: "A"
+        },
+        sports: {
+          icon: "⚽", title: "Magic Letter Sports", subtitle: "✏️ Trace a letter. Get ready to play! 🏆",
+          foundLabel: "Sports things", welcome: "Welcome to Sports Day", hello: null,
+          intro: "Follow the dots to make the letter. Let's play!",
+          praise: ["Goal!", "Wow!", "Champion!", "Super writing!", "You did it!", "High five!"],
+          items: L => (typeof SPORTS_ITEMS !== "undefined" && SPORTS_ITEMS[L]) || [{ name: "Ball", emoji: "⚽", line: "Kick it!" }],
+          cheer: item => item.line || "Hooray!", homePic: "F"
+        },
+        house: {
+          icon: "🛋️", title: "Magic Letter House", subtitle: "✏️ Trace a letter. Find things at home! 🧸",
+          foundLabel: "House things", welcome: "Welcome to the House", hello: null,
+          intro: "Follow the dots to make the letter. Let's find something at home!",
+          praise: ["Wonderful!", "Wow!", "Super writing!", "You did it!", "Fantastic!", "Hooray!"],
+          items: L => (typeof HOUSE_ITEMS !== "undefined" && HOUSE_ITEMS[L]) || [{ name: "Sofa", emoji: "🛋️", line: "Sit down!" }],
+          cheer: item => item.line || "Hooray!", homePic: "S"
         }
       };
+      const WORLD_KEYS = Object.keys(WORLDS);
 
       const targetLetters = Object.keys(animals);
       const $ = id => document.getElementById(id);
@@ -79,7 +96,7 @@
       const tryButton = $("tryButton"), clearButton = $("clearButton"), newLetterButton = $("newLetterButton");
       const installButton = $("installButton"), soundButton = $("soundButton");
       const homeEl = $("home"), homeButton = $("homeButton"), caseButton = $("caseButton");
-      const worldZooButton = $("worldZoo"), worldGardenButton = $("worldGarden");
+      const worldButtons = Array.from(document.querySelectorAll(".world-btn[data-world]"));
       const appTitle = $("appTitle"), appSubtitle = $("appSubtitle"), foundLabelEl = $("foundLabel"), foundIconEl = $("foundIcon");
 
       // ---------- state ----------
@@ -93,7 +110,8 @@
       let phase = "home";         // "home" | "play" | "celebrate"
       let world = "zoo";          // key of WORLDS
       let letterCase = "upper";   // "upper" | "lower"
-      const pos = { zoo: 0, garden: 0 };   // next letter index per world
+      const perWorld = make => Object.fromEntries(WORLD_KEYS.map(k => [k, make()]));
+      const pos = perWorld(() => 0);      // next letter index per world
       let leniency = 0;           // 0..2, grows each time the child is told "almost"
       let idleTimer = null, wipeTimer = null, nextTimer = null, celebrateTimer = null;
       let renderQueued = false, guideQueued = false;
@@ -102,9 +120,9 @@
       let teachingAnimationId = null, teachingAnimationToken = 0, teaching = false;
       let lastPling = 0, lastOneFingerNudge = 0;
       // Found items per world, keyed by UPPERCASE letter (shared by A and a).
-      const foundBy = { zoo: new Set(), garden: new Set() };
+      const foundBy = perWorld(() => new Set());
       const foundSet = () => foundBy[world];
-      const cycleState = { zoo: {}, garden: {} };
+      const cycleState = perWorld(() => ({}));
       const alphabetChips = new Map();
       const arbiter = createTouchArbiter();
 
@@ -180,7 +198,7 @@
           if (WORLDS[d.world]) world = d.world;
           if (d.letterCase === "lower" || d.letterCase === "upper") letterCase = d.letterCase;
           if (Number.isFinite(d.stars) && d.stars >= 0) stars = Math.floor(d.stars);
-          Object.keys(WORLDS).forEach(w => {
+          WORLD_KEYS.forEach(w => {
             (d.found && Array.isArray(d.found[w]) ? d.found[w] : []).forEach(L => { if (targetLetters.includes(L)) foundBy[w].add(L); });
             const p = d.pos && d.pos[w];
             if (Number.isInteger(p) && p >= 0 && p < targetLetters.length) pos[w] = p;
@@ -192,7 +210,7 @@
         try {
           window.localStorage.setItem(STORE_KEY, JSON.stringify({
             v: 1, world, letterCase, stars, pos, sound: audioEnabled,
-            found: { zoo: [...foundBy.zoo], garden: [...foundBy.garden] }
+            found: Object.fromEntries(WORLD_KEYS.map(k => [k, [...foundBy[k]]]))
           }));
         } catch (err) { /* storage is optional */ }
       }
@@ -818,8 +836,7 @@
       // ---------- worlds + home screen ----------
       function applyWorld() {
         const W = WORLDS[world];
-        document.body.classList.toggle("world-garden", world === "garden");
-        document.body.classList.toggle("world-zoo", world === "zoo");
+        WORLD_KEYS.forEach(k => document.body.classList.toggle(`world-${k}`, k === world));
         appTitle.textContent = W.title;
         appSubtitle.textContent = W.subtitle;
         foundLabelEl.textContent = W.foundLabel;
@@ -829,10 +846,12 @@
 
       function updateHomeProgress() {
         const n = targetLetters.length;
-        $("progressZoo").textContent = `⭐ ${foundBy.zoo.size} / ${n}`;
-        $("progressGarden").textContent = `⭐ ${foundBy.garden.size} / ${n}`;
-        worldZooButton.classList.toggle("last", world === "zoo");
-        worldGardenButton.classList.toggle("last", world === "garden");
+        worldButtons.forEach(btn => {
+          const k = btn.dataset.world;
+          const prog = btn.querySelector(".world-progress");
+          if (prog && foundBy[k]) prog.textContent = `⭐ ${foundBy[k].size} / ${n}`;
+          btn.classList.toggle("last", k === world);
+        });
       }
 
       function showHome(speak) {
@@ -1056,8 +1075,7 @@
         });
         caseButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); toggleCase(); boop(); });
         homeButton.addEventListener("click", () => { ensureAudio(); unlockSpeech(); showHome(true); boop(); });
-        worldZooButton.addEventListener("click", () => chooseWorld("zoo"));
-        worldGardenButton.addEventListener("click", () => chooseWorld("garden"));
+        worldButtons.forEach(btn => btn.addEventListener("click", () => chooseWorld(btn.dataset.world)));
         clearButton.addEventListener("click", () => {
           ensureAudio(); unlockSpeech();
           if (phase !== "play") return;
@@ -1086,9 +1104,12 @@
         applyWorld();
         setTarget(targetLetters[pos[world]] || "A");
         markLetter();
-        // The Garden picture on the home screen is the apple SVG.
-        const apple = WORLDS.garden.items("A")[0];
-        if (apple && apple.svg) $("gardenPic").innerHTML = apple.svg;
+        // Picture-pack worlds show one of their own SVG pictures on the home screen.
+        worldButtons.forEach(btn => {
+          const W = WORLDS[btn.dataset.world], pic = btn.querySelector(".world-pic");
+          const item = W && W.homePic ? W.items(W.homePic)[0] : null;
+          if (pic && item && item.svg) pic.innerHTML = item.svg;
+        });
         showHome(false);
       }
 

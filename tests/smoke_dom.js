@@ -22,7 +22,7 @@ global.document = {
   body: { appendChild() {}, classList: { _c: new Set(), toggle(c, on) { on ? this._c.add(c) : this._c.delete(c); }, add(c) { this._c.add(c); }, remove(c) { this._c.delete(c); }, contains(c) { return this._c.has(c); } } },
   addEventListener(t, f) { (listeners["doc:" + t] ||= []).push(f); },
   querySelectorAll: sel => /data-go-home/.test(sel) ? ["homeButton", "backButton"].map(id => els[id] || mkEl(id))
-    : !/world-btn/.test(sel) ? [] : ["Zoo", "Garden", "Sports", "House", "Countries"].map(W => {
+    : !/world-btn/.test(sel) ? [] : ["Zoo", "Garden", "Sports", "House", "Countries", "Dinos"].map(W => {
     const b = els["world" + W] || mkEl("world" + W);
     b.dataset = { world: W.toLowerCase() };
     const prog = els["progress" + W] || mkEl("progress" + W), pic = els["pic" + W] || mkEl("pic" + W);
@@ -172,8 +172,32 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       `| ${t}:`, g("animalName"), "| svg:", /<svg/.test(els.animalEmoji.innerHTML), "|", g("message"));
     await sleep(4800); flushRaf();
   }
+  // ---- Dinos world: only letters with a dinosaur (no F, J, W, X, Y, Z) ----
   click("homeButton"); flushRaf();
-  console.log("progress:", ["Zoo", "Garden", "Sports", "House", "Countries"].map(W => W + " " + g("progress" + W)).join(", "));
+  console.log("home pic Dinos is svg:", /<svg/.test(els.picDinos.innerHTML), "| dinos progress:", g("progressDinos"));
+  click("worldDinos"); flushRaf();
+  console.log("dinos:", g("appTitle"), "|", g("foundLabel"), g("foundCount"), "| body.world-dinos:", document.body.classList.contains("world-dinos"),
+    "| welcome:", g("animalName"), "| svg:", /<svg/.test(els.animalEmoji.innerHTML), "|", g("promptTitle"));
+  if (/trace [a-z]\?/.test(g("promptTitle"))) { click("caseButton"); flushRaf(); }
+  while (!/trace E\?/.test(g("promptTitle"))) { click("nextLetterButton"); flushRaf(); }
+  click("nextLetterButton"); flushRaf(); console.log("dinos ▶ from E (skips F):", g("promptTitle"));
+  while (!/trace A\?/.test(g("promptTitle"))) { click("prevLetterButton"); flushRaf(); }
+  click("prevLetterButton"); flushRaf(); console.log("dinos ◀ from A wraps to:", g("promptTitle"));
+  const dStars = g("stars");
+  trace("X"); await sleep(3000); flushRaf();
+  console.log("X in dinos (no dino):", g("recognized"), "|", g("message"), "| picture still pencil:", els.animalEmoji.textContent === "✏️", "| stars unchanged:", dStars === g("stars"));
+  await sleep(4500); flushRaf();
+  const dt = g("promptTitle").match(/trace (\w)\?/)[1];
+  trace(dt); await sleep(400); flushRaf();
+  console.log(`dinos ${dt}:`, g("animalName"), "| svg:", /<svg/.test(els.animalEmoji.innerHTML), "|", g("message"), "| found", g("foundCount"));
+  await sleep(4800); flushRaf();
+  console.log("dinos auto-next:", g("promptTitle"));
+  click("homeButton"); flushRaf();
+  click("worldZoo"); flushRaf();
+  while (!/trace E\?/.test(g("promptTitle"))) { click("nextLetterButton"); flushRaf(); }
+  click("nextLetterButton"); flushRaf(); console.log("zoo ▶ from E (has F again):", g("promptTitle"));
+  click("homeButton"); flushRaf();
+  console.log("progress:", ["Zoo", "Garden", "Sports", "House", "Countries", "Dinos"].map(W => W + " " + g("progress" + W)).join(", "));
   const saved = JSON.parse(store["magicLetterZoo.progress.v1"] || "{}");
   console.log("saved found:", JSON.stringify(saved.found), "| world:", saved.world);
   process.exit(0);

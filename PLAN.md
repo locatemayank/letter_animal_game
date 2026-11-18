@@ -13,7 +13,7 @@ These choices are already decided:
 - the home screen with world buttons and saved progress;
 - the Garden world (all custom SVG);
 - lowercase a–z on school lines, with an ABC ⇄ abc button;
-- three extra picture worlds that were not in the original plan, ⚽ Sports, 🛋️ House and 🌍 Countries (custom SVG; Countries shows flags);
+- four extra picture worlds that were not in the original plan, ⚽ Sports, 🛋️ House, 🌍 Countries (custom SVG; Countries shows flags) and 🦖 Dinos (45 dinosaurs; letters without a dinosaur are skipped);
 - a labelled "⬅️ Categories" button to go back to the home screen;
 - about 4 pictures per letter in every world, picked at random each time;
 - ◀ / ▶ letter buttons beside the letter tile (the Done and New Letter buttons are gone).

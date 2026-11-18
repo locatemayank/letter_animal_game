@@ -1,4 +1,4 @@
-const CACHE_NAME = "magic-letter-zoo-v22";
+const CACHE_NAME = "magic-letter-zoo-v23";
 const ASSETS = [
   "./",
   "./index.html",

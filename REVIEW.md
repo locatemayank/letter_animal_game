@@ -5,6 +5,16 @@ Audience: children aged 3 to 4 tracing uppercase letters on a phone or tablet.
 
 The game is charming. It has a clear loop (trace, then meet an animal), good audio and confetti feedback, it installs as a PWA, and it cycles A to Z so every letter comes up. Most of the problems are in the parts a parent can't see: the letter check accepts almost anything, and the touch handling ignores real drawing or draws when it shouldn't. Both are fixed in the new `index.html`. Ideas for further work are at the end.
 
+## Update 7: Dinosaurs world (November 2026)
+
+**🦖 Dinos.** A sixth world, Dinos, shows a cute cartoon dinosaur for each letter that has one: 45 hand-drawn SVG dinosaurs over 20 letters, picked at random like the other worlds. They include A Ankylosaurus / Allosaurus / Apatosaurus / Argentinosaurus, B Brachiosaurus / Baryonyx / Brontosaurus, D Diplodocus / Dilophosaurus / Deinonychus, P Parasaurolophus / Pachycephalosaurus, S Stegosaurus / Spinosaurus / Styracosaurus, T T. rex / Triceratops / Therizinosaurus / Troodon, U Utahraptor and V Velociraptor. The flying and swimming reptiles that children count as dinosaurs are in too: Pteranodon, Quetzalcoatlus and Rhamphorhynchus fly, and Elasmosaurus, Plesiosaurus, Ichthyosaurus and Mosasaurus swim. Each dinosaur has a short line that is read aloud, such as "Triceratops has three horns and a big frill!".
+
+**Letters without a dinosaur are skipped.** F, J, W, X, Y and Z have no well-known dinosaur, so the Dinos world leaves them out. The letter row shows only the 20 dino letters, ◀ / ▶ jump straight over the gaps (E → G, and ◀ on A wraps to V), and the home button counts "⭐ 0 / 20". If a child draws one of the skipped letters anyway, the game says "That looks like X! Now can you trace V?" without a picture, and gives no stars. The other worlds still use all 26 letters.
+
+**Home screen.** Six world buttons: one row of six on a sideways screen, 3 + 3 on an upright tablet and 2 + 2 + 2 on an upright phone. The Dinos world has its own warm sand-and-jungle colours.
+
+The service worker cache is now v23.
+
 ## Update 6: bigger picture, words always visible, phones sideways (November 2026)
 
 **Wider picture.** The drawing area is a little narrower (about 59 % of the width instead of 67 % on a sideways screen) and the picture panel is wider, so the reward picture is bigger.

@@ -5,7 +5,7 @@ Usage (from anywhere):  python tests/build.py
 index.html keeps its markup and CSS; only the final <script> block is replaced with
 engine.js (LetterEngine) + arbiter.js (createTouchArbiter) + the picture packs
 garden.js (GARDEN_ITEMS), sports.js (SPORTS_ITEMS), house.js (HOUSE_ITEMS),
-countries.js (COUNTRY_ITEMS, COUNTRY_HOME_SVG) + game.js (controller). Edit those files, run this, then run the tests (see tests/README.md).
+countries.js (COUNTRY_ITEMS, COUNTRY_HOME_SVG), dinos.js (DINO_ITEMS) + game.js (controller). Edit those files, run this, then run the tests (see tests/README.md).
 """
 import os
 import subprocess
@@ -34,6 +34,7 @@ packs = "\n\n".join([
     between(read("sports.js"), "// ==SPORTS START==", "// ==SPORTS END=="),
     between(read("house.js"), "// ==HOUSE START==", "// ==HOUSE END=="),
     between(read("countries.js"), "// ==COUNTRIES START==", "// ==COUNTRIES END=="),
+    between(read("dinos.js"), "// ==DINOS START==", "// ==DINOS END=="),
 ])
 game = read("game.js").rstrip() + "\n"
 

@@ -119,10 +119,11 @@ class Pack:
     def add(self, letter, name, line, s):
         self.items.setdefault(letter, []).append({"name": name, "line": line, "svg": s})
 
-    def write(self, path, const, marker, title):
+    def write(self, path, const, marker, title, allow_missing=False):
         order = [chr(c) for c in range(65, 91)]
         missing = [k for k in order if k not in self.items]
-        assert not missing, f"missing letters: {missing}"
+        assert allow_missing or not missing, f"missing letters: {missing}"
+        order = [k for k in order if k in self.items]
         out = [f"// =={marker} START==", f"// {title}", f"const {const} = {{"]
         for i, k in enumerate(order):
             arr = self.items[k]

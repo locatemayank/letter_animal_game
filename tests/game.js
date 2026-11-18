@@ -101,11 +101,24 @@
           items: L => (typeof COUNTRY_ITEMS !== "undefined" && COUNTRY_ITEMS[L]) || [{ name: "World", emoji: "🌍", line: "Our big world!" }],
           cheer: item => item.line || "Hooray!",
           homeSvg: () => (typeof COUNTRY_HOME_SVG !== "undefined" ? COUNTRY_HOME_SVG : null)
+        },
+        dinos: {
+          icon: "🦖", title: "Magic Letter Dinos", subtitle: "✏️ Trace a letter. Meet a dinosaur! 🦕",
+          foundLabel: "Dinos", welcome: "Welcome to Dino Land", hello: null,
+          intro: "Follow the dots to make the letter. A dinosaur will stomp in!",
+          praise: ["Roar-some!", "Wow!", "Dino-mite!", "Super writing!", "You did it!", "Stomp stomp, hooray!"],
+          items: L => (typeof DINO_ITEMS !== "undefined" && DINO_ITEMS[L]) || [{ name: "Dinosaur", emoji: "🦖", line: "Roar!" }],
+          // Only letters that have a dinosaur (no F, J, W, X, Y, Z); the others are skipped.
+          letters: (typeof DINO_ITEMS !== "undefined") ? Object.keys(DINO_ITEMS) : null,
+          cheer: item => item.line || "Roar!", homePic: "T", welcomePic: "T"
         }
       };
       const WORLD_KEYS = Object.keys(WORLDS);
 
-      const targetLetters = Object.keys(animals);
+      const ALL_LETTERS = Object.keys(animals);
+      // Letters a world plays (most worlds: A-Z; Dinos skips letters without a dinosaur).
+      const lettersOf = w => (WORLDS[w] && WORLDS[w].letters && WORLDS[w].letters.length ? WORLDS[w].letters : ALL_LETTERS);
+      let targetLetters = ALL_LETTERS;   // letters of the current world (set by applyWorld)
       const $ = id => document.getElementById(id);
       const canvasWrap = $("canvasWrap");
       const drawCanvas = $("drawCanvas");
@@ -239,9 +252,10 @@
           if (d.letterCase === "lower" || d.letterCase === "upper") letterCase = d.letterCase;
           if (Number.isFinite(d.stars) && d.stars >= 0) stars = Math.floor(d.stars);
           WORLD_KEYS.forEach(w => {
-            (d.found && Array.isArray(d.found[w]) ? d.found[w] : []).forEach(L => { if (targetLetters.includes(L)) foundBy[w].add(L); });
+            const ls = lettersOf(w);
+            (d.found && Array.isArray(d.found[w]) ? d.found[w] : []).forEach(L => { if (ls.includes(L)) foundBy[w].add(L); });
             const p = d.pos && d.pos[w];
-            if (Number.isInteger(p) && p >= 0 && p < targetLetters.length) pos[w] = p;
+            if (Number.isInteger(p) && p >= 0 && p < ls.length) pos[w] = p;
           });
           audioEnabled = d.sound !== false;
         } catch (err) { /* start fresh */ }
@@ -741,6 +755,16 @@
       }
 
       function revealOther(letter) {
+        if (!targetLetters.includes(letter.toUpperCase())) {
+          // A real letter, but this world has no picture for it (e.g. no dinosaur starts with X).
+          recognized.textContent = `I see ${letter}!`;
+          message.textContent = `That looks like ${letter}! Now can you trace ${targetLetter}?`;
+          say(`That looks like ${spoken(letter)}! Now can you trace ${spoken(targetLetter)}?`);
+          showToast(`I see ${letter}!`);
+          boop();
+          wipeTimer = setTimeout(() => clearDrawing(true), 4200);
+          return;
+        }
         revealItem(letter, false);
         message.textContent = `That looks like ${letter}! Now can you trace ${targetLetter}?`;
         wipeTimer = setTimeout(() => clearDrawing(true), 5200);
@@ -882,6 +906,8 @@
       function applyWorld() {
         const W = WORLDS[world];
         WORLD_KEYS.forEach(k => document.body.classList.toggle(`world-${k}`, k === world));
+        const letters = lettersOf(world);
+        if (letters !== targetLetters) { targetLetters = letters; setupAlphabet(); }
         appTitle.textContent = W.title;
         appSubtitle.textContent = W.subtitle;
         foundLabelEl.textContent = W.foundLabel;
@@ -890,9 +916,9 @@
       }
 
       function updateHomeProgress() {
-        const n = targetLetters.length;
         worldButtons.forEach(btn => {
           const k = btn.dataset.world;
+          const n = lettersOf(k).length;
           const prog = btn.querySelector(".world-progress");
           if (prog && foundBy[k]) prog.textContent = `⭐ ${foundBy[k].size} / ${n}`;
           btn.classList.toggle("last", k === world);
@@ -915,10 +941,10 @@
         homeEl.classList.add("hidden");
         homeEl.setAttribute("aria-hidden", "true");
         applyWorld();
-        startLetter(targetLetters[pos[world]] || "A", false);
+        startLetter(targetLetters[pos[world]] || targetLetters[0], false);
         const W = WORLDS[world];
         if (W.hello) setPicture({ emoji: W.hello });
-        else { const pics = W.items("A"); setPicture(pics[Math.floor(Math.random() * pics.length)]); }
+        else { const pics = W.items(W.welcomePic || "A"); setPicture(pics[Math.floor(Math.random() * pics.length)]); }
         recognized.textContent = "Hello, little writer!";
         animalName.textContent = W.welcome;
         message.textContent = W.intro;
@@ -1162,7 +1188,7 @@
         updateSoundButton();
         updateCaseButton();
         applyWorld();
-        setTarget(targetLetters[pos[world]] || "A");
+        setTarget(targetLetters[pos[world]] || targetLetters[0]);
         markLetter();
         // Picture-pack worlds show one of their own SVG pictures on the home screen.
         worldButtons.forEach(btn => {

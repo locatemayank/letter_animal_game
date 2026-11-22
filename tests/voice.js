@@ -8,6 +8,10 @@
 const voiceId = text => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
+// Clips that sit in another folder of the site than voice/ (e.g. uploaded as stage01/voice/...):
+// { "stage01/": "id id ...", ... }. build.py fills this in from the clips it finds next to index.html.
+const VOICE_FOLDERS = {}; // ==VOICE FOLDERS==
+
 const Voice = (() => {
   const DIR = "voice/";
   const GAP = 0.14;          // seconds between chained parts ("Welcome to the Zoo!" + "Can you trace A?")
@@ -18,7 +22,9 @@ const Voice = (() => {
   let playing = [];          // WebAudio sources or <audio> elements of the current line
   let token = 0;
 
-  const url = id => DIR + id + ".mp3";
+  const folderOf = new Map();
+  Object.keys(VOICE_FOLDERS).forEach(folder => VOICE_FOLDERS[folder].split(" ").forEach(id => folderOf.set(id, folder)));
+  const url = id => (folderOf.get(id) || "") + DIR + id + ".mp3";
 
   function fetchRaw(id) {
     if (raw.has(id)) return raw.get(id);

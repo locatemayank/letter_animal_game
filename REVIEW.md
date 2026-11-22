@@ -19,6 +19,8 @@ The game is charming. It has a clear loop (trace, then meet an animal), good aud
 
 The service worker cache is now v24.
 
+**Fix (22 Nov).** The clips were uploaded as `stage01/voice/` … `stage08/voice/` instead of `voice/`, so the game could not find them and used the browser voice for every line. The game now knows which folder each clip is in (`build.py` writes the list), so the clips play where they are.
+
 ## Update 7: Dinosaurs world (November 2026)
 
 **🦖 Dinos.** A sixth world, Dinos, shows a cute cartoon dinosaur for each letter that has one: 45 hand-drawn SVG dinosaurs over 20 letters, picked at random like the other worlds. They include A Ankylosaurus / Allosaurus / Apatosaurus / Argentinosaurus, B Brachiosaurus / Baryonyx / Brontosaurus, D Diplodocus / Dilophosaurus / Deinonychus, P Parasaurolophus / Pachycephalosaurus, S Stegosaurus / Spinosaurus / Styracosaurus, T T. rex / Triceratops / Therizinosaurus / Troodon, U Utahraptor and V Velociraptor. The flying and swimming reptiles that children count as dinosaurs are in too: Pteranodon, Quetzalcoatlus and Rhamphorhynchus fly, and Elasmosaurus, Plesiosaurus, Ichthyosaurus and Mosasaurus swim. Each dinosaur has a short line that is read aloud, such as "Triceratops has three horns and a big frill!".

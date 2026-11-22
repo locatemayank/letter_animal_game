@@ -37,6 +37,10 @@ python tests/voice_browser_test.py   # needs: pip install playwright; python -m 
 
 ## Recorded voice
 
+Clips normally live in `voice/`. They can also sit in `<folder>/voice/` (the first upload put them in
+`stage01/voice/` … `stage08/voice/`): `python tests/build.py` scans for them and writes the list into
+`VOICE_FOLDERS`, so rebuild after moving or adding clips. A clip in the top-level `voice/` wins.
+
 Clip name rule: lowercase the text, drop accents, turn every run of other characters into "-":
 "Can you trace little A?" → `voice/can-you-trace-little-a.mp3`, "B is for Brachiosaurus" →
 `voice/b-is-for-brachiosaurus.mp3`. `tools/voice_script.tsv` has the full list.

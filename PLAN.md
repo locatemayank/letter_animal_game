@@ -8,7 +8,7 @@ These choices are already decided:
 - **Numbers reward:** tracing a number makes that many objects pop in, and they are counted aloud.
 - **Age range:** the game starts at 3–4 years and grows to 3–6 years, adding lowercase, bigger numbers and short words.
 
-**Status (15 Nov 2026):** the following are built:
+**Status (22 Nov 2026):** the following are built:
 
 - the home screen with world buttons and saved progress;
 - the Garden world (all custom SVG);
@@ -16,8 +16,9 @@ These choices are already decided:
 - four extra picture worlds that were not in the original plan, ⚽ Sports, 🛋️ House, 🌍 Countries (custom SVG; Countries shows flags) and 🦖 Dinos (45 dinosaurs; letters without a dinosaur are skipped);
 - a labelled "⬅️ Categories" button to go back to the home screen;
 - about 4 pictures per letter in every world, picked at random each time;
-- ◀ / ▶ letter buttons beside the letter tile (the Done and New Letter buttons are gone).
-- Bigger picture panel with the words pinned under it; phones use the side-by-side layout when sideways and show a "Turn me sideways!" tip when upright.
+- ◀ / ▶ letter buttons beside the letter tile (the Done and New Letter buttons are gone);
+- a bigger picture panel with the words pinned under it; phones use the side-by-side layout when sideways and show a "Turn me sideways!" tip when upright;
+- a recorded natural voice for every spoken line (765 clips in `voice/`); a missing clip falls back to the browser voice, so the clips can be uploaded in batches.
 
 That covers most of phase 1, all of phase 3 and the lowercase part of phase 5. Next up: Numbers 0–9.
 

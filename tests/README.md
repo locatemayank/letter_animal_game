@@ -16,8 +16,11 @@ The script inside it is assembled from the files here:
 | `more_sheet.py` | Safety checks + contact sheet for one extras file: `python tests/more_sheet.py house_more_nz sheet.png [tile] [LETTERS]` |
 | `svgkit.py` | Drawing helpers shared by the pack scripts (outline, highlight, face, thick lines), `add_extensions`, and `Pack.write(..., allow_missing=True)` for packs that skip letters |
 | `pack_sheet.py` | Contact sheet of any picture pack: `python tests/pack_sheet.py tests/sports.js sheet.png` |
+| `voice.js` | `Voice` + `voiceId`: plays the recorded clip `voice/<id>.mp3` for a line (WebAudio, or an `<audio>` element on old browsers), chains two-part lines, preloads the current letter's clips, and calls back to the browser voice when any clip is missing or slow |
+| `voice_lines.js` | Lists every line the game can say and writes `../tools/voice_script.tsv` (id, text, group) in upload order: prompts, then Zoo, Garden, Sports, House, Countries, Dinos. Run it after adding pictures |
+| `voice_browser_test.py` | Headless Chromium check (Playwright) of clip playback, two-part lines, missing-clip fallback, no-WebAudio, sound off, service-worker caching and offline |
 | `game.js` | Game controller: worlds (Zoo / Garden / Sports / House / Countries / Dinos; Zoo has 4 emoji animals per letter; a world may play only some letters via `letters`), random picture per letter (never the same twice in a row), ◀ / ▶ letter buttons, home screen and back button, picture fitted above the words (fitPicture), "Keep it upright" button, ABC ⇄ abc, school lines, canvas rendering, pointer wiring, guide dots, voice, celebration flow, saved progress |
-| `build.py` | Rebuilds the `<script>` block in `../index.html` from the files above and syntax-checks it |
+| `build.py` | Rebuilds (engine, arbiter, voice, packs, game) the `<script>` block in `../index.html` from the files above and syntax-checks it |
 
 ## Workflow
 
@@ -28,7 +31,27 @@ cd tests
 node test_arbiter.js     # 17 touch scenarios
 node sim.js              # simulated preschool handwriting (env: N, W, H, LEN, SET=lower)
 node smoke_dom.js        # headless walk-through of ../index.html: home, Zoo, idle auto-check, abc, i-dot, ◀/▶, random pictures, Garden, Sports, House, Countries, Dinos (skipped letters)
+cd ..
+python tests/voice_browser_test.py   # needs: pip install playwright; python -m playwright install chromium-headless-shell
 ```
+
+## Recorded voice
+
+Clip name rule: lowercase the text, drop accents, turn every run of other characters into "-":
+"Can you trace little A?" → `voice/can-you-trace-little-a.mp3`, "B is for Brachiosaurus" →
+`voice/b-is-for-brachiosaurus.mp3`. `tools/voice_script.tsv` has the full list.
+
+```
+node tests/voice_lines.js                     # refresh tools/voice_script.tsv
+pip install kokoro-onnx soundfile             # + ffmpeg on the PATH
+python tools/record_kokoro.py --model-dir <folder with kokoro-v1.0.int8.onnx + voices-v1.0.bin>
+python tools/record_kokoro.py --only b-is-for-bear   # re-record one clip
+python tools/record_kokoro.py --show --only ...      # print the phonemes without recording
+```
+
+Only missing clips are recorded. Pronunciation fixes go in `SAY_AS` in `record_kokoro.py`
+(IPA between slashes). A "?" after a letter that ends in an "ee" sound (B, C, D, E, G, P, T, V, Z)
+is read as "!", because Kokoro otherwise glides it into "deer?" or "peer?".
 
 `SET=lower node sim.js` runs the same simulation on the lowercase letters (on school lines).
 `ENGINE=./orig_engine.js node sim.js` runs it against the original recognizer (baseline).

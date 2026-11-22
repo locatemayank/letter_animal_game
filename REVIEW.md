@@ -5,6 +5,20 @@ Audience: children aged 3 to 4 tracing uppercase letters on a phone or tablet.
 
 The game is charming. It has a clear loop (trace, then meet an animal), good audio and confetti feedback, it installs as a PWA, and it cycles A to Z so every letter comes up. Most of the problems are in the parts a parent can't see: the letter check accepts almost anything, and the touch handling ignores real drawing or draws when it shouldn't. Both are fixed in the new `index.html`. Ideas for further work are at the end.
 
+## Update 8: recorded voice (November 2026)
+
+**A natural voice.** Every line the game speaks now has a recorded clip: 765 short MP3 files in the `voice/` folder (about 6.5 MB in total, each under 3 seconds). That covers "Where shall we play?", the six world welcomes, "Can you trace A?" and "Can you trace little A?", "Almost! Follow the pink dots.", the "Watch me make…" and "Let's follow the dots…" help lines, "That looks like…" and every "A is for Apple" line in all six worlds. The clips were made with the open Kokoro text-to-speech model (voice "af_heart", a warm, clear female voice, slightly slowed for small children). Hard names have their pronunciation set by hand (Xigua, Quetzalcoatlus, Pachycephalosaurus, Kiribati, Jalapeño and about 40 more), and letter names are read as letters ("A is for", not "uh is for"). Every clip was checked by running speech recognition on it.
+
+**Upload a batch at a time.** Any line whose clip is missing is read by the browser voice as before, so the game works with none, some or all of the clips. A clip that is not uploaded yet, a slow network (more than 1.5 s) or an old browser all fall back to the browser voice. Lines that come in two parts ("Welcome to the Zoo!" then "Can you trace A?") play as two clips with a short pause between them.
+
+**Offline.** Clips are kept by the service worker once they have been heard (in their own cache, so a game update does not download them again). Offline, a clip heard before still plays; a new line uses the browser voice. The current letter's clips are downloaded in advance, so they play without a delay.
+
+**Your own voice.** `tools/voice_script.tsv` lists every line and its file name (for example `voice/can-you-trace-a.mp3`). A clip recorded by a parent with the same file name replaces the Kokoro one. `tools/record_kokoro.py` re-records clips, for example after new pictures are added (run `node tests/voice_lines.js` first to update the list).
+
+**Fix.** The message bubble at the bottom stayed on top of the buttons after it faded out and could swallow taps on them. It no longer blocks taps.
+
+The service worker cache is now v24.
+
 ## Update 7: Dinosaurs world (November 2026)
 
 **🦖 Dinos.** A sixth world, Dinos, shows a cute cartoon dinosaur for each letter that has one: 45 hand-drawn SVG dinosaurs over 20 letters, picked at random like the other worlds. They include A Ankylosaurus / Allosaurus / Apatosaurus / Argentinosaurus, B Brachiosaurus / Baryonyx / Brontosaurus, D Diplodocus / Dilophosaurus / Deinonychus, P Parasaurolophus / Pachycephalosaurus, S Stegosaurus / Spinosaurus / Styracosaurus, T T. rex / Triceratops / Therizinosaurus / Troodon, U Utahraptor and V Velociraptor. The flying and swimming reptiles that children count as dinosaurs are in too: Pteranodon, Quetzalcoatlus and Rhamphorhynchus fly, and Elasmosaurus, Plesiosaurus, Ichthyosaurus and Mosasaurus swim. Each dinosaur has a short line that is read aloud, such as "Triceratops has three horns and a big frill!".

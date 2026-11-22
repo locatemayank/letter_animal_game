@@ -759,7 +759,7 @@
           // A real letter, but this world has no picture for it (e.g. no dinosaur starts with X).
           recognized.textContent = `I see ${letter}!`;
           message.textContent = `That looks like ${letter}! Now can you trace ${targetLetter}?`;
-          say(`That looks like ${spoken(letter)}! Now can you trace ${spoken(targetLetter)}?`);
+          say([`That looks like ${spoken(letter)}!`, `Can you trace ${spoken(targetLetter)}?`]);
           showToast(`I see ${letter}!`);
           boop();
           wipeTimer = setTimeout(() => clearDrawing(true), 4200);
@@ -853,6 +853,14 @@
         leniency = 0;
         glowDots = null;
         guide = LetterEngine.buildGuide(targetLetter, width, height);
+        preloadVoice(targetLetter);
+      }
+
+      // Fetch the clips this letter may need, so they play straight away.
+      function preloadVoice(letter) {
+        const s = spoken(letter), L = letter.toUpperCase();
+        Voice.preload([`Can you trace ${s}?`, ...WORLDS[world].items(L).map(it => `${L} is for ${it.name}`),
+          "Almost! Follow the pink dots.", `Let's follow the dots to make ${s}.`, `Watch me make ${s}. Then you try!`]);
       }
 
       function stopEverything() {
@@ -898,7 +906,7 @@
         updateCaseButton();
         // Same letter, other case: A -> a -> A. Found items are shared between cases.
         startLetter(targetLetter.toUpperCase(), false);
-        say(isLowerCase() ? `Small letters! Can you trace ${spoken(targetLetter)}?` : `Big letters! Can you trace ${spoken(targetLetter)}?`, 200);
+        say([isLowerCase() ? "Small letters!" : "Big letters!", `Can you trace ${spoken(targetLetter)}?`], 200);
         showToast(isLowerCase() ? "abc  small letters" : "ABC  big letters");
       }
 
@@ -927,6 +935,7 @@
 
       function showHome(speak) {
         stopEverything();
+        Voice.stop();
         if ("speechSynthesis" in window) window.speechSynthesis.cancel();
         phase = "home";
         updateHomeProgress();
@@ -948,7 +957,7 @@
         recognized.textContent = "Hello, little writer!";
         animalName.textContent = W.welcome;
         message.textContent = W.intro;
-        say(`${W.welcome}! Can you trace ${spoken(targetLetter)}?`, 200);
+        say([`${W.welcome}!`, `Can you trace ${spoken(targetLetter)}?`], 200);
         boop();
       }
 
@@ -1054,8 +1063,9 @@
       }
 
       function unlockSpeech() {
-        if (speechUnlocked || !audioEnabled || !("speechSynthesis" in window)) return;
-        speechUnlocked = true;
+        if (speechUnlocked || !audioEnabled) return;
+        speechUnlocked = true;   // also unlocks the recorded voice (called from a tap)
+        if (!("speechSynthesis" in window)) return;
         chooseVoice();
         try {
           const warmup = new SpeechSynthesisUtterance(" ");
@@ -1066,8 +1076,16 @@
         } catch (error) { /* speech is optional */ }
       }
 
-      function say(text, delay = 60) {
-        if (!audioEnabled || !speechUnlocked || !("speechSynthesis" in window)) return;
+      // Speak a line: the recorded clips in voice/ when they are there, else the browser voice.
+      // `parts` is one sentence or a list of sentences said one after another.
+      function say(parts, delay = 60) {
+        if (!audioEnabled || !speechUnlocked) return;
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        Voice.say(Array.isArray(parts) ? parts : [parts], delay, text => speakWithBrowser(text, 30));
+      }
+
+      function speakWithBrowser(text, delay) {
+        if (!audioEnabled || !("speechSynthesis" in window)) return;
         const speak = () => {
           const u = new SpeechSynthesisUtterance(text);
           u.lang = "en-US"; u.rate = 0.8; u.pitch = 1.18; u.volume = 1;
@@ -1094,7 +1112,7 @@
         updateSoundButton();
         saveProgress();
         if (audioEnabled) { ensureAudio(); boop(); showToast("Sound on!"); }
-        else { if ("speechSynthesis" in window) window.speechSynthesis.cancel(); showToast("Sound off"); }
+        else { Voice.stop(); if ("speechSynthesis" in window) window.speechSynthesis.cancel(); showToast("Sound off"); }
       }
 
       // ---------- install ----------
@@ -1184,6 +1202,8 @@
       }
 
       function welcome() {
+        Voice.setContext(() => ensureAudio());
+        Voice.preload(["Where shall we play?", ...WORLD_KEYS.map(k => `${WORLDS[k].welcome}!`)]);
         loadProgress();
         updateSoundButton();
         updateCaseButton();

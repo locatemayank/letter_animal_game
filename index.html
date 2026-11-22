@@ -493,6 +493,7 @@
       font-weight: 1000;
       box-shadow: var(--shadow);
       opacity: 0;
+      pointer-events: none; /* never block the buttons under it */
       transition: opacity 0.18s ease, transform 0.18s ease;
     }
 
@@ -1858,6 +1859,135 @@ const createTouchArbiter = (opts = {}) => {
   return { down, move, up, reset, get activeId() { return activeId; }, get size() { return contacts.size; }, cfg };
 };
 // ==ARBITER END==
+
+// ==VOICE START==
+// Recorded voice. Every line the game says can have a clip: voice/<id>.mp3, where
+// id = voiceId(text) ("Can you trace A?" -> voice/can-you-trace-a.mp3).
+// A line whose clip is missing (not uploaded yet, offline, old browser) is read by the
+// browser's speech voice instead, so the clips can be added a batch at a time.
+// Clips are fetched by XHR (works on old Safari too), decoded for WebAudio, or played
+// with an <audio> element when there is no WebAudio.
+const voiceId = text => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+const Voice = (() => {
+  const DIR = "voice/";
+  const GAP = 0.14;          // seconds between chained parts ("Welcome to the Zoo!" + "Can you trace A?")
+  const WAIT_MS = 1500;      // longest wait for a clip before using the speech voice instead
+  const raw = new Map();     // id -> Promise<ArrayBuffer|null>   (null = no clip)
+  const decoded = new Map(); // id -> Promise<AudioBuffer|null>
+  let getContext = () => null;
+  let playing = [];          // WebAudio sources or <audio> elements of the current line
+  let token = 0;
+
+  const url = id => DIR + id + ".mp3";
+
+  function fetchRaw(id) {
+    if (raw.has(id)) return raw.get(id);
+    const p = new Promise(resolve => {
+      if (typeof XMLHttpRequest === "undefined") { resolve(null); return; }
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", url(id), true);
+        xhr.responseType = "arraybuffer";
+        xhr.onload = () => {
+          const ok = (xhr.status === 200 || xhr.status === 0) && xhr.response && xhr.response.byteLength > 200;
+          // A missing clip may come back as a page (404 page or the offline index.html): not audio.
+          const type = (xhr.getResponseHeader && xhr.getResponseHeader("Content-Type")) || "";
+          resolve(ok && !/text\/html/i.test(type) ? xhr.response : null);
+        };
+        xhr.onerror = xhr.ontimeout = xhr.onabort = () => resolve(null);
+        xhr.timeout = 15000;
+        xhr.send();
+      } catch (error) { resolve(null); }
+    });
+    raw.set(id, p);
+    return p;
+  }
+
+  function decode(id) {
+    const ctx = getContext();
+    if (!ctx || !ctx.decodeAudioData) return fetchRaw(id).then(buf => (buf ? "element" : null));
+    if (decoded.has(id)) return decoded.get(id);
+    const p = fetchRaw(id).then(buf => new Promise(resolve => {
+      if (!buf) { resolve(null); return; }
+      try {
+        // Callback form: old Safari has no promise-returning decodeAudioData. slice(0) keeps
+        // the cached ArrayBuffer usable (decoding detaches it).
+        const maybe = ctx.decodeAudioData(buf.slice(0), b => resolve(b), () => resolve(null));
+        if (maybe && maybe.catch) maybe.catch(() => resolve(null));
+      } catch (error) { resolve(null); }
+    }));
+    decoded.set(id, p);
+    // Don't keep a failed decode forever (e.g. the context was not ready yet).
+    p.then(b => { if (!b) decoded.delete(id); });
+    return p;
+  }
+
+  function stop() {
+    token++;
+    playing.forEach(s => {
+      try { if (s.stop) s.stop(); else { s.pause(); s.src = ""; } } catch (error) { /* already ended */ }
+    });
+    playing = [];
+  }
+
+  function playBuffers(ctx, buffers) {
+    let t = ctx.currentTime + 0.03;
+    buffers.forEach(b => {
+      const src = ctx.createBufferSource();
+      src.buffer = b;
+      src.connect(ctx.destination);
+      src.start(t);
+      playing.push(src);
+      t += b.duration + GAP;
+    });
+  }
+
+  function playElements(ids, my) {
+    let i = 0;
+    const next = () => {
+      if (my !== token || i >= ids.length) return;
+      const a = new Audio(url(ids[i++]));
+      playing.push(a);
+      a.onended = () => setTimeout(next, GAP * 1000);
+      a.onerror = next;
+      const p = a.play();
+      if (p && p.catch) p.catch(() => {});
+    };
+    next();
+  }
+
+  return {
+    setContext(fn) { getContext = fn; },
+    // Start downloading clips we will probably need soon, so they play without a pause.
+    preload(texts) { texts.forEach(t => fetchRaw(voiceId(t))); },
+    stop,
+    // Say the parts one after another with recorded clips. Calls fallback(fullText) if any
+    // part has no clip (then the whole line uses the same voice).
+    say(parts, delay, fallback) {
+      stop();
+      const my = token;
+      const ids = parts.map(voiceId);
+      setTimeout(() => {
+        if (my !== token) return;
+        let done = false;
+        const timer = setTimeout(() => { if (!done && my === token) { done = true; fallback(parts.join(" ")); } }, WAIT_MS);
+        Promise.all(ids.map(decode)).then(got => {
+          if (done || my !== token) return;
+          done = true;
+          clearTimeout(timer);
+          if (got.some(g => !g)) { fallback(parts.join(" ")); return; }
+          const ctx = getContext();
+          if (got[0] === "element" || !ctx) playElements(ids, my);
+          else playBuffers(ctx, got);
+        });
+      }, delay);
+    },
+    has(text) { return fetchRaw(voiceId(text)).then(Boolean); }
+  };
+})();
+// ==VOICE END==
 
 // ==GARDEN START==
 // Garden world: fruit & vegetables A–Z, all hand-made SVG (viewBox 0 0 100 100).
@@ -3344,7 +3474,7 @@ const DINO_ITEMS = {
           // A real letter, but this world has no picture for it (e.g. no dinosaur starts with X).
           recognized.textContent = `I see ${letter}!`;
           message.textContent = `That looks like ${letter}! Now can you trace ${targetLetter}?`;
-          say(`That looks like ${spoken(letter)}! Now can you trace ${spoken(targetLetter)}?`);
+          say([`That looks like ${spoken(letter)}!`, `Can you trace ${spoken(targetLetter)}?`]);
           showToast(`I see ${letter}!`);
           boop();
           wipeTimer = setTimeout(() => clearDrawing(true), 4200);
@@ -3438,6 +3568,14 @@ const DINO_ITEMS = {
         leniency = 0;
         glowDots = null;
         guide = LetterEngine.buildGuide(targetLetter, width, height);
+        preloadVoice(targetLetter);
+      }
+
+      // Fetch the clips this letter may need, so they play straight away.
+      function preloadVoice(letter) {
+        const s = spoken(letter), L = letter.toUpperCase();
+        Voice.preload([`Can you trace ${s}?`, ...WORLDS[world].items(L).map(it => `${L} is for ${it.name}`),
+          "Almost! Follow the pink dots.", `Let's follow the dots to make ${s}.`, `Watch me make ${s}. Then you try!`]);
       }
 
       function stopEverything() {
@@ -3483,7 +3621,7 @@ const DINO_ITEMS = {
         updateCaseButton();
         // Same letter, other case: A -> a -> A. Found items are shared between cases.
         startLetter(targetLetter.toUpperCase(), false);
-        say(isLowerCase() ? `Small letters! Can you trace ${spoken(targetLetter)}?` : `Big letters! Can you trace ${spoken(targetLetter)}?`, 200);
+        say([isLowerCase() ? "Small letters!" : "Big letters!", `Can you trace ${spoken(targetLetter)}?`], 200);
         showToast(isLowerCase() ? "abc  small letters" : "ABC  big letters");
       }
 
@@ -3512,6 +3650,7 @@ const DINO_ITEMS = {
 
       function showHome(speak) {
         stopEverything();
+        Voice.stop();
         if ("speechSynthesis" in window) window.speechSynthesis.cancel();
         phase = "home";
         updateHomeProgress();
@@ -3533,7 +3672,7 @@ const DINO_ITEMS = {
         recognized.textContent = "Hello, little writer!";
         animalName.textContent = W.welcome;
         message.textContent = W.intro;
-        say(`${W.welcome}! Can you trace ${spoken(targetLetter)}?`, 200);
+        say([`${W.welcome}!`, `Can you trace ${spoken(targetLetter)}?`], 200);
         boop();
       }
 
@@ -3639,8 +3778,9 @@ const DINO_ITEMS = {
       }
 
       function unlockSpeech() {
-        if (speechUnlocked || !audioEnabled || !("speechSynthesis" in window)) return;
-        speechUnlocked = true;
+        if (speechUnlocked || !audioEnabled) return;
+        speechUnlocked = true;   // also unlocks the recorded voice (called from a tap)
+        if (!("speechSynthesis" in window)) return;
         chooseVoice();
         try {
           const warmup = new SpeechSynthesisUtterance(" ");
@@ -3651,8 +3791,16 @@ const DINO_ITEMS = {
         } catch (error) { /* speech is optional */ }
       }
 
-      function say(text, delay = 60) {
-        if (!audioEnabled || !speechUnlocked || !("speechSynthesis" in window)) return;
+      // Speak a line: the recorded clips in voice/ when they are there, else the browser voice.
+      // `parts` is one sentence or a list of sentences said one after another.
+      function say(parts, delay = 60) {
+        if (!audioEnabled || !speechUnlocked) return;
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        Voice.say(Array.isArray(parts) ? parts : [parts], delay, text => speakWithBrowser(text, 30));
+      }
+
+      function speakWithBrowser(text, delay) {
+        if (!audioEnabled || !("speechSynthesis" in window)) return;
         const speak = () => {
           const u = new SpeechSynthesisUtterance(text);
           u.lang = "en-US"; u.rate = 0.8; u.pitch = 1.18; u.volume = 1;
@@ -3679,7 +3827,7 @@ const DINO_ITEMS = {
         updateSoundButton();
         saveProgress();
         if (audioEnabled) { ensureAudio(); boop(); showToast("Sound on!"); }
-        else { if ("speechSynthesis" in window) window.speechSynthesis.cancel(); showToast("Sound off"); }
+        else { Voice.stop(); if ("speechSynthesis" in window) window.speechSynthesis.cancel(); showToast("Sound off"); }
       }
 
       // ---------- install ----------
@@ -3769,6 +3917,8 @@ const DINO_ITEMS = {
       }
 
       function welcome() {
+        Voice.setContext(() => ensureAudio());
+        Voice.preload(["Where shall we play?", ...WORLD_KEYS.map(k => `${WORLDS[k].welcome}!`)]);
         loadProgress();
         updateSoundButton();
         updateCaseButton();

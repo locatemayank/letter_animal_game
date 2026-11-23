@@ -5,6 +5,24 @@ Audience: children aged 3 to 4 tracing uppercase letters on a phone or tablet.
 
 The game is charming. It has a clear loop (trace, then meet an animal), good audio and confetti feedback, it installs as a PWA, and it cycles A to Z so every letter comes up. Most of the problems are in the parts a parent can't see: the letter check accepts almost anything, and the touch handling ignores real drawing or draws when it shouldn't. Both are fixed in the new `index.html`. Ideas for further work are at the end.
 
+## Update 9: wait for the whole letter (November 2026)
+
+**The problem.** On a small k the game cheered as soon as the child lifted the finger after the upper arm, before the leg was drawn. The arm and the leg are one "<" stroke in the guide, so the stem plus the arm already covered 79% of the dots, enough for a pass. The game also checked at every finger lift, so it stopped taking ink at once. The same could happen on any letter when a child lifts the finger partway along a stroke.
+
+**What changed.**
+- **Finger lift.** The game ends the turn on a finger lift only when the letter is clearly finished: at least 90% of the dots, at least 80% of every stroke, and the ink reaching both ends of every stroke. Anything less waits for the pause check (2.8 s without drawing), so the child can carry on.
+- **Pause check.** At the pause the ink must come near both ends of every stroke. If a stroke end is clearly not reached (the k leg), the child hears "Almost! Follow the pink dots" and the missing part glows pink. The drawing stays on the screen, so the child can finish it.
+- **Kinder later.** After two "almost"s the end rule is dropped, so no child gets stuck.
+
+**Checked.** A browser test (`tests/k_browser_test.py`) traces the stem and the arm of a small k. On the current site that wins at once. Now there is no win on the finger lift, an "Almost" after the pause, and a win after the leg.
+
+In the handwriting simulation (520 attempts per row, before → after, capital / small letters):
+- A letter stopped at 80% of the ink no longer ends the turn on the finger lift: 25% / 18% → 94% / 82% keep waiting.
+- At the pause, an 80% letter is no longer passed most of the time: 19% / 13% → 71% / 58% get "almost". Letters like o, whose stroke ends where it starts, can still pass at 80%.
+- A missing stroke is caught more often: 92% / 91% → 95% / 95%.
+- Good and sloppy tracing pass as before (99% and 96–97%).
+- About 1 good letter in 8 now ends at the pause (2.8 s) instead of on the finger lift (was 1 in 50).
+
 ## Update 8: recorded voice (November 2026)
 
 **A natural voice.** Every line the game speaks now has a recorded clip: 765 short MP3 files in the `voice/` folder (about 6.5 MB in total, each under 3 seconds). That covers "Where shall we play?", the six world welcomes, "Can you trace A?" and "Can you trace little A?", "Almost! Follow the pink dots.", the "Watch me make…" and "Let's follow the dots…" help lines, "That looks like…" and every "A is for Apple" line in all six worlds. The clips were made with the open Kokoro text-to-speech model (voice "af_heart", a warm, clear female voice, slightly slowed for small children). Hard names have their pronunciation set by hand (Xigua, Quetzalcoatlus, Pachycephalosaurus, Kiribati, Jalapeño and about 40 more), and letter names are read as letters ("A is for", not "uh is for"). Every clip was checked by running speech recognition on it.

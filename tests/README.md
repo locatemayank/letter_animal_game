@@ -18,6 +18,7 @@ The script inside it is assembled from the files here:
 | `pack_sheet.py` | Contact sheet of any picture pack: `python tests/pack_sheet.py tests/sports.js sheet.png` |
 | `voice.js` | `Voice` + `voiceId`: plays the recorded clip `voice/<id>.mp3` for a line (WebAudio, or an `<audio>` element on old browsers), chains two-part lines, preloads the current letter's clips, and calls back to the browser voice when any clip is missing or slow |
 | `voice_lines.js` | Lists every line the game can say and writes `../tools/voice_script.tsv` (id, text, group) in upload order: prompts, then Zoo, Garden, Sports, House, Countries, Dinos. Run it after adding pictures |
+| `k_browser_test.py` | Headless Chromium check that a small k is not passed after the stem and the arm (no win on the finger lift, "Almost" at the pause, win after the leg) |
 | `voice_browser_test.py` | Headless Chromium check (Playwright) of clip playback, two-part lines, missing-clip fallback, no-WebAudio, sound off, service-worker caching and offline |
 | `game.js` | Game controller: worlds (Zoo / Garden / Sports / House / Countries / Dinos; Zoo has 4 emoji animals per letter; a world may play only some letters via `letters`), random picture per letter (never the same twice in a row), ◀ / ▶ letter buttons, home screen and back button, picture fitted above the words (fitPicture), "Keep it upright" button, ABC ⇄ abc, school lines, canvas rendering, pointer wiring, guide dots, voice, celebration flow, saved progress |
 | `build.py` | Rebuilds (engine, arbiter, voice, packs, game) the `<script>` block in `../index.html` from the files above and syntax-checks it |
@@ -33,6 +34,7 @@ node sim.js              # simulated preschool handwriting (env: N, W, H, LEN, S
 node smoke_dom.js        # headless walk-through of ../index.html: home, Zoo, idle auto-check, abc, i-dot, ◀/▶, random pictures, Garden, Sports, House, Countries, Dinos (skipped letters)
 cd ..
 python tests/voice_browser_test.py   # needs: pip install playwright; python -m playwright install chromium-headless-shell
+python tests/k_browser_test.py       # small k must wait for the leg
 ```
 
 ## Recorded voice
@@ -60,21 +62,26 @@ is read as "!", because Kokoro otherwise glides it into "deer?" or "peer?".
 `SET=lower node sim.js` runs the same simulation on the lowercase letters (on school lines).
 `ENGINE=./orig_engine.js node sim.js` runs it against the original recognizer (baseline).
 `LOWER_R`, `STRAY0`, `STRAY1`, `STRAY2` override the tuning constants for calibration runs only.
+The same goes for the stroke-end rules: `ENDS_LIVE` (1.5), `ENDS_PAUSE` (2.0) and `ENDS_GATE` (2.5) are distances in R. `LIVE_OVERALL` (0.9) and `LIVE_STROKE` (0.8) set the coverage needed to finish on a finger lift.
+The rows "finger lift, …" test the check at each finger lift (`final: false`). The rows "stopped at 80%" leave the last stroke unfinished.
 
-Results at 640×520, 520 attempts per row:
+Results at 640×520, 520 attempts per row (update 9, November 2026):
 
 | Scenario | Original | Uppercase | Lowercase |
 |---|---|---|---|
-| Good trace → pass | 100% | 99.4% | 99.4% |
-| Sloppy trace → pass | 100% | 97.5% | 96.9% |
-| Missing stroke → not passed | 42% | 91.9% | 91.2% |
-| Half traced → not passed | 0% | 99.8% | 96.2% |
-| Zig-zag scribble → not passed | 0% | 95.4% | 85.6%* |
+| Good trace → pass | 100% | 99.2% | 99.4% |
+| Sloppy trace → pass | 100% | 97.1% | 96.3% |
+| Missing stroke → not passed | 42% | 95.4% | 94.8% |
+| Half traced → not passed | 0% | 99.8% | 96.7% |
+| Stopped at 80% → not passed (pause check) | – | 70.6% | 57.9% |
+| Good trace → finished on the finger lift | – | 84.8% | 90.2% |
+| Stopped at 80% → no finish on the finger lift | – | 94.4% | 82.3% |
+| Zig-zag scribble → not passed | 0% | 94.6% | 86.5%* |
 | Loop scribble → not passed | 0% | 100% | 100% |
-| Random scribble → not passed | 0% | 98.5% | 96.9% |
-| Wrong letter on guide → not passed | 0% | 94.4% | 91.5% |
-| Free-drawn target off guide → pass | 100% | 97.3% | 93.7% |
-| Free-drawn other letter → recognised | – | 97.1% | 97.7% |
+| Random scribble → not passed | 0% | 99.4% | 98.3% |
+| Wrong letter on guide → not passed | 0% | 95.2% | 91.3% |
+| Free-drawn target off guide → pass | 100% | 96.5% | 94.0% |
+| Free-drawn other letter → recognised | – | 98.8% | 96.5% |
 
 \* Most lowercase zig-zag "passes" are on i, l and j: a ±20 px zig-zag down a single straight
 line is, in effect, a wobbly trace of that line. Without those three letters the figure is about 93%.

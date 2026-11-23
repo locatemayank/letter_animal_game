@@ -1,4 +1,4 @@
-const CACHE_NAME = "magic-letter-zoo-v24";
+const CACHE_NAME = "magic-letter-zoo-v25";
 // Voice clips live in their own cache so a game update does not download them all again.
 // Change this name only if clips are re-recorded under the same file names.
 const VOICE_CACHE = "magic-letter-zoo-voice-v1";

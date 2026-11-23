@@ -97,12 +97,12 @@ function scribble(letter, kind) {
   return { strokes: [E.densify(pts, 6)], guide };
 }
 
-function run(name, gen, n, check) {
+function run(name, gen, n, check, final = true) {
   let ok = 0; const verdicts = {}; const fails = {};
   for (let i = 0; i < n; i++) {
     const letter = LETTERS[i % LETTERS.length];
     const { strokes, guide, target } = gen(letter);
-    const r = E.evaluate(guide, strokes, target || letter, { final: true, leniency: +(process.env.LEN || 0) });
+    const r = E.evaluate(guide, strokes, target || letter, { final, leniency: +(process.env.LEN || 0) });
     verdicts[r.verdict] = (verdicts[r.verdict] || 0) + 1;
     if (check(r, letter)) ok++; else fails[letter] = (fails[letter] || 0) + 1;
   }
@@ -114,6 +114,9 @@ run("good trace -> pass", L => kidStrokes(L), N, r => r.verdict === "pass");
 run("sloppy trace(q=1.5) -> pass", L => kidStrokes(L, { quality: 1.5 }), N, r => r.verdict === "pass");
 run("missing stroke -> NOT pass", L => kidStrokes(L, { dropStroke: true }), N, (r, L) => E.TEMPLATES[L].length === 1 || r.verdict !== "pass");
 run("half traced -> NOT pass", L => kidStrokes(L, { partial: 0.5 }), N, r => r.verdict !== "pass");
+run("stopped at 80% -> NOT pass", L => kidStrokes(L, { partial: 0.8, shuffle: false }), N, r => r.verdict !== "pass");
+run("finger lift, good -> ends at once", L => kidStrokes(L), N, r => r.verdict === "pass", false);
+run("finger lift, 80% -> keeps waiting", L => kidStrokes(L, { partial: 0.8, shuffle: false }), N, r => r.verdict !== "pass", false);
 run("half traced -> almost", L => kidStrokes(L, { partial: 0.5 }), N, r => r.verdict === "almost");
 run("scribble zigzag -> NOT pass", L => scribble(L, "zigzag"), N, r => r.verdict !== "pass");
 run("scribble loops -> NOT pass", L => scribble(L, "loops"), N, r => r.verdict !== "pass");

@@ -1526,6 +1526,11 @@ const LetterEngine = (() => {
     { overall: 0.55, perStroke: 0.25, precision: 0.55, align: 0.62, maxInk: 3.0, stray: TUNE("STRAY2", 0.22) }
   ];
 
+  // A finger lift ends the turn at once only when the letter is clearly finished.
+  const LIVE_DONE = { overall: TUNE("LIVE_OVERALL", 0.9), perStroke: TUNE("LIVE_STROKE", 0.8) };
+  // How close (in R) the ink must come to both ends of every stroke: on a finger lift / at the pause check.
+  const ENDS = { live: TUNE("ENDS_LIVE", 1.5), pause: TUNE("ENDS_PAUSE", 2.0), gate: TUNE("ENDS_GATE", 2.5) };
+
   function traceReport(guide, inkStrokes, leniency = 0) {
     const L = LENIENCY[clamp(leniency, 0, LENIENCY.length - 1)];
     const R = guide.R;
@@ -1575,7 +1580,17 @@ const LetterEngine = (() => {
     const align = alignN ? alignSum / alignN : 0;
     const inkRatio = guide.guideLength ? inkLength / guide.guideLength : 0;
 
+    // Stroke ends: the child must reach the end of every stroke (e.g. the leg of "k", which is
+    // part of the same "<" stroke as the arm), except at the kindest level.
+    const endGap = guide.strokes.map((s, si) => {
+      const mine = guide.dots.filter(d => d.stroke === si);
+      return Math.max(...[mine[0], mine[mine.length - 1]].map(d => flat.reduce((m, p) => Math.min(m, dist(d, p)), Infinity))) / R;
+    });
+    const worstEnd = Math.max(...endGap);              // in units of R
+    const endsOk = worstEnd <= ENDS.pause;
+
     const pass =
+      (endsOk || leniency >= 2) &&
       coverage >= L.overall &&
       Math.min(...perStroke) >= L.perStroke &&
       precision >= L.precision &&
@@ -1590,7 +1605,7 @@ const LetterEngine = (() => {
     let weakest = 0;
     perStroke.forEach((c, i) => { if (c < perStroke[weakest]) weakest = i; });
 
-    return { coverage, perStroke, precision, align, inkRatio, inkLength, strayFrac, pass, onGuide, almost, tracingEffort, weakestStroke: weakest, uncovered };
+    return { coverage, perStroke, precision, align, inkRatio, inkLength, strayFrac, endsOk, worstEnd, pass, onGuide, almost, tracingEffort, weakestStroke: weakest, uncovered };
   }
 
   // ---------- $P point-cloud recognizer (order/direction independent) ----------
@@ -1724,8 +1739,15 @@ const LetterEngine = (() => {
     const real = inkStrokes.filter(s => s.length && (polylineLength(s) >= minLen || onDot(s)));
     if (!real.length) return { verdict: final ? "empty" : "wait" };
     const trace = traceReport(guide, real, leniency);
+    // While the child is still drawing (finger just lifted), only stop on a letter that is
+    // clearly finished; anything less waits for the pause check so a child who lifts the
+    // finger midway (k: after the arm, before the leg) can carry on.
+    if (!final) {
+      const done = trace.pass && trace.worstEnd <= ENDS.live && trace.coverage >= LIVE_DONE.overall &&
+        Math.min(...trace.perStroke) >= LIVE_DONE.perStroke;
+      return done ? { verdict: "pass", letter: targetLetter, mode: "trace", trace } : { verdict: "wait", trace };
+    }
     if (trace.pass) return { verdict: "pass", letter: targetLetter, mode: "trace", trace };
-    if (!final) return { verdict: "wait", trace };
     const free = freeRecognize(real, targetLetter, leniency);
     const clearTarget = free && free.targetOk && free.target === free.best && free.target.d < 1.5;
     // Child is clearly tracing but stopped early -> point at the missing part
@@ -1733,6 +1755,11 @@ const LetterEngine = (() => {
     if (trace.tracingEffort && !clearTarget) return { verdict: "almost", letter: targetLetter, trace, free };
     if (!free || free.tooSmall) return { verdict: trace.almost ? "almost" : "retry", trace, free };
     if (free.isScribble) return { verdict: "scribble", trace, free };
+    // Tracing right on the dots but a stroke end not reached (k without its leg): show the
+    // missing part instead of letting the shape recognizer call it a k.
+    if (trace.worstEnd > ENDS.gate && leniency < 2 && trace.coverage >= TUNE("ENDS_COV", 0.7) && trace.precision >= 0.85) {
+      return { verdict: "almost", letter: targetLetter, trace, free };
+    }
     // Off the guide but clearly the target letter (e.g. written next to it): still a win.
     if (free.targetOk) return { verdict: "pass", letter: targetLetter, mode: "free", trace, free };
     if (free.confident && free.best.letter !== targetLetter) return { verdict: "other", letter: free.best.letter, trace, free };
